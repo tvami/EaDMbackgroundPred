@@ -32,5 +32,5 @@ source twoD-env/bin/activate
 
 ## Example running
 ```
-python3 runWith1DVanilla.py BinningV1_InputV1_MC_Unblind config_BinningV1_InputV1_MC_Unblind.json
+python3 runWith1DVanilla.py rpf0x0_BinningV1_InputV1_MC_Unblind config_BinningV1_InputV1_MC_Unblind.json
 ```
