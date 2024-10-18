@@ -1,0 +1,127 @@
+{
+  "BINNING": {
+    "default": {
+      "X": {
+        "BINS": [
+          0,
+          200,
+          400,
+          600,
+          800,
+          5000
+        ],
+        "NAME": "pT",
+        "SIGEND": 800,
+        "SIGSTART": 600,
+        "TITLE": "p_{T}"
+      },
+      "Y": {
+        "MAX": 50,
+        "MIN": 1,
+        "NAME": "N",
+        "NBINS": 1,
+        "TITLE": "N"
+      }
+    }
+  },
+  "GLOBAL": {
+    "FILE": "EaDM_$process.root",
+    "HIST": "h$region",
+    "HIST_DOWNvolt": "h$region_$syst_down",
+    "HIST_UPvolt": "h$region_$syst_up",
+    "SIGNAME": [
+      "Signal_M500GeV"
+    ],
+    "SIGNAME1": [
+      "Signal_gluino-1000",
+      "Signal_gluino-1400",
+      "Signal_gluino-1600",
+      "Signal_gluino-1800",
+      "Signal_gluino-2000",
+      "Signal_gluino-2200",
+      "Signal_gluino-2400",
+      "Signal_gluino-2600",
+      "Signal_gluino-800"
+    ],
+    "path": "./histograms_for_2DAlphabet_v1"
+  },
+  "NAME": "EaDM",
+  "OPTIONS": {
+    "blindedFitNot": [
+      "pass"
+    ],
+    "blindedPlotsNot": [
+      "pass"
+    ],
+    "plotEvtsPerUnitVolt": true,
+    "plotTemplateComparisonsVol": true
+  },
+  "PROCESSES": {
+    "SIGNAME": {
+      "COLOR": "red",
+      "LOC": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:h$region",
+      "NAME": "SIGNAME",
+      "SCALE": 1.0,
+      "SYSTEMATICS": [
+        "lumi"
+      ],
+      "SYSTEMATICSvolt": [
+        "lumi",
+        "pileup",
+        "systOnF",
+        "systOnG",
+        "systOnTrigger",
+        "systOnPt",
+        "systOnMuReco",
+        "systOnMuID",
+        "systOnMuTrigger"
+      ],
+      "TITLE": "BH signal",
+      "TYPE": "SIGNAL",
+      "VARIATION": "nominal"
+    },
+    "data_obs": {
+      "ALIAS": "FakeData",
+      "COLOR": "black",
+      "LOC": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:h$region",
+      "NAME": "data_obs",
+      "SCALE": 1.0,
+      "SYSTEMATICS": [],
+      "TITLE": "FakeData",
+      "TYPE": "DATA",
+      "VARIATION": "nominal"
+    }
+  },
+  "REGIONS": {
+    "fail": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    },
+    "pass": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    }
+  },
+  "SYSTEMATICS": {
+    "lumi": {
+      "CODE": 0,
+      "VAL": 1.016
+    },
+    "pileup": {
+      "ALIAS": "PUsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:HIST_DOWN",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:HIST_UP"
+    },
+    "systOnPS": {
+      "ALIAS": "PSsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:HIST_DOWN",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v1/EaDM_$process.root:HIST_UP"
+    }
+  }
+}
