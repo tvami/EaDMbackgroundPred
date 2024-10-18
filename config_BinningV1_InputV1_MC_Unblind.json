@@ -1,0 +1,85 @@
+{
+    "NAME": "EaDM",
+    "GLOBAL": {
+        "FILE": "EaDM_$process.root",
+        "HIST": "h$region",
+        "HIST_UPvolt": "h$region_$syst_up",
+        "HIST_DOWNvolt": "h$region_$syst_down",
+        "path": "./histograms_for_2DAlphabet_v1",
+        "SIGNAME": ["Signal_M500GeV"],
+        "SIGNAME1":  ["Signal_gluino-1000", "Signal_gluino-1400", "Signal_gluino-1600", "Signal_gluino-1800", "Signal_gluino-2000", "Signal_gluino-2200", "Signal_gluino-2400", "Signal_gluino-2600", "Signal_gluino-800"] 
+    },
+    "REGIONS": {
+        "pass": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        },
+        "fail": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        }
+    },
+    "PROCESSES": {
+        "data_obs": {
+            "SYSTEMATICS":[],
+            "COLOR": "black",
+            "SCALE": 1.0,
+            "TYPE": "DATA",
+            "TITLE": "FakeData",
+            "ALIAS": "FakeData",
+            "LOC": "path/FILE:HIST"
+        },
+        "SIGNAME": {
+            "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
+            "SYSTEMATICS": ["lumi"],
+            "COLOR": "red",
+            "SCALE": 1.0,
+            "TYPE": "SIGNAL",
+            "TITLE": "BH signal",
+            "LOC": "path/FILE:HIST"
+        }
+    },
+    "SYSTEMATICS": {
+        "lumi": {
+                "CODE": 0,
+                "VAL": 1.016
+        },
+        "pileup": {
+            "ALIAS": "PUsyst",
+            "UP": "path/FILE:HIST_UP",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0
+        },
+        "systOnPS": {
+            "ALIAS": "PSsyst",
+            "UP": "path/FILE:HIST_UP",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0
+        }
+    },
+    "BINNING": {
+        "default": {
+            "X": {
+                "NAME": "pT",
+                "TITLE": "p_{T}",
+                "BINS":   [0,200,400,600,800,5000],
+                "SIGSTART": 600,
+                "SIGEND": 800
+            },
+            "Y": {
+                "NAME": "N",
+                "TITLE": "N",
+                "NBINS": 1,
+                "MIN": 1,
+                "MAX": 50
+            }
+        }
+    },
+    "OPTIONS": {
+        "blindedFitNot": ["pass"],
+        "blindedPlotsNot": ["pass"],
+        "plotTemplateComparisonsVol": true,
+        "plotEvtsPerUnitVolt" : true
+    }
+}
+
