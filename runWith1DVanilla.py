@@ -270,16 +270,16 @@ def test_FTest(poly1, poly2, signal=''):
     print("rpfSet1: " + str(rpfSet1))
     nRpfs1  = len(rpfSet1.index)
     print(" >>>>>> Num RPF parameters for poly1: " + str(nRpfs1))
-    _gof_for_FTest(twoD, 'gluino-1800-{}_area'.format(poly1), card_or_w='card.txt')
-    gofFile1 = working_area+'/gluino-1800-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly1)
+    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly1), card_or_w='card.txt')
+    gofFile1 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly1)
 
     # Get number of RPF params and run GoF for poly2
     params2 = twoD.ledger.select(_select_signal, '{}'.format(signal), poly2).alphaParams
     rpfSet2 = params2[params2["name"].str.contains("rpf")]
     nRpfs2  = len(rpfSet2.index)
     print(" >>>>>> Num RPF parameters for poly2: " + str(nRpfs2))
-    _gof_for_FTest(twoD, 'gluino-1800-{}_area'.format(poly2), card_or_w='card.txt')
-    gofFile2 = working_area+'/gluino-1800-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly2)
+    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly2), card_or_w='card.txt')
+    gofFile2 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly2)
 
 
     base_fstat = FstatCalc(gofFile1,gofFile2,nRpfs1,nRpfs2,nBins)
@@ -355,16 +355,15 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV"]
+    signal_areas = ["Signal_M500GeV", "Signal_M500GeV"]
     #signal_areas = ["Signal_B1_MD2000_MBH3000_n2"]
     # signal_areas = ["Signal_B1_MD2000_MBH3000_n2","Signal_B1_MD2000_MBH4000_n2","Signal_B1_MD2000_MBH5000_n2","Signal_B1_MD2000_MBH6000_n2","Signal_B1_MD2000_MBH7000_n2","Signal_B1_MD2000_MBH8000_n2","Signal_B1_MD2000_MBH9000_n2","Signal_B1_MD2000_MBH10000_n2","Signal_B1_MD2000_MBH11000_n2"]
     #signal_areas = ["Signal_B1_MD4000_MBH5000_n2","Signal_B1_MD4000_MBH6000_n2","Signal_B1_MD4000_MBH7000_n2","Signal_B1_MD4000_MBH8000_n2","Signal_B1_MD4000_MBH9000_n2","Signal_B1_MD4000_MBH10000_n2","Signal_B1_MD4000_MBH11000_n2"]
 
-    tf_type = '0x0'
-    #tf_type = '1x0'
-    #tf_type = 'expo'
+    #tf_type = '0x0'
+    tf_types = ['1x0', '2x0']
 
-    for signal in signal_areas :
+    for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
       if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
@@ -388,3 +387,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
+    test_FTest('1x0','2x0',"Signal_M500GeV")
