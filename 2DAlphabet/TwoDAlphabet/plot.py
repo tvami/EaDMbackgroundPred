@@ -333,9 +333,9 @@ class Plotter(object):
                         slice_str = '%s < %s < %s'%slice_edges
 
                         if (region == "pass") :
-                            slice_str = "RNN score > 0.2"
+                            slice_str = "0.1 < RNN score < 0.2"
                         elif (region == "fail") :
-                            slice_str = "RNN score < 0.2"
+                            slice_str = "RNN score < 0.1"
 
                         out_pad_name = f'{self.dir}/base_figs/{projn}_{region}{"" if not logyFlag else "_logy"}'
 
