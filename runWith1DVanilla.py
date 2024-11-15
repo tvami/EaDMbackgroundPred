@@ -169,8 +169,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023 Cosmics (1.07M Events)')
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023 Cosmics (1.07M Events)')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Run 3 Cosmics (14.4M Events)')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Run 3 Cosmics (14.4M Events)')
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -361,7 +361,7 @@ if __name__ == "__main__":
     #signal_areas = ["Signal_B1_MD4000_MBH5000_n2","Signal_B1_MD4000_MBH6000_n2","Signal_B1_MD4000_MBH7000_n2","Signal_B1_MD4000_MBH8000_n2","Signal_B1_MD4000_MBH9000_n2","Signal_B1_MD4000_MBH10000_n2","Signal_B1_MD4000_MBH11000_n2"]
 
     #tf_type = '0x0'
-    tf_types = ['1x0', '2x0']
+    tf_types = ['0x0', '1x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
