@@ -169,8 +169,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023Dv1 Cosmics (1.1M Events)')
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023Dv1 Cosmics (1.1M Events)')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023Dv1 (1.1M Events)')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023Dv1 (1.1M Events)')
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
