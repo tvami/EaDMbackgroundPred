@@ -37,6 +37,7 @@ python3 runWith1DVanilla_v0.py rpf1x0_Binningv1_Inputv0_VR config_Binningv1_Inpu
 
 ## Histogram Versions
 
-- v0: Cosmic MC in Validation Region - 10 GeV pT cut (rpf1x0_Binningv1_Inputv0_VR)
-- v1: 2023Dv1 Cosmics in Validation Region - 10 GeV pT cut (rpf1x0_Binningv3_Inputv1_VR)
-- v2: 2023Dv2 Cosmics in Validation Region - 10 GeV pT cut (rpf1x0_Binningv3_Inputv2_VR)
+- v0: Cosmic MC in Validation Region (VR) - 10 GeV pT cut (rpf1x0_Binningv1_Inputv0_VR)
+- v1: 2023Dv1 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv1_VR)
+- v2: 2023Dv2 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv2_VR)
+- v3: 2023Dv1+v2 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv3_VR)
