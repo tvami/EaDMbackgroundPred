@@ -32,9 +32,9 @@ source twoD-env/bin/activate
 
 ## Example running
 ```
-python3 runWith1DVanilla.py rpf0x0_BinningV1_InputV1_MC_Unblind config_BinningV1_InputV1_MC_Unblind.json
+python3 runWith1DVanilla_v0.py rpf1x0_Binningv1_Inputv0_VR config_Binningv1_Inputv0_VR.json
 ```
 
 ## Histogram Versions
-```
-- v0: Cosmic MC in Validation Region
+
+- v0: Cosmic MC in Validation Region (rpf1x0_Binningv1_Inputv0_VR)
