@@ -3,8 +3,8 @@
     "GLOBAL": {
         "FILE": "EaDM_$process.root",
         "HIST": "h$region",
-        "HIST_UPvolt": "h$region_$syst_up",
-        "HIST_DOWNvolt": "h$region_$syst_down",
+        "HIST_UP": "h$region_$syst_up",
+        "HIST_DOWN": "h$region_$syst_down",
         "path": "./histograms_for_2DAlphabet_v3",
         "SIGNAME": ["Signal_M500GeV_VR"],
         "SIGNAME1":  ["Signal_gluino-1000", "Signal_gluino-1400", "Signal_gluino-1600", "Signal_gluino-1800", "Signal_gluino-2000", "Signal_gluino-2200", "Signal_gluino-2400", "Signal_gluino-2600", "Signal_gluino-800"] 
@@ -21,7 +21,7 @@
     },
     "PROCESSES": {
         "data_obs": {
-            "SYSTEMATICS":[],
+            "SYSTEMATICS":["pT","t0"],
             "COLOR": "black",
             "SCALE": 1.0,
             "TYPE": "DATA",
@@ -44,14 +44,14 @@
                 "CODE": 0,
                 "VAL": 1.016
         },
-        "pileup": {
-            "ALIAS": "PUsyst",
+        "pT": {
+            "ALIAS": "pTsyst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
         },
-        "systOnPS": {
-            "ALIAS": "PSsyst",
+        "t0": {
+            "ALIAS": "t0syst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
@@ -80,8 +80,8 @@
         }
     },
     "OPTIONS": {
-        "blindedFit": ["true"],
-        "blindedPlots": ["true"],
+        "blindedFit": ["pass"],
+        "blindedPlots": ["pass"],
         "plotTemplateComparisonsVol": true,
         "plotEvtsPerUnitVolt" : true
     }
