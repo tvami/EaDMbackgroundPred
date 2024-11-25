@@ -270,7 +270,7 @@ class Plotter(object):
 
             make_can('{d}/{p}_{r}_2D'.format(d=self.dir,p=process,r=region), [out_file_name%('prefit')+'.png', out_file_name%('postfit')+'.png'])
 
-    def plot_projections(self, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', subtitles={}, units='GeV', regionsToGroup=[]):
+    def plot_projections(self, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
         '''Plot comparisons of data and the post-fit background model and signal
         using the 1D projections. Canvases are grouped based on projection axis.
         The canvas rows are separate selection regions while the columns
@@ -279,6 +279,7 @@ class Plotter(object):
         Args:
             lumiText (string): LaTeX-formatted string containing luminosity information. Defaults to Run2 conditions.
             extraText (str): Additional text to place after experiment (CMS) text.
+            pf_slice_str ({str:str}): Dict of raw strings corresponding to the pass/fail regions specified in the JSON to be placed as the axis slice text in top left corner of pad.
             subtitles ({str:str}, optional): Dict of raw strings corresponding to each region specified in the JSON to be placed underneath axis slice text in top left corner of pad. If multiple titles are desired, separate with semicolon character.
                 Example: {"SR_fail": r"$ParticleNet_{TvsQCD}$ Pass\n$ParticleNetMD_{Xbb}$ Fail", "SR_pass": r"$ParticleNet_{TvsQCD}$ Pass;$ParticleNetMD_{Xbb}$ Pass"}
             units (str): Units of measurement for observable. Placed on x-axis and in slice string.
@@ -333,9 +334,9 @@ class Plotter(object):
                         slice_str = '%s < %s < %s'%slice_edges
 
                         if (region == "pass") :
-                            slice_str = "0.1 < RNN score < 0.2"
+                            slice_str = pf_slice_str[region]
                         elif (region == "fail") :
-                            slice_str = "RNN score < 0.1"
+                            slice_str = pf_slice_str[region]
 
                         out_pad_name = f'{self.dir}/base_figs/{projn}_{region}{"" if not logyFlag else "_logy"}'
 
@@ -690,10 +691,10 @@ def _get_start_stop(i,slice_idxs):
     stop  = slice_idxs[i+1]
     return start, stop
 
-def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', subtitles={}, units='GeV', regionsToGroup=[]):
+def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
     plotter = Plotter(ledger, twoD, fittag, loadExisting)
     plotter.plot_2D_distributions()
-    plotter.plot_projections(lumiText, extraText, subtitles, units, regionsToGroup)
+    plotter.plot_projections(lumiText, extraText, pf_slice_str, subtitles, units, regionsToGroup)
 
 def make_systematic_plots(twoD):
     '''Make plots of the systematic shape variations of each process based on those

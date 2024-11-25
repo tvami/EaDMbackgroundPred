@@ -30,9 +30,9 @@ cmsenv
 source twoD-env/bin/activate
 ```
 
-## Example running
+## Example running (NOTE: Use same X between all scripts)
 ```
-python3 runWith1DVanilla_v0.py rpf1x0_Binningv1_Inputv0_VR config_Binningv1_Inputv0_VR.json
+python3 runWith1DVanilla_vX.py rpf1x0_Binningv1_InputvX_VR config_Binningv1_InputvX_VR.json
 ```
 
 ## Histogram Versions
