@@ -326,7 +326,7 @@ class TwoDAlphabet:
             # systematic_analyzer_cmd = 'python $CMSSW_BASE/src/HiggsAnalysis/CombinedLimit/test/systematicsAnalyzer.py card.txt --all -f html > systematics_table.html'
             # execute_cmd(systematic_analyzer_cmd)    
 
-    def StdPlots(self, subtag, ledger=None, plotSplusB=True, vtol=0.3, stol=0.1, vtol2=2.0, stol2=0.5, regex='^(?!.*(_bin_|_par))', corrthresh=0.0, corrtext=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', subtitles={}, units='GeV', regionsToGroup=[]):
+    def StdPlots(self, subtag, ledger=None, plotSplusB=True, vtol=0.3, stol=0.1, vtol2=2.0, stol2=0.5, regex='^(?!.*(_bin_|_par))', corrthresh=0.0, corrtext=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
         '''
         Args:
             subtag (str): 'b' or 's' to denote background-only or signal-plus-background fit result.
@@ -346,6 +346,7 @@ class TwoDAlphabet:
             lumiText (str): LaTeX-formatted string containing luminosity information. Ensure that a raw string is passed and that all latex is wrapped
                             in $$. Defaults to Run2 conditions.
             extraText (str): Additional text to place after experiment (CMS) text. Defaults to "Preliminary"
+            pf_slice_str ({str:str}): Dict of raw strings corresponding to the pass/fail regions specified in the JSON to be placed as the axis slice text in top left corner of pad.
             subtitles ({str:str}): Dict of raw strings corresponding to each region specified in the JSON to be placed underneath axis slice text in 
                                    top left corner of pad. If multiple titles are desired, separate with semicolon character.
                                    Example: 
@@ -379,9 +380,9 @@ class TwoDAlphabet:
                 corrText=False
             )
             plot.gen_post_fit_shapes()
-            plot.gen_projections(ledger=ledger, twoD=self, fittag='b', lumiText=lumiText, extraText=extraText, subtitles=subtitles, units=units, regionsToGroup=regionsToGroup)
+            plot.gen_projections(ledger=ledger, twoD=self, fittag='b', lumiText=lumiText, extraText=extraText, pf_slice_str=pf_slice_str, subtitles=subtitles, units=units, regionsToGroup=regionsToGroup)
             if plotSplusB:
-                plot.gen_projections(ledger=ledger, twoD=self, fittag='s', lumiText=lumiText, extraText=extraText, subtitles=subtitles, units=units, regionsToGroup=regionsToGroup)
+                plot.gen_projections(ledger=ledger, twoD=self, fittag='s', lumiText=lumiText, extraText=extraText, pf_slice_str=pf_slice_str, subtitles=subtitles, units=units, regionsToGroup=regionsToGroup)
             
     def GetParamsOnMatch(self, regex='', subtag='', b_or_s='b'):
         out = {}
