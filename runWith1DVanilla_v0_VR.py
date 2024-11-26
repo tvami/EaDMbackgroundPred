@@ -169,8 +169,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023Dv2 (12.1M Events)')
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023Dv2 (12.1M Events)')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Cosmic MC (250K Events)', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Cosmic MC (250K Events)', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -387,4 +387,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M500GeV")
+    #test_FTest('1x0','expo',"Signal_M500GeV")

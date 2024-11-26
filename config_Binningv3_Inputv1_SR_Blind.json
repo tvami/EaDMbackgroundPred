@@ -25,8 +25,8 @@
             "COLOR": "black",
             "SCALE": 1.0,
             "TYPE": "DATA",
-            "TITLE": "Cosmics_Data_VR_v1",
-            "ALIAS": "Cosmics_Data_VR_v1",
+            "TITLE": "Cosmics_Data_SRb400_v1_syst2",
+            "ALIAS": "Cosmics_Data_SRb400_v1_syst2",
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
@@ -80,8 +80,8 @@
         }
     },
     "OPTIONS": {
-        "blindedFit": ["true"],
-        "blindedPlots": ["true"],
+        "blindedFit": ["pass"],
+        "blindedPlots": ["pass"],
         "plotTemplateComparisonsVol": true,
         "plotEvtsPerUnitVolt" : true
     }
