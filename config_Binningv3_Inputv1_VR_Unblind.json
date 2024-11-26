@@ -5,7 +5,7 @@
         "HIST": "h$region",
         "HIST_UPvolt": "h$region_$syst_up",
         "HIST_DOWNvolt": "h$region_$syst_down",
-        "path": "./histograms_for_2DAlphabet_v0",
+        "path": "./histograms_for_2DAlphabet_v1",
         "SIGNAME": ["Signal_M500GeV_VR"],
         "SIGNAME1":  ["Signal_gluino-1000", "Signal_gluino-1400", "Signal_gluino-1600", "Signal_gluino-1800", "Signal_gluino-2000", "Signal_gluino-2200", "Signal_gluino-2400", "Signal_gluino-2600", "Signal_gluino-800"] 
     },
@@ -25,8 +25,8 @@
             "COLOR": "black",
             "SCALE": 1.0,
             "TYPE": "DATA",
-            "TITLE": "FakeData",
-            "ALIAS": "FakeData",
+            "TITLE": "Cosmics_Data_VR_v1",
+            "ALIAS": "Cosmics_Data_VR_v1",
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
@@ -62,11 +62,11 @@
             "X": {
                 "NAME": "pT",
                 "TITLE": "p_{T}",
-		"BINS":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
+		"BINSv1":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
 		"BINSv2":   [0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
-                "BINSv3":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
-		"SIGSTART": 400,
-                "SIGEND": 800,
+                "BINS":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
+		"SIGSTART": 440,
+                "SIGEND": 650,
 		"MINtest": 10,
 		"MAXtest": 5001
             },
@@ -80,8 +80,8 @@
         }
     },
     "OPTIONS": {
-        "blindedFit": ["pass"],
-        "blindedPlots": ["true"],
+        "blindedFitNA": ["pass"],
+        "blindedPlotsNA": ["pass"],
         "plotTemplateComparisonsVol": true,
         "plotEvtsPerUnitVolt" : true
     }

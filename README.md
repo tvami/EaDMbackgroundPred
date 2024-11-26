@@ -30,14 +30,14 @@ cmsenv
 source twoD-env/bin/activate
 ```
 
-## Example running (NOTE: Use same X between all scripts)
+## Example running (NOTE: Use same X & - between all scripts)
 ```
-python3 runWith1DVanilla_vX.py rpf1x0_Binningv1_InputvX_VR config_Binningv1_InputvX_VR.json
+python3 runWith1DVanilla_vX_-R.py rpf1x0_Binningv1_InputvX_-R_Unblind config_Binningv1_InputvX_-R_Unblind.json
 ```
 
 ## Histogram Versions
 
-- v0: Cosmic MC in Validation Region (VR) - 10 GeV pT cut (rpf1x0_Binningv1_Inputv0_VR)
-- v1: 2023Dv1 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv1_VR)
-- v2: 2023Dv2 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv2_VR)
-- v3: 2023Dv1+v2 Cosmics in VR - 10 GeV pT cut (rpf1x0_Binningv3_Inputv3_VR)
+- v0: Cosmic MC - 10 GeV pT cut
+- v1: 2023Dv1 Cosmics - 10 GeV pT cut
+- v2: 2023Dv2 Cosmics - 10 GeV pT cut
+- v3: 2023Dv1+v2 Cosmics - 10 GeV pT cut
