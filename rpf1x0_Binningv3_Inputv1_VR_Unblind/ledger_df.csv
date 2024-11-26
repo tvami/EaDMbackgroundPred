@@ -1,0 +1,7 @@
+,process,region,binning,color,process_type,scale,variation,source_filename,source_histname,alias,title,combine_idx,lnN,shapes,syst_type,direction,variation_alias
+0,data_obs,pass,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v1/EaDM_Cosmics_Data_VR.root,hpass,Cosmics_Data_VR,Cosmics_Data_VR,,,,,,
+1,Signal_M500GeV_VR,pass,default,red,SIGNAL,1.0,lumi,./histograms_for_2DAlphabet_v1/EaDM_Signal_M500GeV_VR.root,hpass,Signal_M500GeV_VR,DM signal,,1.016,,lnN,,
+2,Signal_M500GeV_VR,pass,default,red,SIGNAL,1.0,nominal,./histograms_for_2DAlphabet_v1/EaDM_Signal_M500GeV_VR.root,hpass,Signal_M500GeV_VR,DM signal,,,,,,
+3,data_obs,fail,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v1/EaDM_Cosmics_Data_VR.root,hfail,Cosmics_Data_VR,Cosmics_Data_VR,,,,,,
+4,Signal_M500GeV_VR,fail,default,red,SIGNAL,1.0,lumi,./histograms_for_2DAlphabet_v1/EaDM_Signal_M500GeV_VR.root,hfail,Signal_M500GeV_VR,DM signal,,1.016,,lnN,,
+5,Signal_M500GeV_VR,fail,default,red,SIGNAL,1.0,nominal,./histograms_for_2DAlphabet_v1/EaDM_Signal_M500GeV_VR.root,hfail,Signal_M500GeV_VR,DM signal,,,,,,

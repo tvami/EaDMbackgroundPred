@@ -6,7 +6,7 @@
         "HIST_UP": "h$region_$syst_up",
         "HIST_DOWN": "h$region_$syst_down",
         "path": "./histograms_for_2DAlphabet_v3",
-        "SIGNAME": ["Signal_M500GeV_VR"],
+        "SIGNAME": ["Signal_M500GeV_SR"],
         "SIGNAME1":  ["Signal_gluino-1000", "Signal_gluino-1400", "Signal_gluino-1600", "Signal_gluino-1800", "Signal_gluino-2000", "Signal_gluino-2200", "Signal_gluino-2400", "Signal_gluino-2600", "Signal_gluino-800"] 
     },
     "REGIONS": {
@@ -25,8 +25,8 @@
             "COLOR": "black",
             "SCALE": 1.0,
             "TYPE": "DATA",
-            "TITLE": "Cosmics_Data_SRb400_v3_syst",
-            "ALIAS": "Cosmics_Data_SRb400_v3_syst",
+            "TITLE": "Cosmics_Data_SR_Blind_syst",
+            "ALIAS": "Cosmics_Data_SR_Blind_syst",
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
