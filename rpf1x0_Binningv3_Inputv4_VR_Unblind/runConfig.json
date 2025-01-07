@@ -101,7 +101,7 @@
       "Signal_gluino-2600",
       "Signal_gluino-800"
     ],
-    "path": "./histograms_for_2DAlphabet_v3"
+    "path": "./histograms_for_2DAlphabet_v4"
   },
   "NAME": "EaDM",
   "OPTIONS": {
@@ -117,7 +117,7 @@
   "PROCESSES": {
     "SIGNAME": {
       "COLOR": "red",
-      "LOC": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:h$region",
+      "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "SIGNAME",
       "SCALE": 1.0,
       "SYSTEMATICS": [
@@ -141,7 +141,7 @@
     "data_obs": {
       "ALIAS": "Cosmics_Data_VR",
       "COLOR": "black",
-      "LOC": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:h$region",
+      "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "data_obs",
       "SCALE": 1.0,
       "SYSTEMATICS": [],
@@ -171,15 +171,15 @@
     },
     "pileup": {
       "ALIAS": "PUsyst",
-      "DOWN": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:HIST_DOWN",
+      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_DOWN",
       "SIGMA": 1.0,
-      "UP": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:HIST_UP"
+      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_UP"
     },
     "systOnPS": {
       "ALIAS": "PSsyst",
-      "DOWN": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:HIST_DOWN",
+      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_DOWN",
       "SIGMA": 1.0,
-      "UP": "./histograms_for_2DAlphabet_v3/EaDM_$process.root:HIST_UP"
+      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_UP"
     }
   }
 }
