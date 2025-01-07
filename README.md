@@ -49,4 +49,6 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
   - VR: cut on pT [10,inf)
   - SR: cuts on pT [10,400], eta [-0.9,0.9], nTracks [1,2]
     - SR syst: t0, pT, signal yield (1.6%)
-- v4: Run 3 Cosmics - TODO
+- v4: 2023Dv1+v2 Cosmics (testing nSeg mismodeling)
+  - VR: cut on pT [10,inf), nSeg [0,10]
+- v5: Run 3 Cosmics - TODO

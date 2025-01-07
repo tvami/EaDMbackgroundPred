@@ -1,0 +1,89 @@
+{
+    "NAME": "EaDM",
+    "GLOBAL": {
+        "FILE": "EaDM_$process.root",
+        "HIST": "h$region",
+        "HIST_UPvolt": "h$region_$syst_up",
+        "HIST_DOWNvolt": "h$region_$syst_down",
+        "path": "./histograms_for_2DAlphabet_v3",
+        "SIGNAME": ["Signal_M500GeV_VR"],
+        "SIGNAME1":  ["Signal_gluino-1000", "Signal_gluino-1400", "Signal_gluino-1600", "Signal_gluino-1800", "Signal_gluino-2000", "Signal_gluino-2200", "Signal_gluino-2400", "Signal_gluino-2600", "Signal_gluino-800"] 
+    },
+    "REGIONS": {
+        "pass": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        },
+        "fail": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        }
+    },
+    "PROCESSES": {
+        "data_obs": {
+            "SYSTEMATICS":[],
+            "COLOR": "black",
+            "SCALE": 1.0,
+            "TYPE": "DATA",
+            "TITLE": "Cosmics_Data_VR",
+            "ALIAS": "Cosmics_Data_VR",
+            "LOC": "path/FILE:HIST"
+        },
+        "SIGNAME": {
+            "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
+            "SYSTEMATICS": ["lumi"],
+            "COLOR": "red",
+            "SCALE": 1.0,
+            "TYPE": "SIGNAL",
+            "TITLE": "DM signal",
+            "LOC": "path/FILE:HIST"
+        }
+    },
+    "SYSTEMATICS": {
+        "lumi": {
+                "CODE": 0,
+                "VAL": 1.016
+        },
+        "pileup": {
+            "ALIAS": "PUsyst",
+            "UP": "path/FILE:HIST_UP",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0
+        },
+        "systOnPS": {
+            "ALIAS": "PSsyst",
+            "UP": "path/FILE:HIST_UP",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0
+        }
+    },
+    "BINNING": {
+        "default": {
+            "X": {
+                "NAME": "pT",
+                "TITLE": "p_{T}",
+		"BINSv1":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
+		"BINSv2":   [0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
+                "BINS":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
+		"SIGSTART": 440,
+                "SIGEND": 650,
+		"MINtest": 10,
+		"MAXtest": 5001
+            },
+            "Y": {
+                "NAME": "N",
+                "TITLE": "N",
+                "NBINS": 1,
+                "MIN": 1,
+                "MAX": 50
+            }
+        }
+    },
+    "OPTIONS": {
+        "blindedFitNA": ["pass"],
+        "blindedPlotsNA": ["pass"],
+        "plotTemplateComparisonsVol": true,
+        "plotEvtsPerUnitVolt" : true
+    }
+}
+
