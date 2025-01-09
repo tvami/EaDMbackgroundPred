@@ -31,7 +31,7 @@
         },
         "SIGNAME": {
             "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
-            "SYSTEMATICS": ["lumi"],
+            "SYSTEMATICS":["lumi"],
             "COLOR": "red",
             "SCALE": 1.0,
             "TYPE": "SIGNAL",
@@ -42,7 +42,7 @@
     "SYSTEMATICS": {
         "lumi": {
                 "CODE": 0,
-                "VAL": 1.016
+                "VAL": 1.001
         },
         "pT": {
             "ALIAS": "pTsyst",
