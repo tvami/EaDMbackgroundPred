@@ -85,8 +85,8 @@
   "GLOBAL": {
     "FILE": "EaDM_$process.root",
     "HIST": "h$region",
-    "HIST_DOWNvolt": "h$region_$syst_down",
-    "HIST_UPvolt": "h$region_$syst_up",
+    "HIST_DOWN": "h$region_$syst_down",
+    "HIST_UP": "h$region_$syst_up",
     "SIGNAME": [
       "Signal_M500GeV_VR"
     ],
@@ -144,7 +144,10 @@
       "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "data_obs",
       "SCALE": 1.0,
-      "SYSTEMATICS": [],
+      "SYSTEMATICS": [
+        "pT",
+        "t0"
+      ],
       "TITLE": "Cosmics_Data_VR",
       "TYPE": "DATA",
       "VARIATION": "nominal"
@@ -169,17 +172,17 @@
       "CODE": 0,
       "VAL": 1.016
     },
-    "pileup": {
-      "ALIAS": "PUsyst",
-      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_DOWN",
+    "pT": {
+      "ALIAS": "pTsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_down",
       "SIGMA": 1.0,
-      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_UP"
+      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_up"
     },
-    "systOnPS": {
-      "ALIAS": "PSsyst",
-      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_DOWN",
+    "t0": {
+      "ALIAS": "t0syst",
+      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_down",
       "SIGMA": 1.0,
-      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:HIST_UP"
+      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_up"
     }
   }
 }
