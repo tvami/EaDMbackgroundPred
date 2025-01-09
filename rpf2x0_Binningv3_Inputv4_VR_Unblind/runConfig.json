@@ -145,7 +145,8 @@
       "NAME": "data_obs",
       "SCALE": 1.0,
       "SYSTEMATICS": [
-        "pT"
+        "pT",
+        "t0"
       ],
       "TITLE": "Cosmics_Data_VR",
       "TYPE": "DATA",
@@ -174,7 +175,7 @@
     "pT": {
       "ALIAS": "pTsyst",
       "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_down",
-      "SIGMA": 0.1,
+      "SIGMA": 1.0,
       "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_up"
     },
     "t0": {
