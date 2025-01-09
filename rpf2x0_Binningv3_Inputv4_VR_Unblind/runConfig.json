@@ -144,7 +144,9 @@
       "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "data_obs",
       "SCALE": 1.0,
-      "SYSTEMATICS": [],
+      "SYSTEMATICS": [
+        "pT"
+      ],
       "TITLE": "Cosmics_Data_VR",
       "TYPE": "DATA",
       "VARIATION": "nominal"
@@ -172,7 +174,7 @@
     "pT": {
       "ALIAS": "pTsyst",
       "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_down",
-      "SIGMA": 1.0,
+      "SIGMA": 0.1,
       "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_up"
     },
     "t0": {

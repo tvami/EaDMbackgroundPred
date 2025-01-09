@@ -1,6 +1,6 @@
 imax 6
 jmax 2
-kmax 1
+kmax 2
 ------------------------------------------------------------------------------------------------------------------------
 shapes  Signal_M500GeV_VR    fail_LOW ../base.root w:Signal_M500GeV_VR_fail_LOW w:Signal_M500GeV_VR_fail_LOW_$SYSTEMATIC
 shapes  Signal_M500GeV_VR    fail_SIG ../base.root w:Signal_M500GeV_VR_fail_SIG w:Signal_M500GeV_VR_fail_SIG_$SYSTEMATIC
@@ -30,6 +30,7 @@ process                                                     0                   
 rate                                     -1                   -1                   -1                   -1                   -1                   -1                   1                    1                    1                    1                    1                    1                    
 ------------------------------------------------------------------------------------------------------------------------
 lumi                 lnN                                 1.016                1.016                1.016                1.016                1.016                1.016 -                    -                    -                    -                    -                    -                    
+pT                   shapes               -                    -                    -                    -                    -                    -                    -                    -                    -                    -                    -                    -                    
 Background_fail_LOW_bin_2-1              flatParam
 Background_fail_LOW_bin_3-1              flatParam
 Background_fail_LOW_bin_4-1              flatParam
