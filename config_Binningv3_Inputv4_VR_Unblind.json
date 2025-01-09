@@ -21,7 +21,7 @@
     },
     "PROCESSES": {
         "data_obs": {
-            "SYSTEMATICS":[],
+            "SYSTEMATICS":["pT"],
             "COLOR": "black",
             "SCALE": 1.0,
             "TYPE": "DATA",
@@ -48,7 +48,7 @@
             "ALIAS": "pTsyst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
-            "SIGMA": 1.0
+            "SIGMA": 0.1
         },
         "t0": {
             "ALIAS": "t0syst",
