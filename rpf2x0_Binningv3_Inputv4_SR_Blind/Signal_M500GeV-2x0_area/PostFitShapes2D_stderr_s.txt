@@ -42,7 +42,7 @@ fail_HIGH                 0.00000
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
 pass_HIGH                 1.26992   
-pass_LOW                  1.40196   
+pass_LOW                  1.40396   
 pass_SIG                  1.34369   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M500GeV_SR
@@ -78,23 +78,23 @@ pass_SIG                  1.34369
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
 fail_HIGH                 0.01013   
-fail_LOW                  0.00092   
+fail_LOW                  0.00067   
 fail_SIG                  0.00793   
-pass_HIGH                 0.89355   
-pass_LOW                  0.86591   
-pass_SIG                  0.79209   
+pass_HIGH                 0.80871   
+pass_LOW                  0.75975   
+pass_SIG                  0.67739   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
 fail_HIGH                 Background           1.00000   
 fail_HIGH                 Signal_M500GeV_SR    0.00000   
-fail_LOW                  Background           1.00000   
+fail_LOW                  Background           0.99996   
 fail_LOW                  Signal_M500GeV_SR    0.00000   
 fail_SIG                  Background           1.00000   
 fail_SIG                  Signal_M500GeV_SR    0.00000   
-pass_HIGH                 Background_2x0       26.72840  
+pass_HIGH                 Background_2x0       36.98274  
 pass_HIGH                 Signal_M500GeV_SR    0.00000   
-pass_LOW                  Background_2x0       11.33412  
+pass_LOW                  Background_2x0       10.82967  
 pass_LOW                  Signal_M500GeV_SR    0.00000   
-pass_SIG                  Background_2x0       26.58655  
+pass_SIG                  Background_2x0       27.66602  
 pass_SIG                  Signal_M500GeV_SR    0.00000   
