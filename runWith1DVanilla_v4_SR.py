@@ -361,7 +361,7 @@ if __name__ == "__main__":
     #signal_areas = ["Signal_B1_MD4000_MBH5000_n2","Signal_B1_MD4000_MBH6000_n2","Signal_B1_MD4000_MBH7000_n2","Signal_B1_MD4000_MBH8000_n2","Signal_B1_MD4000_MBH9000_n2","Signal_B1_MD4000_MBH10000_n2","Signal_B1_MD4000_MBH11000_n2"]
 
     #tf_type = '0x0'
-    tf_types = ['expo']
+    tf_types = ['2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
