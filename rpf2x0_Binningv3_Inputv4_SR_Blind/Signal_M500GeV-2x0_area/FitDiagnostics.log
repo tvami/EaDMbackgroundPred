@@ -10,20 +10,9 @@ Set Default Value of Parameter r To : 1
 >> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 19 : -2.06653e-07
- - -0.773332	Background_rpf_2x0_par3
- - 0.537089	Background_rpf_2x0_par0
- - 0.334959	Background_rpf_2x0_par1
- - -0.0359905	Background_rpf_2x0_par2
- - 0.000234209	Background_fail_LOW_bin_1-1
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 21 floating parameters
@@ -35,6 +24,6 @@ Running Minos for POI r
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 4.86949e-09  -4.86949e-09/+50  (68% CL)
+Best fit r: 5.55176e-10  -5.55176e-10/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out
