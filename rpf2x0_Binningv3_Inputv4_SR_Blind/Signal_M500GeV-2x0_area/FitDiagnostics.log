@@ -18,23 +18,12 @@ Running Minos for POI r
 >> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -2.0718e-08
- - -0.999999	Background_fail_LOW_bin_1-1
- - 0.0014858	r
- - 0.000321125	Background_rpf_2x0_par0
- - -0.000270258	Background_rpf_2x0_par3
- - -5.34448e-05	Background_rpf_2x0_par1
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_fail_LOW_bin_1-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_fail_LOW_bin_1-1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 3.64468e-09  -3.64468e-09/+50  (68% CL)
+Best fit r: 2.48967e-09  -2.48967e-09/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-27 log messages saved to combine_logger.out
+21 log messages saved to combine_logger.out
