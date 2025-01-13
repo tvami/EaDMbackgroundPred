@@ -42,7 +42,7 @@ fail_HIGH                 0.00000
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
 pass_HIGH                 1.26992   
-pass_LOW                  1.40396   
+pass_LOW                  1.40314   
 pass_SIG                  1.34369   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M500GeV_SR
@@ -77,24 +77,24 @@ pass_SIG                  1.34369
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.00999   
-fail_LOW                  0.00058   
-fail_SIG                  0.00814   
-pass_HIGH                 0.41129   
-pass_LOW                  0.00679   
-pass_SIG                  0.07477   
+fail_HIGH                 0.00821   
+fail_LOW                  0.00079   
+fail_SIG                  0.00750   
+pass_HIGH                 0.73562   
+pass_LOW                  0.67970   
+pass_SIG                  0.64616   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
 fail_HIGH                 Background           1.00000   
 fail_HIGH                 Signal_M500GeV_SR    1.00000   
-fail_LOW                  Background           0.99996   
+fail_LOW                  Background           1.00000   
 fail_LOW                  Signal_M500GeV_SR    1.00000   
 fail_SIG                  Background           1.00000   
 fail_SIG                  Signal_M500GeV_SR    1.00000   
-pass_HIGH                 Background_2x0       36.92766  
+pass_HIGH                 Background_2x0       21.53316  
 pass_HIGH                 Signal_M500GeV_SR    1.00000   
-pass_LOW                  Background_2x0       10.82966  
+pass_LOW                  Background_2x0       10.85113  
 pass_LOW                  Signal_M500GeV_SR    1.00000   
-pass_SIG                  Background_2x0       27.65992  
+pass_SIG                  Background_2x0       25.74503  
 pass_SIG                  Signal_M500GeV_SR    1.00000   
