@@ -26,13 +26,13 @@ def _generate_constraints(nparams):
     out = {}
     for i in range(nparams):
         if i == 0:
-            out[i] = {"MIN":0.5,"MAX":100}
+            out[i] = {"MIN":0,"MAX":100}
         if i == 1:
-            out[i] = {"MIN":10,"MAX":100}
+            out[i] = {"MIN":0,"MAX":100}
         if i == 2:
-            out[i] = {"MIN":-10,"MAX":100}
+            out[i] = {"MIN":-100,"MAX":0}
         if i == 3:
-            out[i] = {"MIN":0.2,"MAX":100}
+            out[i] = {"MIN":0,"MAX":100}
     return out
 
 # Dict to store transfer function forms and constraints
