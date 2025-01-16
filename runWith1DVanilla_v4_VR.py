@@ -26,10 +26,15 @@ def _generate_constraints(nparams):
     out = {}
     for i in range(nparams):
         if i == 0:
-            out[i] = {"MIN":0,"MAX":30}
-        else:
-            out[i] = {"MIN":-50,"MAX":50}
+            out[i] = {"MIN":0,"MAX":100}
+        if i == 1:
+            out[i] = {"MIN":50,"MAX":100}
+        if i == 2:
+            out[i] = {"MIN":-50,"MAX":0}
+        if i == 3:
+            out[i] = {"MIN":0,"MAX":0.1}
     return out
+
 
 # Dict to store transfer function forms and constraints
 _rpf_options = {
