@@ -23,7 +23,7 @@
         "data_obs": {
             "SYSTEMATICS":["pT", "t0"],
             "COLOR": "black",
-            "SCALE": 1.0,
+            "SCALE": 1,
             "TYPE": "DATA",
             "TITLE": "Cosmics_Data_VR",
             "ALIAS": "Cosmics_Data_VR",
@@ -33,7 +33,7 @@
             "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
             "SYSTEMATICS":["lumi"],
             "COLOR": "red",
-            "SCALE": 1.0,
+            "SCALE": 0.01,
             "TYPE": "SIGNAL",
             "TITLE": "DM signal",
             "LOC": "path/FILE:HIST"
