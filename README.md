@@ -52,6 +52,6 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
 - v4: 2023Dv1+v2 Cosmics (testing nSeg mismodeling)
   - VR: cuts on pT [50,inf], eta [-0.9,0.9], nTracks [1,2]
     - VR syst: t0, pT, signal yield (0.1% - tried removing but got segmentation error during limit calculation)
-  - SR: cuts on pT [10,inf], eta [-0.9,0.9], nTracks [1,2]
+  - SR: cuts on pT [50,440], eta [-0.9,0.9], nTracks [1,2]
     - SR syst: t0, pT, signal yield (0.1% - tried removing but got segmentation error during limit calculation)
 - v5: Run 3 Cosmics - TODO
