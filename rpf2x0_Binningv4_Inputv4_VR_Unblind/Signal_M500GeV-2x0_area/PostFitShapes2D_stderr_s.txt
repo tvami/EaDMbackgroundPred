@@ -42,8 +42,8 @@ fail_HIGH                 0.00000
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
 pass_HIGH                 0.50005   
-pass_LOW                  0.50293   
-pass_SIG                  0.50037   
+pass_LOW                  0.50277   
+pass_SIG                  0.50032   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M500GeV_VR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50037
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01157   
-fail_LOW                  0.00174   
-fail_SIG                  0.00672   
-pass_HIGH                 0.10524   
-pass_LOW                  0.04357   
-pass_SIG                  0.04647   
+fail_HIGH                 0.01239   
+fail_LOW                  0.00176   
+fail_SIG                  0.00732   
+pass_HIGH                 0.10754   
+pass_LOW                  0.04421   
+pass_SIG                  0.04779   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 Background           0.99880   
+fail_HIGH                 Background           0.99844   
 fail_HIGH                 Signal_M500GeV_VR    1.00000   
-fail_LOW                  Background           0.99998   
+fail_LOW                  Background           1.00000   
 fail_LOW                  Signal_M500GeV_VR    1.00000   
-fail_SIG                  Background           1.00026   
+fail_SIG                  Background           0.99995   
 fail_SIG                  Signal_M500GeV_VR    1.00000   
-pass_HIGH                 Background_2x0       0.10390   
+pass_HIGH                 Background_2x0       0.10321   
 pass_HIGH                 Signal_M500GeV_VR    1.00000   
-pass_LOW                  Background_2x0       0.25706   
+pass_LOW                  Background_2x0       0.25181   
 pass_LOW                  Signal_M500GeV_VR    1.00000   
-pass_SIG                  Background_2x0       0.15625   
+pass_SIG                  Background_2x0       0.15188   
 pass_SIG                  Signal_M500GeV_VR    1.00000   
