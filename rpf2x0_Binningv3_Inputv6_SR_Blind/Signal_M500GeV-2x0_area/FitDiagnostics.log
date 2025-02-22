@@ -39,21 +39,21 @@ Running Minos for POI r
 >> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.000525526
- - -0.675375	Background_rpf_2x0_par2
- - -0.554537	Background_rpf_2x0_par3
- - 0.442071	Background_rpf_2x0_par0
- - 0.199705	Background_rpf_2x0_par1
- - 0.0323575	r
+Eigenvalue 20 : -0.000524617
+ - -0.67813	Background_rpf_2x0_par2
+ - -0.554112	Background_rpf_2x0_par3
+ - 0.437587	Background_rpf_2x0_par0
+ - 0.201406	Background_rpf_2x0_par1
+ - 0.0324315	r
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 19 : -2.19769e-05
- - 0.745194	Background_rpf_2x0_par3
- - -0.659642	Background_rpf_2x0_par0
- - -0.0977586	Background_rpf_2x0_par1
- - 0.0014289	r
- - 9.08975e-05	Background_fail_LOW_bin_3-1
+Eigenvalue 19 : -1.25722e-05
+ - 0.748242	Background_rpf_2x0_par3
+ - -0.655952	Background_rpf_2x0_par0
+ - -0.099289	Background_rpf_2x0_par1
+ - 0.00155166	r
+ - 9.80467e-05	Background_fail_LOW_bin_3-1
 >> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 2)
@@ -66,6 +66,6 @@ Eigenvalue 19 : -2.19769e-05
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.868723  -0.868723/+49.1313  (68% CL)
+Best fit r: 0.870146  -0.870146/+49.1299  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 27 log messages saved to combine_logger.out
