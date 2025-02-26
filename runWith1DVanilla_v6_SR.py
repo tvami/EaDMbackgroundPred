@@ -369,7 +369,7 @@ if __name__ == "__main__":
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+    #   if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
@@ -382,13 +382,13 @@ if __name__ == "__main__":
           if not "Fit failed" in content: fitPassed = True
           rMax = rMax / 10.
       plot_fit(signal,tf_type)
-      print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
-      #GOF(signal,tf_type,condor=False)
-      #plot_GOF(signal,tf_type,condor=False)
-      #SignalInjection(signal, tf_type, r=0, condor=False)
-      #plot_SignalInjection(signal, tf_type, r=0, condor=False)
-      #Impacts(signal,tf_type)
-      os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
-      open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M500GeV")
+    #   print("\n\n\nFit is succesful, running limits now for " + str(signal))
+    #   run_limits(signal,tf_type)
+    #   #GOF(signal,tf_type,condor=False)
+    #   #plot_GOF(signal,tf_type,condor=False)
+    #   #SignalInjection(signal, tf_type, r=0, condor=False)
+    #   #plot_SignalInjection(signal, tf_type, r=0, condor=False)
+    #   #Impacts(signal,tf_type)
+    #   os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
+    #   open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
+    # #test_FTest('1x0','2x0',"Signal_M500GeV")
