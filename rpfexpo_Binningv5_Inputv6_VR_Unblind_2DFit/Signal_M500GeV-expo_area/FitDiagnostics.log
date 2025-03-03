@@ -1,0 +1,231 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 108 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 105 : -3.30856e-10
+ - 0.891257	Background_fail_HIGH_bin_7-6
+ - -0.398433	Background_fail_HIGH_bin_10-7
+ - 0.208255	Background_fail_LOW_bin_1-1
+ - -0.0587288	Background_fail_LOW_bin_1-2
+ - -0.00432483	Background_fail_LOW_bin_1-5
+Eigenvalue 106 : -1.46372e-07
+ - 0.613845	Background_fail_HIGH_bin_10-7
+ - 0.327985	Background_fail_LOW_bin_1-7
+ - 0.327985	Background_fail_LOW_bin_1-3
+ - 0.327985	Background_fail_LOW_bin_1-4
+ - 0.327985	Background_fail_LOW_bin_1-5
+Eigenvalue 107 : -1.60222e-07
+ - -0.673508	Background_fail_HIGH_bin_10-7
+ - -0.307413	Background_fail_HIGH_bin_7-6
+ - 0.298021	Background_fail_LOW_bin_1-7
+ - 0.29802	Background_fail_LOW_bin_1-3
+ - 0.29802	Background_fail_LOW_bin_1-4
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_HIGH_bin_10-7 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 105 : -2.58404e-08
+ - -0.997308	Background_fail_HIGH_bin_7-6
+ - 0.0635078	Background_fail_LOW_bin_1-2
+ - -0.0256753	Background_rpf_expo_par0
+ - -0.0111409	Background_fail_LOW_bin_1-3
+ - -0.0111409	Background_fail_LOW_bin_1-4
+Eigenvalue 106 : -1.52719e-07
+ - -0.443016	Background_fail_LOW_bin_1-3
+ - -0.443016	Background_fail_LOW_bin_1-4
+ - -0.443016	Background_fail_LOW_bin_1-6
+ - -0.443016	Background_fail_LOW_bin_1-5
+ - -0.443016	Background_fail_LOW_bin_1-7
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+Eigenvalue 104 : -2.58316e-08
+ - 0.997038	Background_fail_HIGH_bin_7-6
+ - -0.0650793	Background_fail_LOW_bin_1-2
+ - 0.0256653	Background_rpf_expo_par0
+ - 0.015344	Background_fail_LOW_bin_1-4
+ - 0.015344	Background_fail_LOW_bin_1-5
+Eigenvalue 105 : -1.17718e-07
+ - 0.493767	Background_fail_LOW_bin_1-4
+ - 0.493767	Background_fail_LOW_bin_1-5
+ - 0.493767	Background_fail_LOW_bin_1-7
+ - 0.493767	Background_fail_LOW_bin_1-6
+ - -0.136908	Background_fail_LOW_bin_1-2
+>> Attempt 2 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-4 from the hessian
+>> Verifying eigenvalues are all positive (iteration 3)
+Eigenvalue 103 : -2.58121e-08
+ - -0.996345	Background_fail_HIGH_bin_7-6
+ - 0.0685476	Background_fail_LOW_bin_1-2
+ - -0.0256407	Background_rpf_expo_par0
+ - -0.0246329	Background_fail_LOW_bin_1-5
+ - -0.0246329	Background_fail_LOW_bin_1-6
+Eigenvalue 104 : -8.27965e-08
+ - -0.566668	Background_fail_LOW_bin_1-5
+ - -0.566668	Background_fail_LOW_bin_1-6
+ - -0.566668	Background_fail_LOW_bin_1-7
+ - 0.16425	Background_fail_LOW_bin_1-2
+ - -0.0821162	Background_fail_LOW_bin_1-1
+>> Attempt 3 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-5 from the hessian
+>> Verifying eigenvalues are all positive (iteration 4)
+Eigenvalue 102 : -2.57332e-08
+ - -0.992193	Background_fail_HIGH_bin_7-6
+ - 0.082496	Background_fail_LOW_bin_1-2
+ - -0.0621669	Background_fail_LOW_bin_1-6
+ - -0.0621669	Background_fail_LOW_bin_1-7
+ - -0.0255065	Background_rpf_expo_par0
+Eigenvalue 103 : -4.81348e-08
+ - -0.681596	Background_fail_LOW_bin_1-6
+ - -0.681596	Background_fail_LOW_bin_1-7
+ - 0.215606	Background_fail_LOW_bin_1-2
+ - -0.115031	Background_fail_LOW_bin_1-1
+ - 0.10547	Background_fail_HIGH_bin_7-6
+>> Attempt 4 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-6 from the hessian
+>> Verifying eigenvalues are all positive (iteration 5)
+Eigenvalue 101 : -1.42097e-08
+ - 0.874024	Background_fail_LOW_bin_1-7
+ - -0.396544	Background_fail_LOW_bin_1-2
+ - 0.263511	Background_fail_LOW_bin_1-1
+ - 0.09692	Background_fail_HIGH_bin_7-6
+ - 0.00204842	Background_rpf_expo_par0
+Eigenvalue 102 : -2.61019e-08
+ - -0.993041	Background_fail_HIGH_bin_7-6
+ - 0.112136	Background_fail_LOW_bin_1-7
+ - -0.025656	Background_rpf_expo_par0
+ - 0.0188173	Background_fail_LOW_bin_1-1
+ - 0.0168206	Background_fail_LOW_bin_1-2
+>> Attempt 5 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_HIGH_bin_7-6 from the hessian
+>> Verifying eigenvalues are all positive (iteration 6)
+Eigenvalue 101 : -1.43222e-08
+ - -0.882079	Background_fail_LOW_bin_1-7
+ - 0.390416	Background_fail_LOW_bin_1-2
+ - -0.263652	Background_fail_LOW_bin_1-1
+ - 0.000456469	Background_rpf_expo_par0
+ - 1.59992e-05	Background_rpf_expo_par1
+>> Attempt 6 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-7 from the hessian
+>> Verifying eigenvalues are all positive (iteration 7)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_fail_HIGH_bin_10-7
+     - Background_fail_LOW_bin_1-3
+     - Background_fail_LOW_bin_1-4
+     - Background_fail_LOW_bin_1-5
+     - Background_fail_LOW_bin_1-6
+     - Background_fail_HIGH_bin_7-6
+     - Background_fail_LOW_bin_1-7
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 109 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 106 : -6.12138e-09
+ - 0.761801	Background_fail_LOW_bin_1-2
+ - -0.288703	Background_fail_LOW_bin_1-5
+ - -0.288703	Background_fail_LOW_bin_1-3
+ - -0.288703	Background_fail_LOW_bin_1-4
+ - -0.288703	Background_fail_LOW_bin_1-6
+Eigenvalue 107 : -1.67552e-08
+ - 0.712371	Background_fail_LOW_bin_1-1
+ - -0.427059	Background_fail_LOW_bin_1-2
+ - -0.248857	Background_fail_LOW_bin_1-6
+ - -0.248857	Background_fail_LOW_bin_1-7
+ - -0.248857	Background_fail_LOW_bin_1-5
+Eigenvalue 108 : -1.67966e-07
+ - -0.906236	Background_fail_HIGH_bin_10-7
+ - -0.417286	Background_fail_HIGH_bin_7-6
+ - -0.0656432	Background_rpf_expo_par0
+ - -0.0073982	Background_fail_LOW_bin_1-1
+ - 0.00687862	Background_fail_LOW_bin_1-2
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_HIGH_bin_10-7 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 105 : -6.11759e-09
+ - -0.76297	Background_fail_LOW_bin_1-2
+ - 0.288316	Background_fail_LOW_bin_1-3
+ - 0.288316	Background_fail_LOW_bin_1-4
+ - 0.288316	Background_fail_LOW_bin_1-5
+ - 0.288316	Background_fail_LOW_bin_1-6
+Eigenvalue 106 : -1.66616e-08
+ - -0.707528	Background_fail_LOW_bin_1-1
+ - 0.425324	Background_fail_LOW_bin_1-2
+ - 0.248351	Background_fail_LOW_bin_1-3
+ - 0.248351	Background_fail_LOW_bin_1-4
+ - 0.248351	Background_fail_LOW_bin_1-5
+Eigenvalue 107 : -2.89172e-08
+ - 0.994515	Background_fail_HIGH_bin_7-6
+ - 0.0781141	Background_fail_LOW_bin_1-1
+ - -0.0382673	Background_fail_LOW_bin_1-2
+ - 0.0270749	Background_rpf_expo_par0
+ - -0.0229494	Background_fail_LOW_bin_1-3
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_HIGH_bin_7-6 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+Eigenvalue 105 : -6.11759e-09
+ - 0.762981	Background_fail_LOW_bin_1-2
+ - -0.28831	Background_fail_LOW_bin_1-6
+ - -0.28831	Background_fail_LOW_bin_1-7
+ - -0.28831	Background_fail_LOW_bin_1-3
+ - -0.28831	Background_fail_LOW_bin_1-4
+Eigenvalue 106 : -1.67856e-08
+ - 0.711993	Background_fail_LOW_bin_1-1
+ - -0.426862	Background_fail_LOW_bin_1-2
+ - -0.249341	Background_fail_LOW_bin_1-3
+ - -0.249341	Background_fail_LOW_bin_1-4
+ - -0.249341	Background_fail_LOW_bin_1-5
+>> Attempt 2 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 3)
+Eigenvalue 105 : -6.18887e-09
+ - -0.698868	Background_fail_LOW_bin_1-2
+ - 0.31987	Background_fail_LOW_bin_1-6
+ - 0.31987	Background_fail_LOW_bin_1-7
+ - 0.31987	Background_fail_LOW_bin_1-4
+ - 0.31987	Background_fail_LOW_bin_1-3
+>> Attempt 3 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 4)
+Eigenvalue 104 : -1.22522e-09
+ - 0.447213	Background_fail_LOW_bin_1-3
+ - 0.447213	Background_fail_LOW_bin_1-4
+ - 0.447213	Background_fail_LOW_bin_1-5
+ - 0.447213	Background_fail_LOW_bin_1-6
+ - 0.447213	Background_fail_LOW_bin_1-7
+>> Attempt 4 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 5)
+Eigenvalue 103 : -5.84362e-10
+ - 0.5	Background_fail_LOW_bin_1-6
+ - 0.5	Background_fail_LOW_bin_1-4
+ - 0.5	Background_fail_LOW_bin_1-5
+ - 0.5	Background_fail_LOW_bin_1-7
+ - -0.00119438	Background_rpf_expo_par0
+>> Attempt 5 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_fail_LOW_bin_1-6 from the hessian
+>> Verifying eigenvalues are all positive (iteration 6)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_fail_HIGH_bin_10-7
+     - Background_fail_HIGH_bin_7-6
+     - Background_fail_LOW_bin_1-1
+     - Background_fail_LOW_bin_1-2
+     - Background_fail_LOW_bin_1-3
+     - Background_fail_LOW_bin_1-6
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 50  -50/+9.33653e-11  (68% CL)
+Done in 0.03 min (cpu), 0.03 min (real)
+50 log messages saved to combine_logger.out
