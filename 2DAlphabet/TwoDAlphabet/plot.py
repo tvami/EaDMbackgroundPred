@@ -186,8 +186,8 @@ class Plotter(object):
 
                     # Now do projections using the 2D
                     out_proj_name = '{p}_{r}_{t}_proj{x}{i}'
-                    for proj in ['X','Y']:
-                    # for proj in ['X']:
+                    #for proj in ['X','Y']:
+                    for proj in ['X']:
                         slices = self.slices['x' if proj == 'Y' else 'y'][region]
 
                         for islice in range(3):
@@ -304,18 +304,17 @@ class Plotter(object):
 
             # Make both regular and logarithmic y-axis plots
             for logyFlag in [False, True]:
-            # for logyFlag in [False]:
                 # Get reduced dataframes for all backgrounds and the signals
                 ordered_bkgs = self._order_df_on_proc_list(
                                             group[group.process_type.eq('BKG')], proc_type='BKG',
                                             alphaBottom=(not logyFlag))
                 signals = group[group.process_type.eq('SIGNAL')]
 
-                # for proj in ['postfit_projx']:
-                for proj in ['postfit_projx','postfit_projy']:
+                for proj in ['postfit_projx']:
+                #for proj in ['postfit_projx','postfit_projy']:
                     for islice in range(3):
                         projn     = f'{proj}{islice}'
-                        # if projn != 'postfit_projx2': continue
+                        if projn != 'postfit_projx2': continue
                         sig_projn = projn
                         if self.twoD.options.plotPrefitSigInFitB and self.fittag == 'b':
                             sig_projn = projn.replace('postfit','prefit') # Plot prefit signal in b-only plots
@@ -333,18 +332,19 @@ class Plotter(object):
                             self.slices['x' if 'y' in proj else 'y'][region]['vals'][islice+1],
                         )
                         slice_str = '%s < %s < %s'%slice_edges
+
                         if (region == "pass") :
-                            subtitle = pf_slice_str[region]
+                            slice_str = pf_slice_str[region]
                         elif (region == "fail") :
-                            subtitle = pf_slice_str[region]
+                            slice_str = pf_slice_str[region]
 
                         out_pad_name = f'{self.dir}/base_figs/{projn}_{region}{"" if not logyFlag else "_logy"}'
 
-                        # # If user requested sub-titles, obtain the ones for this specific region
-                        # if subtitles:
-                        #     subtitle = subtitles[region]
-                        # else:
-                        #     subtitle = {}
+                        # If user requested sub-titles, obtain the ones for this specific region
+                        if subtitles:
+                            subtitle = subtitles[region]
+                        else:
+                            subtitle = {}
 
                         # Produce a matplotlib axis containing the full data + stacked bkg histogram for this projection and slice
                         make_ax_1D(
@@ -369,8 +369,8 @@ class Plotter(object):
 
         # Create a canvas with the full set of projection plots
         for logy in ['', '_logy']:
-            # for proj in ['postfit_projx']:
-            for proj in ['postfit_projx','postfit_projy']:
+            for proj in ['postfit_projx']:
+            #for proj in ['postfit_projx','postfit_projy']:
                 these_axes = axes.loc[axes.proj.str.contains(proj)]
                 if logy == '':
                     these_axes = these_axes.loc[these_axes.logy.eq(False)]
@@ -434,8 +434,7 @@ def _make_pad_gen(name):
     ROOT.gStyle.SetTitleAlign(33)
     ROOT.gStyle.SetTitleX(.77)
 
-    # The time.time() is a trick so the TCanvases live in different memory
-    pad = ROOT.TCanvas(name+str(time.time()), name+str(time.time()), 800, 700)
+    pad = ROOT.TCanvas(name, name, 800, 700)
     pad.cd(); pad.SetRightMargin(0.0); pad.SetTopMargin(0.0); pad.SetBottomMargin(0.0)
     return pad
 
@@ -678,9 +677,6 @@ def make_can(outname, padnames, padx=0, pady=0):
             #raise RuntimeError('histlist of size %s not currently supported: %s'%(len(padnames),[p.GetName() for p in padnames]))
 
     pads = [Image.open(os.path.abspath(pname)) for pname in padnames]
-    if not pads:
-        print(f"Warning: No pads available for {outname}, skipping.")
-        return
     w, h = pads[0].size
     grid = Image.new('RGB', size=(padx*w, pady*h))
     
@@ -870,7 +866,7 @@ def _reduced_corr_matrix(fit_result, varsToIgnore=[], varsOfInterest=[], thresho
                 finalParamsDict[finalPars.at(cm_index).GetName()] = cm_index
 
     nFinalParams = len(finalParamsDict.keys())
-    out = ROOT.TH2D('correlation_matrix'+str(time.time()),'correlation_matrix'+str(time.time()),nFinalParams,0,nFinalParams,nFinalParams,0,nFinalParams)
+    out = ROOT.TH2D('correlation_matrix','correlation_matrix',nFinalParams,0,nFinalParams,nFinalParams,0,nFinalParams)
     out_txt = ''
 
     for out_x_index, paramXName in enumerate(sorted(finalParamsDict.keys())):
@@ -898,7 +894,7 @@ def plot_correlation_matrix(varsToIgnore, threshold=0, corrText=False):
         fit_result = fit_result_file.Get("fit_"+fittag)
         if hasattr(fit_result,'correlationMatrix'):
             corrMtrx, corrTxt = _reduced_corr_matrix(fit_result, varsToIgnore=varsToIgnore, threshold=threshold)
-            corrMtrxCan = ROOT.TCanvas('c'+str(time.time()),'c'+str(time.time()),1400,1000)
+            corrMtrxCan = ROOT.TCanvas('c','c',1400,1000)
             corrMtrxCan.cd()
             corrMtrxCan.SetBottomMargin(0.22)
             corrMtrxCan.SetLeftMargin(0.17)
@@ -987,7 +983,7 @@ def plot_gof(tag, subtag, seed=123456, condor=False):
         leg.AddEntry(0,"p-value = %.2f"%(pvalue),"")
 
         # Draw
-        cout = ROOT.TCanvas('cout'+str(time.time()),'cout'+str(time.time()),800,700)
+        cout = ROOT.TCanvas('cout','cout',800,700)
         htoy_gof.SetTitle('')
         htoy_gof.Draw('pez')
         arrow.Draw()
