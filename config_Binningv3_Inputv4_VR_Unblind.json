@@ -21,7 +21,7 @@
     },
     "PROCESSES": {
         "data_obs": {
-            "SYSTEMATICS":["pT","t0"],
+            "SYSTEMATICS":["RNN","pT","t0"],
             "COLOR": "black",
             "SCALE": 1,
             "TYPE": "DATA",
@@ -33,7 +33,7 @@
             "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
             "SYSTEMATICS":["lumi"],
             "COLOR": "red",
-            "SCALE": 0.01,
+            "SCALE": 0.1,
             "TYPE": "SIGNAL",
             "TITLE": "DM signal",
             "LOC": "path/FILE:HIST"
@@ -52,6 +52,12 @@
         },
         "t0": {
             "ALIAS": "t0syst",
+            "UP": "path/FILE:HIST_UP",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0
+        },
+        "RNN": {
+            "ALIAS": "RNNsyst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
@@ -83,7 +89,7 @@
     "OPTIONS": {
         "blindedFitNA": ["pass"],
         "blindedPlotsNA": ["pass"],
-        "plotTemplateComparisons": true,
+        "plotTemplateComparisonsVolt": true,
         "plotEvtsPerUnitVolt" : true
     }
 }
