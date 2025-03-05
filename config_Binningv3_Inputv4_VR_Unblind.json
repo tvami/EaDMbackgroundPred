@@ -21,7 +21,7 @@
     },
     "PROCESSES": {
         "data_obs": {
-            "SYSTEMATICS":[],
+            "SYSTEMATICS":["pT","t0"],
             "COLOR": "black",
             "SCALE": 1,
             "TYPE": "DATA",
@@ -83,7 +83,7 @@
     "OPTIONS": {
         "blindedFitNA": ["pass"],
         "blindedPlotsNA": ["pass"],
-        "plotTemplateComparisonsVol": true,
+        "plotTemplateComparisons": true,
         "plotEvtsPerUnitVolt" : true
     }
 }
