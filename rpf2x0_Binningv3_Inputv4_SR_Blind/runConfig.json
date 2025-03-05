@@ -145,6 +145,7 @@
       "NAME": "data_obs",
       "SCALE": 1,
       "SYSTEMATICS": [
+        "RNN",
         "pT",
         "t0"
       ],
@@ -168,6 +169,12 @@
     }
   },
   "SYSTEMATICS": {
+    "RNN": {
+      "ALIAS": "RNNsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_down",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region_$syst_up"
+    },
     "lumi": {
       "CODE": 0,
       "VAL": 1.001

@@ -7,24 +7,49 @@ Set Default Value of Parameter mask_pass_HIGH To : 1
 Set Default Value of Parameter r To : 1
 >>> 2 out of 6 channels masked
 
->> Found 20 floating parameters
+>> Found 19 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 19 : -0.000197796
- - -0.677526	Background_rpf_2x0_par2
- - -0.538831	Background_rpf_2x0_par3
- - 0.490156	Background_rpf_2x0_par0
- - 0.101812	Background_rpf_2x0_par1
- - -0.000577734	Background_fail_LOW_bin_2-1
+Eigenvalue 18 : -0.000290996
+ - 0.681592	Background_rpf_2x0_par1
+ - -0.676364	Background_rpf_2x0_par3
+ - -0.241993	Background_rpf_2x0_par2
+ - 0.139261	Background_rpf_2x0_par0
+ - -0.00251784	Background_fail_LOW_bin_3-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par2 from the hessian
+>> Dropping Background_rpf_2x0_par1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 18 : -1.2692e-05
- - -0.729559	Background_rpf_2x0_par3
- - 0.677825	Background_rpf_2x0_par0
- - 0.0910858	Background_rpf_2x0_par1
- - 0.000223523	Background_fail_LOW_bin_1-1
- - -8.47861e-05	Background_fail_LOW_bin_4-1
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_rpf_2x0_par1
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 20 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 18 : -0.00015407
+ - 0.805896	Background_rpf_2x0_par3
+ - -0.47199	Background_rpf_2x0_par0
+ - -0.272307	Background_rpf_2x0_par1
+ - -0.193274	Background_rpf_2x0_par2
+ - 0.127478	r
+Eigenvalue 19 : -0.000574546
+ - -0.689371	Background_rpf_2x0_par1
+ - 0.602857	Background_rpf_2x0_par2
+ - -0.283637	r
+ - 0.262223	Background_rpf_2x0_par0
+ - 0.110089	Background_rpf_2x0_par3
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_2x0_par1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 18 : -0.000211674
+ - 0.705991	Background_rpf_2x0_par3
+ - -0.530651	Background_rpf_2x0_par0
+ - -0.406631	Background_rpf_2x0_par2
+ - 0.233745	r
+ - 0.000548186	Background_fail_LOW_bin_3-1
 >> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 2)
@@ -32,30 +57,11 @@ Eigenvalue 18 : -1.2692e-05
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par2
+     - Background_rpf_2x0_par1
      - Background_rpf_2x0_par3
- Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
-Running Minos for POI r
->> Found 21 floating parameters
->> The following parameters are protected in the event of negative eigenvalues: r
->> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.00021157
- - 0.684784	Background_rpf_2x0_par2
- - 0.513629	Background_rpf_2x0_par3
- - -0.49597	Background_rpf_2x0_par0
- - -0.145034	Background_rpf_2x0_par1
- - -0.0152873	r
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par2 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
->> All eigenvalues are positive
->> Inverting Hessian...
->> Matrix inverted
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par2
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.720553  -0.720553/+49.2794  (68% CL)
+Best fit r: 9.28386e-12  -9.28386e-12/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-30 log messages saved to combine_logger.out
+27 log messages saved to combine_logger.out
