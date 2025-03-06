@@ -87,6 +87,7 @@ class TwoDAlphabet:
             os.mkdir(self.tag+'/')
 
         if self.options.plotTemplateComparisons and not os.path.isdir(self.tag+'/UncertPlots/'): 
+            print('Making dir '+self.tag+'/UncertPlots/')
             os.mkdir(self.tag+'/UncertPlots/')
 
     def LoadOptions(self, nonDefaultOpts={}):

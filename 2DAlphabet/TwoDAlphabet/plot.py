@@ -439,7 +439,7 @@ def _make_pad_gen(name):
     return pad
 
 def make_pad_2D(outname, hist, style='lego', logzFlag=False, ROOTout=None,
-                savePDF=False, savePNG=False, year=1, extraText='Preliminary'):
+                savePDF=False, savePNG=False, year=1, extraText='Work in Progress'):
     '''Make a pad holding a 2D plot with standardized formatting conventions.
 
     Args:
@@ -485,7 +485,7 @@ def make_pad_2D(outname, hist, style='lego', logzFlag=False, ROOTout=None,
 def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='', slicetitle='',
             totalBkg=None, logyFlag=True, ROOTout=None, savePDF=False, savePNG=False,
             dataOff=False, datastyle='pe X0', year=1, addSignals=True, 
-            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Preliminary', units='GeV', hspace=0.0):
+            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Work in Progress', units='GeV', hspace=0.0):
     '''Create a matplotlib.axis.Axis object holding a 1D plot with standardized CMS formatting conventions
     Args:
         outname (str): Output file path + name.
@@ -691,7 +691,7 @@ def _get_start_stop(i,slice_idxs):
     stop  = slice_idxs[i+1]
     return start, stop
 
-def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Preliminary', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
+def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Work in Progress', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
     plotter = Plotter(ledger, twoD, fittag, loadExisting)
     plotter.plot_2D_distributions()
     plotter.plot_projections(lumiText, extraText, pf_slice_str, subtitles, units, regionsToGroup)
