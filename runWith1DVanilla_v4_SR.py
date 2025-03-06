@@ -348,7 +348,7 @@ def test_FTest(poly1, poly2, signal=''):
         latex.DrawLatex(0.12,0.91,"CMS")
         latex.SetTextSize(0.05)
         latex.SetTextFont(52)
-        latex.DrawLatex(0.23,0.91,"Preliminary")
+        latex.DrawLatex(0.23,0.91,"Work in Progress")
         latex.SetTextFont(42)
         latex.SetTextFont(52)
         latex.SetTextSize(0.045)
