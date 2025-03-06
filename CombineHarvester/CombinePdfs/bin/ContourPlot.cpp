@@ -16,7 +16,7 @@ int main() {
   legend->Draw();
   GetAxisHist(pads[0])->GetXaxis()->SetTitleOffset(1.);
 
-  DrawCMSLogo(pads[0], "CMS", "Preliminary", 0, 0.045, 0.035, 1.2);
+  DrawCMSLogo(pads[0], "CMS", "Work in Progress", 0, 0.045, 0.035, 1.2);
   DrawTitle(pads[0], "19.7 fb^{-1} (8 TeV) + 4.9 fb^{-1} (7 TeV)", 3);
   // drawTitle(pads[0], "H#rightarrow#tau#tau", 1);
   // pads[0]->SetLogx(1);

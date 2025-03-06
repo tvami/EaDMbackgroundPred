@@ -660,7 +660,7 @@ if options.biasStudy !='' or options.ftest:
                 latex.SetTextSize(0.05)
                 latex.SetTextFont(52)
                 # if options.isData:
-                latex.DrawLatex(0.65,0.91,"Preliminary")
+                latex.DrawLatex(0.65,0.91,"Work in Progress")
                 # else:
                 #     l.DrawLatex(0.23,0.91,"Simulation")
                 latex.SetTextFont(42)
@@ -757,7 +757,7 @@ if options.biasStudy !='' or options.ftest:
                 latex.SetTextSize(0.05)
                 latex.SetTextFont(52)
                 # if options.isData:
-                latex.DrawLatex(0.23,0.91,"Preliminary")
+                latex.DrawLatex(0.23,0.91,"Work in Progress")
                 # else:
                 #     l.DrawLatex(0.23,0.91,"Simulation")
                 latex.SetTextFont(42)

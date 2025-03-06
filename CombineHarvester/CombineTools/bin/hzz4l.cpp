@@ -97,7 +97,7 @@ int main() {
   data.Draw("esamex0");
 
   FixTopRange(pads[0], GetPadYMax(pads[0]), 0.15);
-  DrawCMSLogo(pads[0], "CMS", "Preliminary", 11, 0.045, 0.035, 1.2);
+  DrawCMSLogo(pads[0], "CMS", "Work in Progress", 11, 0.045, 0.035, 1.2);
   DrawTitle(pads[0], "19.7 fb^{-1} (8 TeV)", 3);
   DrawTitle(pads[0], "H#rightarrowZZ", 1);
   canv->Update();

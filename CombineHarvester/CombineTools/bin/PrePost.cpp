@@ -125,7 +125,7 @@ int main() {
   if (pads[0]->GetLogy()) h[0]->SetMinimum(0.09);
 
   FixTopRange(pads[0], GetPadYMax(pads[0]), 0.25);
-  DrawCMSLogo(pads[0], "CMS", "Preliminary", 11, 0.045, 0.035, 1.2);
+  DrawCMSLogo(pads[0], "CMS", "Work in Progress", 11, 0.045, 0.035, 1.2);
   DrawTitle(pads[0], "19.7 fb^{-1} (8 TeV) + 4.9 fb^{-1} (7 TeV)", 3);
   DrawTitle(pads[0], "H#rightarrow#tau#tau", 1);
 
