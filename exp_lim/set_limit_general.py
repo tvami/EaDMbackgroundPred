@@ -53,7 +53,7 @@ parser.add_option('-x', '--process', type='string', action='store',
                 dest          =       'process',
                 help          =       'Name of HSCP. e.g. pp#rightarrow#tilde{g}#tilde{g}')
 parser.add_option('-o', '--xsorder', type='string', action='store',
-                default       =       'NNLO+NNLL',
+                default       =       'LO',
                 dest          =       'xsorder',
                 help          =       'Order of XS calculation. e.g. NNLO+NNLL')
 parser.add_option('-d', '--debug', type='int',

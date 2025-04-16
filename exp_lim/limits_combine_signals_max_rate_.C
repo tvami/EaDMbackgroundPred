@@ -4,7 +4,7 @@
 void limits_combine_signals_max_rate_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Wed Apr 16 11:16:40 2025) by ROOT version 6.30/07
+//=========  (Wed Apr 16 11:52:01 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -364,7 +364,7 @@ void limits_combine_signals_max_rate_()
    entry->SetMarkerStyle(21);
    entry->SetMarkerSize(1);
    entry->SetTextFont(62);
-   entry=leg->AddEntry("","#sigma^{NNLO+NNLL}_{th}(A'#rightarrow#mu#mu)#pm1#sigma","l");
+   entry=leg->AddEntry("","#sigma^{LO}_{th}(A'#rightarrow#mu#mu)#pm1#sigma","l");
    entry->SetLineColor(4);
    entry->SetLineStyle(1);
    entry->SetLineWidth(3);
