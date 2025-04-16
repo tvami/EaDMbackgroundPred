@@ -28,27 +28,24 @@ Eigenvalue 18 : -4.98404e-06
 Running Minos for POI r
 >> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
->> Parameter r does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 18 : -1.03248e-05
- - 0.824724	Background_rpf_2x0_par3
- - -0.43862	Background_rpf_2x0_par0
- - -0.349369	Background_rpf_2x0_par1
- - -0.0733642	Background_rpf_2x0_par2
- - 0.00122652	Background_fail_LOW_bin_4-1
+Eigenvalue 19 : -0.000506408
+ - 0.706155	Background_rpf_2x0_par2
+ - -0.642095	r
+ - -0.227317	Background_rpf_2x0_par3
+ - 0.121543	Background_fail_HIGH_bin_7-1
+ - 0.101223	Background_fail_HIGH_bin_9-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par3 from the hessian
+>> Dropping Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
-     - r
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par3
+     - Background_rpf_2x0_par2
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Done! s+b fit and b-only fit should be identical
+Best fit r: 1.78371e-06  -1.78371e-06/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out
