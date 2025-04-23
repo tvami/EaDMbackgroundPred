@@ -2,15 +2,15 @@ import ROOT
 import sys
 import pickle
 
-ROOT.gStyle.SetPadRightMargin(0.13);
+ROOT.gStyle.SetPadRightMargin(0.13)
 ROOT.gROOT.SetBatch(True)
 
-phenoContour = ROOT.TGraph("limitPlotScripts/phenoContour.csv", "%lg,%lg")
-#phenoContour.SetFillColorAlpha(ROOT.kBlue-2,0.2)
-phenoContour.SetFillColorAlpha(ROOT.kBlack,0.99)
-phenoContour.SetFillStyle(3005)
-phenoContour.SetLineColor(ROOT.kBlack)
-phenoContour.SetLineWidth(2)
+# phenoContour = ROOT.TGraph("phenoContour.csv", "%lg,%lg")
+# #phenoContour.SetFillColorAlpha(ROOT.kBlue-2,0.2)
+# phenoContour.SetFillColorAlpha(ROOT.kBlack,0.99)
+# phenoContour.SetFillStyle(3005)
+# phenoContour.SetLineColor(ROOT.kBlack)
+# phenoContour.SetLineWidth(2)
 
 #with open('output_BR100pct.root.expectedSurface.pkl', 'rb') as f:
 with open('output_BR100pct.root.observedSurface.pkl', 'rb') as f:
@@ -22,8 +22,8 @@ zPoints = data["z"].flatten()
 
 result = list(zip(xPoints, yPoints, zPoints))
 
-tauPrimeMass = (200, 400, 600, 800, 1000, 1200, 1400)
-ZPrimeMass = (3000, 4000, 5000, 6000, 7000)
+epsilon = [1.000000e-08,2.000000e-08,3.000000e-08,4.000000e-08,5.000000e-08,6.000000e-08,7.000000e-08,8.000000e-08,9.000000e-08,1.000000e-07]
+dmMass = [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]
 
 graph = ROOT.TGraph2D()
 
@@ -32,11 +32,12 @@ for point in result:
     graph.SetPoint(graph.GetN(), x, y, z)
     
 graphOrig = ROOT.TGraph()
-for x in tauPrimeMass :
-  for y in ZPrimeMass :
+for x in epsilon :
+  for y in dmMass :
     graphOrig.SetPoint(graphOrig.GetN(), x, y)
 
 graph.SetMinimum(0.00001)
+graph.SetMaximum(10000)
 #graph.SetNpy(500);
 #graph.SetNpx(500);
 graph.SetTitle("")
@@ -51,7 +52,7 @@ graphOrig.SetMarkerColor(1)
 graphOrig.SetMarkerStyle(ROOT.kCircle)
 graphOrig.SetMarkerSize(0.75)
 graphOrig.Draw("PSAME")
-phenoContour.Draw("LFSAME")
+#phenoContour.Draw("LFSAME")
 canvas.Update()
 
 marker = ROOT.TGraph()
