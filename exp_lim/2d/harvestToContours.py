@@ -631,7 +631,9 @@ def interpolateSurface(modelDict = {}, interpolationFunction = "linear", useROOT
 
             # Undo the scaling from above to get back to original units
             if args.interpolationScheme.lower()=="rbf":
-                xymeshgrid[1] = xymeshgrid[1] / yScaling
+                xymeshgrid_list = list(xymeshgrid)
+                xymeshgrid_list[1] = xymeshgrid_list[1] / yScaling
+                xymeshgrid = tuple(xymeshgrid_list)
                 yArray = yArray/yScaling
 
 
@@ -662,6 +664,7 @@ def interpolateSurface(modelDict = {}, interpolationFunction = "linear", useROOT
 
             graphs[whichContour] = []
             for contour in contourList:
+                if len(contour[0]) == 0: continue
                 graph = ROOT.TGraph(len(contour[0]), contour[0].flatten('C'), contour[1].flatten('C') )
                 if graph.Integral() > args.areaThreshold:
                     graphs[whichContour].append(graph)
@@ -791,12 +794,11 @@ def createGraphsFromArrays(x,y,z,label):
 def getContourPoints(xi,yi,zi,level ):
 
     c = plt.contour(xi,yi,zi, [level])
-    contour = c.collections[0]
 
     contourList = []
 
-    for i in range( len(contour.get_paths() ) ):
-        v = contour.get_paths()[i].vertices
+    for i in range( len(c.get_paths() ) ):
+        v = c.get_paths()[i].vertices
 
         x = v[:,0]
         y = v[:,1]

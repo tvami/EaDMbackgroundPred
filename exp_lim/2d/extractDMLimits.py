@@ -11,19 +11,19 @@ ma_arr = df['ma'].to_numpy()
 mx_arr = df['mx'].to_numpy()
 epsilon_arr = df['epsilon'].to_numpy()
 
-inputFolder = "/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre4/src/rpf2x0_Binningv3_Inputv4_SR_Blind"
+inputFolder = "/Users/sanjitmasanam/Documents/CodingProjects/git_repos/EaDMbackgroundPred/rpf2x0_Binningv3_Inputv4_SR_Blind"
 
 outputPoints = []
 
 for dmMass in [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]:
 	for epsilon in [1.000000e-08,2.000000e-08,3.000000e-08,4.000000e-08,5.000000e-08,6.000000e-08,7.000000e-08,8.000000e-08,9.000000e-08,1.000000e-07]:
 		######### HACK FOR WRONG XS NUMBERS. SET TO ONE AFTER FIXED. #########
-		scale =  0.01 * 2 * rate_CMS_arr[(np.isclose(ma_arr, np.full(ma_arr.shape, 0.237194))) & (np.isclose(mx_arr, np.full(mx_arr.shape, dmMass))) & (np.isclose(epsilon_arr, np.full(epsilon_arr.shape, epsilon), rtol=5e-10, atol=5e-10))]
+		scale = float(0.01 * 2 * rate_CMS_arr[(np.isclose(ma_arr, np.full(ma_arr.shape, 0.237194))) & (np.isclose(mx_arr, np.full(mx_arr.shape, dmMass))) & (np.isclose(epsilon_arr, np.full(epsilon_arr.shape, epsilon), rtol=5e-10, atol=5e-10))])
 		print("Scale: ", scale)
 
 		limitInfo = {}
 
-		inputFileName = f"{inputFolder}/Signal_M{dmMass}GeV-2x0_area/higgsCombineTest.AsymptoticLimits.mH120.root"
+		inputFileName = f"{inputFolder}/Signal_M{int(dmMass/2)}GeV-2x0_area/higgsCombineTest.AsymptoticLimits.mH120.root"
 		inputFile = ROOT.TFile(inputFileName)
 		inputTree = inputFile.Get("limit")
 
