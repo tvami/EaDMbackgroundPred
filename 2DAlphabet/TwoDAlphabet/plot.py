@@ -1014,6 +1014,8 @@ def plot_signalInjection(tag, subtag, injectedAmount, seed=123456, stats=True, c
         ROOT.gROOT.SetBatch(True)
         if stats:
             ROOT.gStyle.SetOptStat(True)
+            ROOT.gStyle.SetStatX(0.75)
+            ROOT.gStyle.SetStatY(0.85)
         else:
             ROOT.gStyle.SetOptStat(False)
         # Final plotting
