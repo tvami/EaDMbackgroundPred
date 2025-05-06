@@ -703,7 +703,7 @@ def make_systematic_plots(twoD):
     being plotted. Plots are saved to UncertPlots/.
     '''
     for (p,r), _ in twoD.df.groupby(['process','region']):
-        if p == 'SIGNAME': continue
+        if p == 'data_obs': continue
 
         nominal_full = twoD.organizedHists.Get(process=p, region=r, systematic='')
         binning, _ = twoD.GetBinningFor(r)
