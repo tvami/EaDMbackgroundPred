@@ -30,7 +30,7 @@ for dmMass in [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]:
 		tmpDict = {}
 		tmpDict["m1"] = dmMass
 		tmpDict["m2"] = epsilon
-		tmpDict["dm"] = tmpDict["m1"]-tmpDict["m2"]
+		#tmpDict["dm"] = tmpDict["m1"]-tmpDict["m2"]
 
 		# inputTree.Print()
 		for entry in inputTree:

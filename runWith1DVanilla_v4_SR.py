@@ -215,7 +215,7 @@ def SignalInjection(signal, tf, r, condor=False):
     twoD.SignalInjection(
 	'{}-{}_area'.format(signal, tf),
 	injectAmount = r,	# injected signal xsec (r=0 : bias test)
-	ntoys=500,		# will take forever if not on condor
+	ntoys=2000,		# will take forever if not on condor
 	blindData = True,	# make sure you're blinding if working with data
 	#setParams = params,     # give the toys the same RPF params
 	verbosity = 0,		# you can change this if you need

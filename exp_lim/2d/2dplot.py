@@ -12,8 +12,8 @@ ROOT.gROOT.SetBatch(True)
 # phenoContour.SetLineColor(ROOT.kBlack)
 # phenoContour.SetLineWidth(2)
 
-#with open('output_BR100pct.root.expectedSurface.pkl', 'rb') as f:
-with open('output_BR100pct.root.observedSurface.pkl', 'rb') as f:
+with open('output_BR100pct.root.expectedSurface.pkl', 'rb') as f:
+#with open('output_BR100pct.root.observedSurface.pkl', 'rb') as f:
     data = pickle.load(f)
 
 xPoints = data["x"].flatten()
