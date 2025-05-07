@@ -381,11 +381,11 @@ if __name__ == "__main__":
       run_limits(signal,tf_type)
       GOF(signal,tf_type,condor=False)
       plot_GOF(signal,tf_type,condor=False)
-      #if signal == "Signal_M500GeV":
-      #  for r in [0,0.1,0.5,1,2,3]:
-      #      SignalInjection(signal, tf_type, r=r, condor=False)
-      #      plot_SignalInjection(signal, tf_type, r=r, condor=False)
-      #Impacts(signal,tf_type)
+      if signal == "Signal_M500GeV":
+        for r in [0,0.1,0.5,1,2,3]:
+            SignalInjection(signal, tf_type, r=r, condor=False)
+            plot_SignalInjection(signal, tf_type, r=r, condor=False)
+      Impacts(signal,tf_type)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
     #test_FTest('1x0','2x0',"Signal_M500GeV")
