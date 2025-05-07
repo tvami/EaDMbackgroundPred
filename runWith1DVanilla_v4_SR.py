@@ -379,8 +379,8 @@ if __name__ == "__main__":
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       run_limits(signal,tf_type)
-      #GOF(signal,tf_type,condor=False)
-      #plot_GOF(signal,tf_type,condor=False)
+      GOF(signal,tf_type,condor=False)
+      plot_GOF(signal,tf_type,condor=False)
       #if signal == "Signal_M500GeV":
       #  for r in [0,0.1,0.5,1,2,3]:
       #      SignalInjection(signal, tf_type, r=r, condor=False)

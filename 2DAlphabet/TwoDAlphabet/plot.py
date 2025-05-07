@@ -1014,8 +1014,8 @@ def plot_gof(tag, subtag, seed=123456, condor=False):
         arrow.SetLineWidth(2)
 
         # Legend
-        leg = ROOT.TLegend(0.1,0.7,0.4,0.9)
-        leg.SetLineColor(ROOT.kWhite)
+        leg = ROOT.TLegend(0.6,0.7,0.9,0.9)
+        leg.SetLineColor(ROOT.kBlack)
         leg.SetLineWidth(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(42)
@@ -1055,8 +1055,6 @@ def plot_signalInjection(tag, subtag, injectedAmount, seed=123456, stats=True, c
         ROOT.gROOT.SetBatch(True)
         if stats:
             ROOT.gStyle.SetOptStat(True)
-            ROOT.gStyle.SetStatX(0.75)
-            ROOT.gStyle.SetStatY(0.85)
         else:
             ROOT.gStyle.SetOptStat(False)
         # Final plotting
