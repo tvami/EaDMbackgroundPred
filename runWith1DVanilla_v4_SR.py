@@ -376,15 +376,15 @@ if __name__ == "__main__":
           content = file.read()
           if not "Fit failed" in content: fitPassed = True
           rMax = rMax / 2.
-      plot_fit(signal,tf_type)
+      #plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
-      GOF(signal,tf_type,condor=False)
-      plot_GOF(signal,tf_type,condor=False)
-      if signal == "Signal_M500GeV":
-        for r in [0,0.1,0.5,1,2,3]:
-            SignalInjection(signal, tf_type, r=r, condor=False)
-            plot_SignalInjection(signal, tf_type, r=r, condor=False)
+      #run_limits(signal,tf_type)
+      #GOF(signal,tf_type,condor=False)
+      #plot_GOF(signal,tf_type,condor=False)
+      #if signal == "Signal_M500GeV":
+      #  for r in [0,0.1,0.5,1,2,3]:
+      #      SignalInjection(signal, tf_type, r=r, condor=False)
+      #      plot_SignalInjection(signal, tf_type, r=r, condor=False)
       Impacts(signal,tf_type)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
