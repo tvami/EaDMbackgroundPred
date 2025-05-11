@@ -21,7 +21,7 @@
     },
     "PROCESSES": {
         "data_obs": {
-            "SYSTEMATICS":["RNN","pT","t0"],
+            "SYSTEMATICS":[],
             "COLOR": "black",
             "SCALE": 1,
             "TYPE": "DATA",
@@ -31,7 +31,7 @@
         },
         "SIGNAME": {
             "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
-            "SYSTEMATICS":["lumi"],
+            "SYSTEMATICS":["lumi","RNN","pT","t0"],
             "COLOR": "red",
             "SCALE": 0.1,
             "TYPE": "SIGNAL",
@@ -71,7 +71,7 @@
                 "TITLE": "p_{T}",
 		"BINSv1":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
 		"BINSv2":   [0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
-                "BINS":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
+                "BINS":   [50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
 		"SIGSTART": 440,
                 "SIGEND": 650,
 		"MINtest": 10,

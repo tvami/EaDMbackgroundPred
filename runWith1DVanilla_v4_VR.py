@@ -384,7 +384,7 @@ if __name__ == "__main__":
           rMax = rMax / 10.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
+      #run_limits(signal,tf_type)
       #GOF(signal,tf_type,condor=False)
       #plot_GOF(signal,tf_type,condor=False)
       #SignalInjection(signal, tf_type, r=0, condor=False)

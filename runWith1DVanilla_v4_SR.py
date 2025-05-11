@@ -376,9 +376,9 @@ if __name__ == "__main__":
           content = file.read()
           if not "Fit failed" in content: fitPassed = True
           rMax = rMax / 2.
-      #plot_fit(signal,tf_type)
+      plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      #run_limits(signal,tf_type)
+      run_limits(signal,tf_type)
       #GOF(signal,tf_type,condor=False)
       #plot_GOF(signal,tf_type,condor=False)
       #if signal == "Signal_M500GeV":
