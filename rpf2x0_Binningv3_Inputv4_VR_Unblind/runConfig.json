@@ -3,7 +3,6 @@
     "default": {
       "X": {
         "BINS": [
-          0,
           50,
           140,
           270,
@@ -121,7 +120,10 @@
       "NAME": "SIGNAME",
       "SCALE": 0.1,
       "SYSTEMATICS": [
-        "lumi"
+        "lumi",
+        "RNN",
+        "pT",
+        "t0"
       ],
       "SYSTEMATICSvolt": [
         "lumi",
@@ -144,11 +146,7 @@
       "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "data_obs",
       "SCALE": 1,
-      "SYSTEMATICS": [
-        "RNN",
-        "pT",
-        "t0"
-      ],
+      "SYSTEMATICS": [],
       "TITLE": "Cosmics_Data_VR",
       "TYPE": "DATA",
       "VARIATION": "nominal"
