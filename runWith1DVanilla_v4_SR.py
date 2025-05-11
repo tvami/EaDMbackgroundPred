@@ -227,11 +227,11 @@ def plot_SignalInjection(signal, tf, r, condor=False):
     working_area = workingArea
     plot.plot_signalInjection(working_area, '{}-{}_area'.format(signal, tf), injectedAmount=r, condor=condor)
 
-def Impacts(signal, tf):
+def Impacts(signal, tf, toys=500):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     #twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='card.txt', extra='-t 1')
-    twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='initialFitWorkspace.root --snapshotName initialFit', extra='-t 1')
+    twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='initialFitWorkspace.root --snapshotName initialFit', extra=f'-t {toys}')
 
 def run_limits(signal, tf):
     working_area = workingArea

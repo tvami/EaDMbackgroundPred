@@ -629,8 +629,8 @@ class TwoDAlphabet:
                 '-M Impacts', '--rMin %s'%rMin,
                 '--rMax %s'%rMax, '-d %s'%card_or_w,
                 '--cminDefaultMinimizerStrategy {} -m 0'.format(defMinStrat),
-                impact_nuis_str, extra, #param_str,
-                '-t -1 --bypassFrequentistFit' if True else ''
+                impact_nuis_str, #extra, #param_str,
+                '-t 500 --bypassFrequentistFit' if True else ''
             ]
             # Remove old runs if they exist
             execute_cmd('rm *_paramFit_*.root *_initialFit_*.root')
