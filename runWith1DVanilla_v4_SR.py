@@ -61,11 +61,11 @@ _rpf_options = {
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
         'constraints': _generate_constraints(4)
-       #     0: {"MIN": 0.0, "MAX": 100},
-       #     1: {"MIN": 50, "MAX": 100},
-       #     2: {"MIN": -50, "MAX": 0},
-       #     3: {"MIN": 0, "MAX": 0.1}
-       # }
+         #   0: {"MIN": 0.0, "MAX": 100},
+         #   1: {"MIN": 50, "MAX": 100},
+         #   2: {"MIN": -50, "MAX": 0},
+         #   3: {"MIN": 0, "MAX": 0.1}
+         #}
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
@@ -232,7 +232,7 @@ def plot_SignalInjection(signal, tf, r, condor=False):
     working_area = workingArea
     plot.plot_signalInjection(working_area, '{}-{}_area'.format(signal, tf), injectedAmount=r, condor=condor)
 
-def Impacts(signal, tf, toys=500):
+def Impacts(signal, tf, toys):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     #twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='card.txt', extra='-t 1')
@@ -364,8 +364,8 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
-    tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
+    signal_areas = ["Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -390,7 +390,7 @@ if __name__ == "__main__":
       #  for r in [0,0.1,0.5,1,2,3]:
       #      SignalInjection(signal, tf_type, r=r, condor=False)
       #      plot_SignalInjection(signal, tf_type, r=r, condor=False)
-      #Impacts(signal,tf_type,toys=500)
+      Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
     #test_FTest('1x0','2x0',"Signal_M500GeV")
