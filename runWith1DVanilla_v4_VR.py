@@ -360,17 +360,12 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV"]
-    #signal_areas = ["Signal_B1_MD2000_MBH3000_n2"]
-    # signal_areas = ["Signal_B1_MD2000_MBH3000_n2","Signal_B1_MD2000_MBH4000_n2","Signal_B1_MD2000_MBH5000_n2","Signal_B1_MD2000_MBH6000_n2","Signal_B1_MD2000_MBH7000_n2","Signal_B1_MD2000_MBH8000_n2","Signal_B1_MD2000_MBH9000_n2","Signal_B1_MD2000_MBH10000_n2","Signal_B1_MD2000_MBH11000_n2"]
-    #signal_areas = ["Signal_B1_MD4000_MBH5000_n2","Signal_B1_MD4000_MBH6000_n2","Signal_B1_MD4000_MBH7000_n2","Signal_B1_MD4000_MBH8000_n2","Signal_B1_MD4000_MBH9000_n2","Signal_B1_MD4000_MBH10000_n2","Signal_B1_MD4000_MBH11000_n2"]
-
-    #tf_type = '0x0'
-    tf_types = ['2x0']
+    signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV",]
+    tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0',]
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50

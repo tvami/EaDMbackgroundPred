@@ -1,0 +1,19 @@
+,process,region,binning,color,process_type,scale,variation,source_filename,source_histname,alias,title,combine_idx,lnN,shapes,syst_type,direction,variation_alias
+0,data_obs,pass,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v4/EaDM_Cosmics_Data_VR.root,hpass,Cosmics_Data_VR,Cosmics_Data_VR,,,,,,
+1,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,lumi,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass,Signal_M500GeV_VR,DM signal,,1.001,,lnN,,
+2,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,RNN,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_RNNsyst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,RNNsyst
+3,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,RNN,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_RNNsyst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,RNNsyst
+4,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,pT,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_pTsyst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,pTsyst
+5,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,pT,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_pTsyst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,pTsyst
+6,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,t0,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_t0syst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,t0syst
+7,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,t0,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass_t0syst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,t0syst
+8,Signal_M500GeV_VR,pass,default,red,SIGNAL,0.1,nominal,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hpass,Signal_M500GeV_VR,DM signal,,,,,,
+9,data_obs,fail,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v4/EaDM_Cosmics_Data_VR.root,hfail,Cosmics_Data_VR,Cosmics_Data_VR,,,,,,
+10,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,lumi,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail,Signal_M500GeV_VR,DM signal,,1.001,,lnN,,
+11,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,RNN,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_RNNsyst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,RNNsyst
+12,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,RNN,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_RNNsyst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,RNNsyst
+13,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,pT,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_pTsyst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,pTsyst
+14,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,pT,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_pTsyst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,pTsyst
+15,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,t0,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_t0syst_up,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Up,t0syst
+16,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,t0,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail_t0syst_down,Signal_M500GeV_VR,DM signal,,,1.0,shapes,Down,t0syst
+17,Signal_M500GeV_VR,fail,default,red,SIGNAL,0.1,nominal,./histograms_for_2DAlphabet_v4/EaDM_Signal_M500GeV_VR.root,hfail,Signal_M500GeV_VR,DM signal,,,,,,
