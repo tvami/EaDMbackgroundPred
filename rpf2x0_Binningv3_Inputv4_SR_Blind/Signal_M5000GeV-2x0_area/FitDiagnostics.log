@@ -7,10 +7,10 @@ Set Default Value of Parameter mask_pass_HIGH To : 1
 Set Default Value of Parameter r To : 1
 >>> 2 out of 6 channels masked
 
->> Found 22 floating parameters
+>> Found 19 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 21 : -1.8446e-05
+Eigenvalue 18 : -1.8446e-05
  - 0.790135	Background_rpf_2x0_par3
  - -0.561882	Background_rpf_2x0_par0
  - -0.238746	Background_rpf_2x0_par1
@@ -26,36 +26,26 @@ Eigenvalue 21 : -1.8446e-05
      - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 23 floating parameters
+>> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 22 : -0.000529291
- - -0.714993	r
- - 0.554185	Background_rpf_2x0_par2
- - 0.252824	Background_rpf_2x0_par0
- - 0.236416	Background_fail_HIGH_bin_9-1
- - -0.151982	Background_rpf_2x0_par3
+Eigenvalue 19 : -0.000480512
+ - -0.700804	r
+ - 0.564433	Background_rpf_2x0_par2
+ - 0.264682	Background_rpf_2x0_par0
+ - 0.235154	Background_fail_HIGH_bin_9-1
+ - -0.167295	Background_rpf_2x0_par3
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 21 : -1.01384e-05
- - -0.789027	Background_rpf_2x0_par3
- - 0.538216	Background_rpf_2x0_par0
- - 0.294186	Background_rpf_2x0_par1
- - -0.032005	r
- - 0.0106095	Background_fail_HIGH_bin_9-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
      - Background_rpf_2x0_par2
-     - Background_rpf_2x0_par3
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.00025142  -0.00025142/+49.9997  (68% CL)
+Best fit r: 0.00480649  -0.00480649/+49.9952  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out

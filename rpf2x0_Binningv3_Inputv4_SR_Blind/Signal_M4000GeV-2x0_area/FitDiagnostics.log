@@ -7,10 +7,10 @@ Set Default Value of Parameter mask_pass_HIGH To : 1
 Set Default Value of Parameter r To : 1
 >>> 2 out of 6 channels masked
 
->> Found 22 floating parameters
+>> Found 19 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 21 : -1.8446e-05
+Eigenvalue 18 : -1.8446e-05
  - 0.790135	Background_rpf_2x0_par3
  - -0.561882	Background_rpf_2x0_par0
  - -0.238746	Background_rpf_2x0_par1
@@ -26,24 +26,24 @@ Eigenvalue 21 : -1.8446e-05
      - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 23 floating parameters
+>> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 22 : -0.000424119
- - -0.708915	r
- - 0.583278	Background_rpf_2x0_par2
- - -0.243134	Background_rpf_2x0_par3
- - 0.214118	Background_rpf_2x0_par1
- - 0.151914	Background_rpf_2x0_par0
+Eigenvalue 19 : -0.000420653
+ - 0.705233	r
+ - -0.581607	Background_rpf_2x0_par2
+ - 0.253127	Background_rpf_2x0_par3
+ - -0.218495	Background_rpf_2x0_par1
+ - -0.153674	Background_rpf_2x0_par0
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 21 : -1.39206e-06
- - 0.781864	Background_rpf_2x0_par3
- - -0.546035	Background_rpf_2x0_par0
- - -0.2995	Background_rpf_2x0_par1
- - 0.028064	r
- - -0.00502587	Background_fail_HIGH_bin_7-1
+Eigenvalue 18 : -1.3648e-05
+ - 0.789718	Background_rpf_2x0_par3
+ - -0.531927	Background_rpf_2x0_par0
+ - -0.304139	Background_rpf_2x0_par1
+ - 0.0291397	r
+ - -0.00522623	Background_fail_HIGH_bin_7-1
 >> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 2)
@@ -56,6 +56,6 @@ Eigenvalue 21 : -1.39206e-06
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 7.61922e-06  -7.61922e-06/+50  (68% CL)
+Best fit r: 7.70447e-06  -7.70447e-06/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out

@@ -118,10 +118,7 @@
       "NAME": "SIGNAME",
       "SCALE": 1.0,
       "SYSTEMATICS": [
-        "lumi",
-        "RNN",
-        "pT",
-        "t0"
+        "lumi"
       ],
       "SYSTEMATICSvolt": [
         "lumi",
@@ -144,7 +141,11 @@
       "LOC": "./histograms_for_2DAlphabet_v4/EaDM_$process.root:h$region",
       "NAME": "data_obs",
       "SCALE": 1,
-      "SYSTEMATICS": [],
+      "SYSTEMATICS": [
+        "RNN",
+        "pT",
+        "t0"
+      ],
       "TITLE": "Cosmics_Data_SR",
       "TYPE": "DATA",
       "VARIATION": "nominal"
