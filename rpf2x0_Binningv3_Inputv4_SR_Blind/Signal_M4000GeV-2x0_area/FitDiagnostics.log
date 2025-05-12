@@ -10,12 +10,12 @@ Set Default Value of Parameter r To : 1
 >> Found 22 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 21 : -4.98404e-06
- - 0.820831	Background_rpf_2x0_par3
- - -0.441125	Background_rpf_2x0_par0
- - -0.356731	Background_rpf_2x0_par1
- - -0.0662221	Background_rpf_2x0_par2
- - 0.0011526	Background_fail_LOW_bin_4-1
+Eigenvalue 21 : -1.8446e-05
+ - 0.790135	Background_rpf_2x0_par3
+ - -0.561882	Background_rpf_2x0_par0
+ - -0.238746	Background_rpf_2x0_par1
+ - -0.0545303	Background_rpf_2x0_par2
+ - 0.00110929	Background_fail_LOW_bin_3-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -29,21 +29,21 @@ Running Minos for POI r
 >> Found 23 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 22 : -0.000468465
- - -0.690429	Background_rpf_2x0_par2
- - 0.646385	r
- - 0.255938	Background_rpf_2x0_par3
- - -0.115494	Background_fail_HIGH_bin_7-1
- - -0.0978521	Background_rpf_2x0_par1
+Eigenvalue 22 : -0.000424119
+ - -0.708915	r
+ - 0.583278	Background_rpf_2x0_par2
+ - -0.243134	Background_rpf_2x0_par3
+ - 0.214118	Background_rpf_2x0_par1
+ - 0.151914	Background_rpf_2x0_par0
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 21 : -2.07941e-06
- - 0.801543	Background_rpf_2x0_par3
- - -0.474145	Background_rpf_2x0_par1
- - -0.362538	Background_rpf_2x0_par0
- - 0.0347898	r
- - -0.00623074	Background_fail_HIGH_bin_7-1
+Eigenvalue 21 : -1.39206e-06
+ - 0.781864	Background_rpf_2x0_par3
+ - -0.546035	Background_rpf_2x0_par0
+ - -0.2995	Background_rpf_2x0_par1
+ - 0.028064	r
+ - -0.00502587	Background_fail_HIGH_bin_7-1
 >> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 2)
@@ -56,6 +56,6 @@ Eigenvalue 21 : -2.07941e-06
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.000303315  -0.000303315/+49.9997  (68% CL)
+Best fit r: 7.61922e-06  -7.61922e-06/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out
