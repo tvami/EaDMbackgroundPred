@@ -4,12 +4,12 @@
 void limits_combine_signals_ep_4e-08_ma_0_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Wed Apr 16 11:52:07 2025) by ROOT version 6.30/07
+//=========  (Sun May 11 23:50:01 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
    climits->SetHighLightColor(2);
-   climits->Range(0.1175,-5.021442,5.7875,-0.2186953);
+   climits->Range(-0.459625,-1.838764,5.817875,5.759863);
    climits->SetFillColor(0);
    climits->SetBorderMode(0);
    climits->SetBorderSize(2);
@@ -23,7 +23,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    climits->SetFrameBorderMode(0);
    
    Double_t Graph0_fx1[10] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 };
-   Double_t Graph0_fy1[10] = { 4.890952e-09, 1.614332e-05, 0.0001447739, 0.0004598721, 0.000674502, 0.0008971049, 0.001035293, 0.001241029, 0.001214406, 0.001337796 };
+   Double_t Graph0_fy1[10] = { 0.0001936002, 1.057465, 12.72155, 42.21578, 80.69272, 122.1428, 150.8144, 188.9817, 208.6631, 249.3827 };
    TGraph *graph = new TGraph(10,Graph0_fx1,Graph0_fy1);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -34,22 +34,22 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0);
    
    TH1F *Graph_Graph01 = new TH1F("Graph_Graph01","",100,0.05,5.45);
-   Graph_Graph01->SetMinimum(5e-05);
-   Graph_Graph01->SetMaximum(0.2);
+   Graph_Graph01->SetMinimum(0.2);
+   Graph_Graph01->SetMaximum(100000);
    Graph_Graph01->SetDirectory(nullptr);
    Graph_Graph01->SetStats(0);
    Graph_Graph01->SetLineWidth(2);
    Graph_Graph01->SetMarkerStyle(20);
    Graph_Graph01->SetMarkerSize(0.9);
    Graph_Graph01->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph01->GetXaxis()->SetRange(18,101);
+   Graph_Graph01->GetXaxis()->SetRange(9,101);
    Graph_Graph01->GetXaxis()->SetLabelFont(42);
    Graph_Graph01->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph01->GetXaxis()->SetLabelSize(0.05);
    Graph_Graph01->GetXaxis()->SetTitleSize(0.055);
    Graph_Graph01->GetXaxis()->SetTitleOffset(1.25);
    Graph_Graph01->GetXaxis()->SetTitleFont(42);
-   Graph_Graph01->GetYaxis()->SetTitle("Monthly DM-induced muon rate x 10^{-5}");
+   Graph_Graph01->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
    Graph_Graph01->GetYaxis()->SetLabelFont(42);
    Graph_Graph01->GetYaxis()->SetLabelOffset(0.015);
    Graph_Graph01->GetYaxis()->SetLabelSize(0.05);
@@ -69,8 +69,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    
    Double_t Graph1_fx2[22] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5, 5, 5, 4.5, 4, 3.5, 3,
    2.5, 2, 1.5, 1, 0.5 };
-   Double_t Graph1_fy2[22] = { 9.116992e-09, 3.051655e-05, 0.0002792222, 0.0008870464, 0.001312179, 0.001719226, 0.001940031, 0.002252743, 0.002206877, 0.002475499, 0.002475499, 0.0008204454, 0.0008204454, 0.00075426, 0.0007320134, 0.0005580878, 0.0004730827,
-   0.0003556944, 0.0002443071, 7.691113e-05, 8.6392e-06, 2.636529e-09 };
+   Double_t Graph1_fy2[22] = { 0.0003614676, 2.005525, 24.51839, 81.5544, 156.98, 234.0765, 282.8531, 343.6281, 378.8495, 461.5191, 461.5191, 152.9417, 152.9417, 129.5994, 111.4697, 81.29837, 64.41126,
+   42.5528, 22.42713, 6.758324, 0.5659091, 0.0001043626 };
    graph = new TGraph(22,Graph1_fx2,Graph1_fy2);
    graph->SetName("Graph1");
    graph->SetTitle("Graph");
@@ -85,8 +85,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph12 = new TH1F("Graph_Graph12","Graph",100,0.05,5.45);
-   Graph_Graph12->SetMinimum(2.372876e-09);
-   Graph_Graph12->SetMaximum(0.002723048);
+   Graph_Graph12->SetMinimum(9.392634e-05);
+   Graph_Graph12->SetMaximum(507.6711);
    Graph_Graph12->SetDirectory(nullptr);
    Graph_Graph12->SetStats(0);
    Graph_Graph12->SetLineWidth(2);
@@ -117,8 +117,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    
    Double_t Graph2_fx3[22] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5, 5, 5, 4.5, 4, 3.5, 3,
    2.5, 2, 1.5, 1, 0.5 };
-   Double_t Graph2_fy3[22] = { 6.821011e-09, 2.267464e-05, 0.0002053668, 0.000651428, 0.0009608372, 0.001268998, 0.001441776, 0.001688715, 0.001647646, 0.001831054, 0.001831054, 0.001018494, 0.001018494, 0.0009304097, 0.0009308478, 0.0007482244, 0.0006354037,
-   0.0004777379, 0.0003268281, 0.0001028898, 1.15705e-05, 3.517163e-09 };
+   Double_t Graph2_fy3[22] = { 0.0002703842, 1.487406, 18.0206, 59.88454, 114.9479, 172.7769, 210.0279, 257.531, 283.1039, 340.8353, 340.8353, 189.8605, 189.8605, 159.866, 141.7478, 108.9962, 86.51162,
+   57.15324, 30.00247, 9.041122, 0.7579232, 0.000139221 };
    graph = new TGraph(22,Graph2_fx3,Graph2_fy3);
    graph->SetName("Graph2");
    graph->SetTitle("Graph");
@@ -131,8 +131,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph23 = new TH1F("Graph_Graph23","Graph",100,0.05,5.45);
-   Graph_Graph23->SetMinimum(3.165447e-09);
-   Graph_Graph23->SetMaximum(0.002014159);
+   Graph_Graph23->SetMinimum(0.0001252989);
+   Graph_Graph23->SetMaximum(374.9188);
    Graph_Graph23->SetDirectory(nullptr);
    Graph_Graph23->SetStats(0);
    Graph_Graph23->SetLineWidth(2);
@@ -162,7 +162,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->Draw("lf");
    
    Double_t Graph0_fx4[10] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 };
-   Double_t Graph0_fy4[10] = { 4.890952e-09, 1.614332e-05, 0.0001447739, 0.0004598721, 0.000674502, 0.0008971049, 0.001035293, 0.001241029, 0.001214406, 0.001337796 };
+   Double_t Graph0_fy4[10] = { 0.0001936002, 1.057465, 12.72155, 42.21578, 80.69272, 122.1428, 150.8144, 188.9817, 208.6631, 249.3827 };
    graph = new TGraph(10,Graph0_fx4,Graph0_fy4);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -173,22 +173,22 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0);
    
    TH1F *Graph_Graph04 = new TH1F("Graph_Graph04","",100,0.05,5.45);
-   Graph_Graph04->SetMinimum(5e-05);
-   Graph_Graph04->SetMaximum(0.2);
+   Graph_Graph04->SetMinimum(0.2);
+   Graph_Graph04->SetMaximum(100000);
    Graph_Graph04->SetDirectory(nullptr);
    Graph_Graph04->SetStats(0);
    Graph_Graph04->SetLineWidth(2);
    Graph_Graph04->SetMarkerStyle(20);
    Graph_Graph04->SetMarkerSize(0.9);
    Graph_Graph04->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph04->GetXaxis()->SetRange(18,101);
+   Graph_Graph04->GetXaxis()->SetRange(9,101);
    Graph_Graph04->GetXaxis()->SetLabelFont(42);
    Graph_Graph04->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph04->GetXaxis()->SetLabelSize(0.05);
    Graph_Graph04->GetXaxis()->SetTitleSize(0.055);
    Graph_Graph04->GetXaxis()->SetTitleOffset(1.25);
    Graph_Graph04->GetXaxis()->SetTitleFont(42);
-   Graph_Graph04->GetYaxis()->SetTitle("Monthly DM-induced muon rate x 10^{-5}");
+   Graph_Graph04->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
    Graph_Graph04->GetYaxis()->SetLabelFont(42);
    Graph_Graph04->GetYaxis()->SetLabelOffset(0.015);
    Graph_Graph04->GetYaxis()->SetLabelSize(0.05);
@@ -207,7 +207,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->Draw("l");
    
    Double_t Graph_fx5[10] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 };
-   Double_t Graph_fy5[10] = { 4.83057e-10, 4.967176e-06, 8.481034e-05, 0.0003114478, 0.0006336606, 0.0009710734, 0.001274207, 0.001523758, 0.001717613, 0.001861282 };
+   Double_t Graph_fy5[10] = { 4.83057e-05, 0.4967176, 8.481034, 31.14478, 63.36606, 97.10734, 127.4207, 152.3758, 171.7613, 186.1282 };
    graph = new TGraph(10,Graph_fx5,Graph_fy5);
    graph->SetName("");
    graph->SetTitle("");
@@ -219,8 +219,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph5 = new TH1F("Graph_Graph5","",100,0.05,5.45);
-   Graph_Graph5->SetMinimum(4.347513e-10);
-   Graph_Graph5->SetMaximum(0.00204741);
+   Graph_Graph5->SetMinimum(4.347513e-05);
+   Graph_Graph5->SetMaximum(204.741);
    Graph_Graph5->SetDirectory(nullptr);
    Graph_Graph5->SetStats(0);
    Graph_Graph5->SetLineWidth(2);
@@ -250,7 +250,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->Draw("l");
    
    Double_t Graph_fx6[10] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 };
-   Double_t Graph_fy6[10] = { 4.347513e-10, 4.470458e-06, 7.632931e-05, 0.000280303, 0.0005702945, 0.0008739661, 0.001146786, 0.001371382, 0.001545852, 0.001675154 };
+   Double_t Graph_fy6[10] = { 4.347513e-05, 0.4470458, 7.632931, 28.0303, 57.02945, 87.39661, 114.6786, 137.1382, 154.5852, 167.5154 };
    graph = new TGraph(10,Graph_fx6,Graph_fy6);
    graph->SetName("");
    graph->SetTitle("");
@@ -263,8 +263,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph6 = new TH1F("Graph_Graph6","",100,0.05,5.45);
-   Graph_Graph6->SetMinimum(3.912762e-10);
-   Graph_Graph6->SetMaximum(0.001842669);
+   Graph_Graph6->SetMinimum(3.912762e-05);
+   Graph_Graph6->SetMaximum(184.2669);
    Graph_Graph6->SetDirectory(nullptr);
    Graph_Graph6->SetStats(0);
    Graph_Graph6->SetLineWidth(2);
@@ -294,7 +294,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->Draw("l");
    
    Double_t Graph_fx7[10] = { 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5 };
-   Double_t Graph_fy7[10] = { 5.313627e-10, 5.463894e-06, 9.329137e-05, 0.0003425926, 0.0006970267, 0.001068181, 0.001401628, 0.001676134, 0.001889374, 0.00204741 };
+   Double_t Graph_fy7[10] = { 5.313627e-05, 0.5463894, 9.329137, 34.25926, 69.70267, 106.8181, 140.1628, 167.6134, 188.9374, 204.741 };
    graph = new TGraph(10,Graph_fx7,Graph_fy7);
    graph->SetName("");
    graph->SetTitle("");
@@ -307,8 +307,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph7 = new TH1F("Graph_Graph7","",100,0.05,5.45);
-   Graph_Graph7->SetMinimum(4.782264e-10);
-   Graph_Graph7->SetMaximum(0.002252151);
+   Graph_Graph7->SetMinimum(4.782264e-05);
+   Graph_Graph7->SetMaximum(225.2151);
    Graph_Graph7->SetDirectory(nullptr);
    Graph_Graph7->SetStats(0);
    Graph_Graph7->SetLineWidth(2);
@@ -397,13 +397,13 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    line->SetLineWidth(2);
    line->SetNDC();
    line->Draw();
-   line = new TLine(2.720414,0,2.720414,0.0007648641);
+   line = new TLine(-1,0,-1,-1);
 
    ci = TColor::GetColor("#666666");
    line->SetLineColor(ci);
    line->SetLineStyle(2);
    line->Draw();
-   TLatex *   tex = new TLatex(2.715414,0,"  2.72 TeV");
+   TLatex *   tex = new TLatex(-1.005,0,"  -1.00 TeV");
 
    ci = TColor::GetColor("#666666");
    tex->SetTextColor(ci);
@@ -414,7 +414,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    tex->Draw();
    
    TH1F *Graph_copy = new TH1F("Graph_copy","",100,0.05,5.45);
-   Graph_copy->SetMinimum(0.001);
+   Graph_copy->SetMinimum(1e-06);
    Graph_copy->SetMaximum(1000);
    Graph_copy->SetDirectory(nullptr);
    Graph_copy->SetStats(0);
@@ -422,14 +422,14 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    Graph_copy->SetMarkerStyle(20);
    Graph_copy->SetMarkerSize(0.9);
    Graph_copy->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_copy->GetXaxis()->SetRange(18,101);
+   Graph_copy->GetXaxis()->SetRange(9,101);
    Graph_copy->GetXaxis()->SetLabelFont(42);
    Graph_copy->GetXaxis()->SetLabelOffset(0.015);
    Graph_copy->GetXaxis()->SetLabelSize(0.05);
    Graph_copy->GetXaxis()->SetTitleSize(0.055);
    Graph_copy->GetXaxis()->SetTitleOffset(1.25);
    Graph_copy->GetXaxis()->SetTitleFont(42);
-   Graph_copy->GetYaxis()->SetTitle("Monthly DM-induced muon rate x 10^{-5}");
+   Graph_copy->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
    Graph_copy->GetYaxis()->SetLabelFont(42);
    Graph_copy->GetYaxis()->SetLabelOffset(0.015);
    Graph_copy->GetYaxis()->SetLabelSize(0.05);

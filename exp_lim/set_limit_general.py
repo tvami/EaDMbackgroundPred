@@ -224,12 +224,12 @@ else:
     g_mclimit.GetYaxis().SetTitle("Cross Section [pb]") # NOT GENERIC
     if ("tau" in cstr) :
       g_mclimit.GetXaxis().SetRangeUser(0.1, 1.5)
-      g_mclimit.SetMinimum(5e-6) #0.005
+      g_mclimit.SetMinimum(2e-6) #0.005
       g_mclimit.SetMaximum(0.02)
     else:
-      g_mclimit.GetXaxis().SetRangeUser(0.8, 3.0)
-      g_mclimit.SetMinimum(5e-5) #0.005
-      g_mclimit.SetMaximum(0.2)
+      g_mclimit.GetXaxis().SetRangeUser(0.5, 3.0)
+      g_mclimit.SetMinimum(2e-1) #0.005
+      g_mclimit.SetMaximum(1e5)
     if ("Prime" in cstr) :
       g_mclimit.GetXaxis().SetRangeUser(0.8, 3.0)
       g_mclimit.SetMinimum(5e-6) #0.005
@@ -355,7 +355,7 @@ if not options.blind:
 
 else:
     g_mclimit.GetXaxis().SetTitle("m("+options.particle+") [TeV]")  # NOT GENERIC
-    g_mclimit.GetYaxis().SetTitle("Monthly DM-induced muon rate x 10^{-5}") # NOT GENERIC
+    g_mclimit.GetYaxis().SetTitle("Monthly DM-induced muon rate") # NOT GENERIC
     g_mclimit.GetXaxis().SetTitleSize(0.055)
     g_mclimit.GetYaxis().SetTitleSize(0.05)
     g_mclimit.Draw("al")
@@ -365,8 +365,8 @@ else:
     graphWP.Draw("l")
     g_mclimit.GetYaxis().SetTitleOffset(1.5)
     g_mclimit.GetXaxis().SetTitleOffset(1.25)
-    g_mclimit.GetXaxis().SetRangeUser(1.0, 10.0)
-    g_mclimit.GetYaxis().SetRangeUser(0.001, 1000.0)
+    g_mclimit.GetXaxis().SetRangeUser(0.5, 10.0)
+    g_mclimit.GetYaxis().SetRangeUser(0.000001, 1000.0)
 
 graphWPdown.Draw("l")
 graphWPup.Draw("l")
