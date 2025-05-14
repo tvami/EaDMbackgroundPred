@@ -17,7 +17,7 @@ if __name__ == "__main__":
         print(f"MdM: {MdM_val}")
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4'
-        rootdir = f'rpfmult_Binning{binning}_Input{inVersion}_{region}_{blinding}'
+        rootdir = f'rpfmult_Binning{binning}_Input{inVersion}_{region}_{blinding}_3500GeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Unblind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_Extrapol'
         f = ROOT.TFile.Open(f"{rootdir}/Signal_M{MdM_val}GeV-{tf.lower()}_area/plots_fit_b/all_plots.root")
