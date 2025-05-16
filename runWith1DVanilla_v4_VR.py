@@ -76,6 +76,15 @@ _rpf_options = {
         'constraints': {
             0: {"MIN": -1.0, "MAX": 50},
             1: {"MIN": -500, "MAX": 500}
+            }
+    },
+    'sigmoid': {
+        'form': '@0/(@1+exp(-@2*x+@3))',
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": 0.0, "MAX": 500},
+            2: {"MIN": 0.0, "MAX": 500},
+            3: {"MIN": -5, "MAX": 5}
         }
     }
 }
@@ -360,12 +369,15 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV",]
-    tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0',]
+    #signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV",]
+    #tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0',]
+
+    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    tf_types = ['0x0','1x0','expo','2x0','sigmoid']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50

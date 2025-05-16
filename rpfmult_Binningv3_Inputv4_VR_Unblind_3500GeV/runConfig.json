@@ -87,18 +87,16 @@
     "HIST_DOWN": "h$region_$syst_down",
     "HIST_UP": "h$region_$syst_up",
     "SIGNAME": [
-      "Signal_M3500GeV_VR"
-    ],
-    "SIGNAME1": [
-      "Signal_gluino-1000",
-      "Signal_gluino-1400",
-      "Signal_gluino-1600",
-      "Signal_gluino-1800",
-      "Signal_gluino-2000",
-      "Signal_gluino-2200",
-      "Signal_gluino-2400",
-      "Signal_gluino-2600",
-      "Signal_gluino-800"
+      "Signal_M500GeV_VR",
+      "Signal_M1000GeV_VR",
+      "Signal_M1500GeV_VR",
+      "Signal_M2000GeV_VR",
+      "Signal_M2500GeV_VR",
+      "Signal_M3000GeV_VR",
+      "Signal_M3500GeV_VR",
+      "Signal_M4000GeV_VR",
+      "Signal_M4500GeV_VR",
+      "Signal_M5000GeV_VR"
     ],
     "path": "./histograms_for_2DAlphabet_v4"
   },
@@ -111,7 +109,7 @@
       "pass"
     ],
     "plotEvtsPerUnitVolt": true,
-    "plotTemplateComparisons": true
+    "plotTemplateComparisonsNA": true
   },
   "PROCESSES": {
     "SIGNAME": {
