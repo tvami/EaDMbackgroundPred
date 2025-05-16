@@ -5,15 +5,15 @@
 Set Default Value of Parameter r To : 1
 >>> 0 out of 6 channels masked
 
->> Found 22 floating parameters
+>> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 21 : -0.000357329
- - -0.762339	Background_rpf_2x0_par3
- - 0.554641	Background_rpf_2x0_par0
- - 0.321718	Background_rpf_2x0_par1
- - -0.0878069	Background_rpf_2x0_par2
- - -0.000431614	Background_fail_LOW_bin_3-1
+Eigenvalue 20 : -3.66726e-05
+ - -0.760822	Background_rpf_2x0_par3
+ - 0.571435	Background_rpf_2x0_par0
+ - 0.297441	Background_rpf_2x0_par1
+ - -0.0783611	Background_rpf_2x0_par2
+ - 0.000343633	Background_fail_HIGH_bin_10-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -24,16 +24,16 @@ Eigenvalue 21 : -0.000357329
      - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 23 floating parameters
+>> Found 22 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter r does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 21 : -0.000344244
- - 0.767888	Background_rpf_2x0_par3
- - -0.546161	Background_rpf_2x0_par0
- - -0.323912	Background_rpf_2x0_par1
- - 0.084472	Background_rpf_2x0_par2
- - 0.000424767	Background_fail_LOW_bin_3-1
+Eigenvalue 20 : -7.22486e-05
+ - 0.76209	Background_rpf_2x0_par3
+ - -0.567882	Background_rpf_2x0_par0
+ - -0.301031	Background_rpf_2x0_par1
+ - 0.0781595	Background_rpf_2x0_par2
+ - -0.000319509	Background_fail_HIGH_bin_10-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -49,4 +49,4 @@ Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
  --- FitDiagnostics ---
 Done! s+b fit and b-only fit should be identical
 Done in 0.00 min (cpu), 0.00 min (real)
-25 log messages saved to combine_logger.out
+21 log messages saved to combine_logger.out
