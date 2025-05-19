@@ -386,7 +386,7 @@ if __name__ == "__main__":
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
