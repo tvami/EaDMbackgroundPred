@@ -1,0 +1,81 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 22 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 20 : -2.7092e-05
+ - -0.771495	Background_rpf_1x0Prime_par1
+ - 0.618317	Background_rpf_1x0Prime_par2
+ - 0.149929	Background_rpf_1x0Prime_par0
+ - 1.45012e-10	Background_fail_LOW_bin_1-1
+ - -1.17291e-10	Background_fail_LOW_bin_2-1
+Eigenvalue 21 : -2.76411e-05
+ - 0.800667	Background_rpf_1x0Prime_par0
+ - -0.533726	Background_rpf_1x0Prime_par2
+ - -0.272158	Background_rpf_1x0Prime_par1
+ - -1.21726e-10	Background_fail_LOW_bin_3-1
+ - -8.66943e-11	Background_fail_LOW_bin_1-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_1x0Prime_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 20 : -2.71106e-05
+ - 0.708222	Background_rpf_1x0Prime_par1
+ - -0.70599	Background_rpf_1x0Prime_par2
+ - 1.18582e-08	Background_fail_LOW_bin_1-1
+ - 1.07672e-10	Background_fail_LOW_bin_2-1
+ - 1.00148e-16	Background_fail_HIGH_bin_1-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_1x0Prime_par1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_rpf_1x0Prime_par0
+     - Background_rpf_1x0Prime_par1
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 23 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 21 : -140596
+ - -0.848685	Background_rpf_1x0Prime_par2
+ - 0.48688	Background_rpf_1x0Prime_par1
+ - 0.206593	Background_rpf_1x0Prime_par0
+ - 5.11163e-05	RNN
+ - 4.18775e-05	Background_fail_LOW_bin_1-1
+Eigenvalue 22 : -268149
+ - 0.777269	Background_rpf_1x0Prime_par0
+ - -0.608513	Background_rpf_1x0Prime_par1
+ - -0.159888	Background_rpf_1x0Prime_par2
+ - -3.93626e-05	Background_fail_LOW_bin_1-1
+ - -3.34969e-05	RNN
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_1x0Prime_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 21 : -149471
+ - -0.763658	Background_rpf_1x0Prime_par2
+ - 0.645622	Background_rpf_1x0Prime_par1
+ - 6.37578e-05	RNN
+ - 5.41546e-05	Background_fail_LOW_bin_1-1
+ - -2.94332e-05	Background_fail_LOW_bin_2-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_1x0Prime_par2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_rpf_1x0Prime_par0
+     - Background_rpf_1x0Prime_par2
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 50  -50/+5.65024e-11  (68% CL)
+Done in 0.00 min (cpu), 0.00 min (real)
+23 log messages saved to combine_logger.out

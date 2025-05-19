@@ -53,7 +53,11 @@ _rpf_options = {
     },
     '1x0Prime': {
         'form': '0.1*(@0+@1*x+@2/x)',
-        'constraints': _generate_constraints(3)
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": -50, "MAX": 500},
+            2: {"MIN": 0.0, "MAX": 1000}
+            }
     },
     '0x1': {
         'form': '0.1*(@0+@1*y)',
@@ -376,12 +380,12 @@ if __name__ == "__main__":
     #signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV",]
     #tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0',]
 
-    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
-    tf_types = ['0x0','1x0','expo','2x0','sigmoid']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
+    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    tf_types = ['1x0Prime','0x0','1x0','expo','2x0','sigmoid']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
