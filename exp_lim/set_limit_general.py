@@ -355,7 +355,7 @@ if not options.blind:
 
 else:
     g_mclimit.GetXaxis().SetTitle("m("+options.particle+") [TeV]")  # NOT GENERIC
-    g_mclimit.GetYaxis().SetTitle("Monthly DM-induced muon rate") # NOT GENERIC
+    g_mclimit.GetYaxis().SetTitle("Bi-monthly DM-induced muon rate") # NOT GENERIC
     g_mclimit.GetXaxis().SetTitleSize(0.055)
     g_mclimit.GetYaxis().SetTitleSize(0.05)
     g_mclimit.Draw("al")
