@@ -78,12 +78,13 @@ _rpf_options = {
             }
         },
     'sigmoid': {
-        'form': '@0/(@1+exp(-@2*x+@3))',
+        'form': '(@0+0.1*@4*x)/(@1+exp(-@2*x+@3))',
         'constraints': {
             0: {"MIN": 0.0, "MAX": 50},
             1: {"MIN": 0.0, "MAX": 500},
             2: {"MIN": 0.0, "MAX": 500},
-            3: {"MIN": -5, "MAX": 5}
+            3: {"MIN": -5, "MAX": 5},
+            4: {"MIN": 0.0, "MAX": 50}
         }
     }
 }
@@ -368,12 +369,12 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
-    tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
+    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV",]#"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    tf_types = ['sigmoid','2x0','1x0']#'2x0','2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      #if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
@@ -388,11 +389,11 @@ if __name__ == "__main__":
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       run_limits(signal,tf_type)
-      #GOF(signal,tf_type,condor=False)
-      #plot_GOF(signal,tf_type,condor=False)
-      #for r in [0,0.1,0.5,1,2,3]:
-      #    SignalInjection(signal, tf_type, r=r, condor=False)
-      #    plot_SignalInjection(signal, tf_type, r=r, condor=False)
+      GOF(signal,tf_type,condor=False)
+      plot_GOF(signal,tf_type,condor=False)
+      for r in [0,0.1,0.5,1,2,3]:
+          SignalInjection(signal, tf_type, r=r, condor=False)
+          plot_SignalInjection(signal, tf_type, r=r, condor=False)
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
