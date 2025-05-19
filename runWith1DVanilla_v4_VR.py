@@ -87,12 +87,13 @@ _rpf_options = {
             }
     },
     'sigmoid': {
-        'form': '@0/(@1+exp(-@2*x+@3))',
+        'form': '(@0+0.1*@4*x)/(@1+exp(-@2*x+@3))',
         'constraints': {
             0: {"MIN": 0.0, "MAX": 50},
             1: {"MIN": 0.0, "MAX": 500},
             2: {"MIN": 0.0, "MAX": 500},
-            3: {"MIN": -5, "MAX": 5}
+            3: {"MIN": -5, "MAX": 5},
+            4: {"MIN": 0.0, "MAX": 50}
         }
     }
 }
@@ -385,7 +386,7 @@ if __name__ == "__main__":
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
