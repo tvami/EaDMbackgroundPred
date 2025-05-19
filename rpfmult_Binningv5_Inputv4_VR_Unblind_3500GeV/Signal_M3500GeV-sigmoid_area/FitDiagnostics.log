@@ -1,0 +1,57 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 22 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 23 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Parameter r does not have a valid stencil and will be dropped
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 20 : -0.000130992
+ - -0.736044	Background_rpf_sigmoid_par0
+ - -0.67007	Background_rpf_sigmoid_par1
+ - -0.0734762	Background_rpf_sigmoid_par3
+ - 0.0620171	Background_rpf_sigmoid_par2
+ - -4.01957e-05	Background_fail_LOW_bin_2-1
+Eigenvalue 21 : -0.000801608
+ - 0.708582	Background_rpf_sigmoid_par3
+ - 0.705579	Background_rpf_sigmoid_par2
+ - -0.00638834	Background_rpf_sigmoid_par0
+ - -0.00537828	Background_rpf_sigmoid_par1
+ - -2.52105e-05	Background_fail_LOW_bin_1-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_sigmoid_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 20 : -0.000138142
+ - -0.732826	Background_rpf_sigmoid_par0
+ - -0.666933	Background_rpf_sigmoid_par1
+ - 0.134785	Background_rpf_sigmoid_par2
+ - -2.86772e-05	Background_fail_LOW_bin_2-1
+ - -1.42462e-05	Background_fail_SIG_bin_1-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_sigmoid_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
+     - r
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_rpf_sigmoid_par3
+     - Background_rpf_sigmoid_par0
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Done! s+b fit and b-only fit should be identical
+Done in 0.00 min (cpu), 0.00 min (real)
+23 log messages saved to combine_logger.out
