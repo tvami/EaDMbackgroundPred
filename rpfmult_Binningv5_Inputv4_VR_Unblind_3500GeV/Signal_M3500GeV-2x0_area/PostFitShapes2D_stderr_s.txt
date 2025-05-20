@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.50009   
-pass_LOW                  0.51562   
-pass_SIG                  0.50048   
+pass_HIGH                 0.50003   
+pass_LOW                  0.50252   
+pass_SIG                  0.50016   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M3500GeV_VR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50048
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01008   
-fail_LOW                  0.00130   
-fail_SIG                  0.00803   
-pass_HIGH                 0.06737   
-pass_LOW                  0.02091   
-pass_SIG                  0.04150   
+fail_HIGH                 0.02103   
+fail_LOW                  0.00645   
+fail_SIG                  0.02636   
+pass_HIGH                 0.20020   
+pass_LOW                  0.10344   
+pass_SIG                  0.12328   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 Background           0.99846   
-fail_HIGH                 Signal_M3500GeV_VR   0.99870   
-fail_LOW                  Background           1.00001   
+fail_HIGH                 Background           1.00000   
+fail_HIGH                 Signal_M3500GeV_VR   0.99940   
+fail_LOW                  Background           1.00014   
 fail_LOW                  Signal_M3500GeV_VR   1.00000   
-fail_SIG                  Background           1.00043   
+fail_SIG                  Background           0.99768   
 fail_SIG                  Signal_M3500GeV_VR   1.00000   
-pass_HIGH                 Background_2x0       0.12885   
-pass_HIGH                 Signal_M3500GeV_VR   1.00134   
-pass_LOW                  Background_2x0       0.47837   
+pass_HIGH                 Background_2x0       0.08850   
+pass_HIGH                 Signal_M3500GeV_VR   1.00059   
+pass_LOW                  Background_2x0       0.48773   
 pass_LOW                  Signal_M3500GeV_VR   1.00000   
-pass_SIG                  Background_2x0       0.19354   
+pass_SIG                  Background_2x0       0.15770   
 pass_SIG                  Signal_M3500GeV_VR   1.00000   
