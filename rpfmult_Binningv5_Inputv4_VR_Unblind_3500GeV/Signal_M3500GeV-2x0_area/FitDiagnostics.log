@@ -5,15 +5,15 @@
 Set Default Value of Parameter r To : 1
 >>> 0 out of 6 channels masked
 
->> Found 21 floating parameters
+>> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.00101973
- - 0.736491	Background_rpf_2x0_par3
- - -0.554186	Background_rpf_2x0_par0
- - -0.351897	Background_rpf_2x0_par1
- - 0.163002	Background_rpf_2x0_par2
- - -0.0036522	Background_fail_HIGH_bin_8-1
+Eigenvalue 19 : -0.00131421
+ - 0.720866	Background_rpf_2x0_par3
+ - -0.499495	Background_rpf_2x0_par0
+ - -0.420792	Background_rpf_2x0_par1
+ - 0.231694	Background_rpf_2x0_par2
+ - -0.00530901	Background_fail_HIGH_bin_8-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -24,16 +24,16 @@ Eigenvalue 20 : -0.00101973
      - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 22 floating parameters
+>> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter r does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.000910954
- - 0.721337	Background_rpf_2x0_par3
- - -0.5668	Background_rpf_2x0_par0
- - -0.365728	Background_rpf_2x0_par1
- - 0.156837	Background_rpf_2x0_par2
- - -0.00363173	Background_fail_HIGH_bin_8-1
+Eigenvalue 19 : -0.00135641
+ - -0.712609	Background_rpf_2x0_par3
+ - 0.510366	Background_rpf_2x0_par0
+ - 0.424141	Background_rpf_2x0_par1
+ - -0.22742	Background_rpf_2x0_par2
+ - 0.00503958	Background_fail_HIGH_bin_8-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
