@@ -7,15 +7,15 @@ Set Default Value of Parameter mask_pass_HIGH To : 1
 Set Default Value of Parameter r To : 1
 >>> 2 out of 6 channels masked
 
->> Found 21 floating parameters
+>> Found 59 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.000247411
- - 0.824883	Background_rpf_sigmoid_par1
- - -0.515199	Background_rpf_sigmoid_par3
- - 0.16419	Background_rpf_sigmoid_par2
- - 0.162031	Background_rpf_sigmoid_par0
- - 0.0303871	Background_rpf_sigmoid_par4
+Eigenvalue 58 : -0.000147583
+ - 0.732764	Background_rpf_sigmoid_par1
+ - -0.665038	Background_rpf_sigmoid_par3
+ - 0.125466	Background_rpf_sigmoid_par4
+ - -0.0676494	Background_rpf_sigmoid_par0
+ - 0.0214709	Background_rpf_sigmoid_par2
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_sigmoid_par1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -26,74 +26,36 @@ Eigenvalue 20 : -0.000247411
      - Background_rpf_sigmoid_par1
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 22 floating parameters
+>> Found 60 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -0.000254875
- - -0.795401	Background_rpf_sigmoid_par1
- - 0.579733	Background_rpf_sigmoid_par3
- - -0.136585	Background_rpf_sigmoid_par2
- - -0.100621	Background_rpf_sigmoid_par0
- - 0.0406062	Background_rpf_sigmoid_par4
-Eigenvalue 21 : -0.00268183
- - 0.859214	r
- - -0.385767	Background_rpf_sigmoid_par4
- - -0.301822	Background_rpf_sigmoid_par2
- - 0.0779106	Background_rpf_sigmoid_par3
- - -0.0672208	Background_fail_HIGH_bin_5-1
+Eigenvalue 59 : -0.000193558
+ - -0.810038	Background_rpf_sigmoid_par1
+ - 0.558246	Background_rpf_sigmoid_par3
+ - -0.128174	Background_rpf_sigmoid_par0
+ - -0.122856	Background_rpf_sigmoid_par4
+ - -0.0216135	Background_rpf_sigmoid_par2
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_sigmoid_par4 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 19 : -0.000252673
- - -0.802188	Background_rpf_sigmoid_par1
- - 0.580278	Background_rpf_sigmoid_par3
- - -0.100307	Background_rpf_sigmoid_par0
- - -0.0900698	Background_rpf_sigmoid_par2
- - -0.0396517	r
-Eigenvalue 20 : -0.00198361
- - 0.785487	r
- - -0.59681	Background_rpf_sigmoid_par2
- - 0.0939831	Background_rpf_sigmoid_par1
- - 0.0910861	Background_rpf_sigmoid_par3
- - -0.0616671	Background_fail_HIGH_bin_5-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_sigmoid_par2 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
-Eigenvalue 18 : -2.17977e-05
- - -0.702843	Background_rpf_sigmoid_par0
- - -0.688191	Background_rpf_sigmoid_par3
- - -0.132014	r
- - -0.121246	Background_rpf_sigmoid_par1
- - 0.0104668	Background_fail_HIGH_bin_5-1
-Eigenvalue 19 : -0.000303281
- - 0.848206	Background_rpf_sigmoid_par1
- - -0.431294	Background_rpf_sigmoid_par3
- - 0.239477	Background_rpf_sigmoid_par0
- - 0.191302	r
- - -0.015146	Background_fail_HIGH_bin_5-1
->> Attempt 2 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_sigmoid_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 3)
-Eigenvalue 18 : -2.74351e-05
- - 0.742349	Background_rpf_sigmoid_par3
- - 0.661814	Background_rpf_sigmoid_par0
- - 0.103678	r
- - -0.0082199	Background_fail_HIGH_bin_5-1
- - -0.00792721	Background_fail_HIGH_bin_6-1
->> Attempt 3 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_sigmoid_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 4)
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 58 : -1.06188e-05
+ - -0.707648	Background_rpf_sigmoid_par0
+ - -0.706057	Background_rpf_sigmoid_par3
+ - -0.0203263	Background_rpf_sigmoid_par2
+ - 0.0139567	Background_rpf_sigmoid_par4
+ - 0.0104544	r
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_sigmoid_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_sigmoid_par4
-     - Background_rpf_sigmoid_par2
      - Background_rpf_sigmoid_par1
-     - Background_rpf_sigmoid_par3
+     - Background_rpf_sigmoid_par0
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.162632  -0.162632/+49.8374  (68% CL)
-Done in 0.00 min (cpu), 0.00 min (real)
-21 log messages saved to combine_logger.out
+Best fit r: 50  -50/+4.20178e-06  (68% CL)
+Done in 0.01 min (cpu), 0.04 min (real)
+24 log messages saved to combine_logger.out

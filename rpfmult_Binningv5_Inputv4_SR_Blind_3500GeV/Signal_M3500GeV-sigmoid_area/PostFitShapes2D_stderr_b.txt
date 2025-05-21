@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.97292   
-pass_LOW                  1.00389   
-pass_SIG                  0.99387   
+pass_HIGH                 0.97752   
+pass_LOW                  1.00439   
+pass_SIG                  0.99618   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M3500GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.99387
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.02108   
-fail_LOW                  0.00826   
-fail_SIG                  0.02603   
-pass_HIGH                 4.45054   
-pass_LOW                  1.60780   
-pass_SIG                  3.81932   
+fail_HIGH                 0.01799   
+fail_LOW                  0.00865   
+fail_SIG                  0.02378   
+pass_HIGH                 0.79946   
+pass_LOW                  0.70044   
+pass_SIG                  0.72402   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
 fail_HIGH                 Background           1.00000   
 fail_HIGH                 Signal_M3500GeV_SR   1.00000   
-fail_LOW                  Background           0.99998   
+fail_LOW                  Background           1.00000   
 fail_LOW                  Signal_M3500GeV_SR   1.00000   
 fail_SIG                  Background           1.00000   
 fail_SIG                  Signal_M3500GeV_SR   1.00000   
-pass_HIGH                 Background_sigmoid   1.67024   
+pass_HIGH                 Background_sigmoid   1.32309   
 pass_HIGH                 Signal_M3500GeV_SR   1.00000   
-pass_LOW                  Background_sigmoid   0.53143   
+pass_LOW                  Background_sigmoid   0.49598   
 pass_LOW                  Signal_M3500GeV_SR   1.00000   
-pass_SIG                  Background_sigmoid   0.83983   
+pass_SIG                  Background_sigmoid   0.71840   
 pass_SIG                  Signal_M3500GeV_SR   1.00000   
