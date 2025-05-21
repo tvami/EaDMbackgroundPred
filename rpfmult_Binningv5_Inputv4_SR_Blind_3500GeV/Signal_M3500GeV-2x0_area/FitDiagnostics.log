@@ -10,74 +10,58 @@ Set Default Value of Parameter r To : 1
 >> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 19 : -0.00203757
- - -0.809839	Background_rpf_2x0_par1
- - 0.511062	Background_rpf_2x0_par2
- - 0.279245	Background_rpf_2x0_par3
- - 0.0675687	Background_rpf_2x0_par0
- - 0.0166471	Background_fail_LOW_bin_2-1
+Eigenvalue 19 : -0.000433153
+ - -0.716252	Background_rpf_2x0_par3
+ - 0.469325	Background_rpf_2x0_par1
+ - 0.463508	Background_rpf_2x0_par0
+ - -0.227584	Background_rpf_2x0_par2
+ - -0.00766427	Background_fail_LOW_bin_2-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par1 from the hessian
+>> Dropping Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par1
+     - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 19 : -0.00220805
- - 0.774535	Background_rpf_2x0_par1
- - -0.560414	Background_rpf_2x0_par2
- - -0.275193	Background_rpf_2x0_par3
- - -0.0907953	Background_rpf_2x0_par0
- - 0.0396695	r
-Eigenvalue 20 : -0.0044507
- - -0.840119	r
- - 0.384814	Background_rpf_2x0_par2
- - 0.356489	Background_rpf_2x0_par1
- - 0.0809122	Background_rpf_2x0_par0
- - 0.0704476	Background_rpf_2x0_par3
+Eigenvalue 19 : -0.000123143
+ - 0.782495	Background_rpf_2x0_par3
+ - -0.582405	Background_rpf_2x0_par0
+ - -0.159244	r
+ - -0.132243	Background_rpf_2x0_par1
+ - 0.0724589	Background_rpf_2x0_par2
+Eigenvalue 20 : -0.0040916
+ - -0.715726	Background_rpf_2x0_par1
+ - 0.689521	r
+ - 0.0678188	Background_rpf_2x0_par2
+ - -0.0534931	Background_fail_HIGH_bin_5-1
+ - -0.0515925	Background_fail_HIGH_bin_6-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par2 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 18 : -1.59636e-05
- - -0.777941	Background_rpf_2x0_par3
- - 0.612934	Background_rpf_2x0_par0
- - 0.114649	r
- - 0.076298	Background_rpf_2x0_par1
- - -0.00872511	Background_fail_HIGH_bin_5-1
-Eigenvalue 19 : -0.00375333
- - 0.724647	Background_rpf_2x0_par1
- - -0.683645	r
- - 0.0510738	Background_fail_HIGH_bin_5-1
- - -0.0452448	Background_rpf_2x0_par3
- - 0.033261	Background_fail_HIGH_bin_4-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
-Eigenvalue 18 : -5.79098e-05
- - 0.769701	Background_rpf_2x0_par3
- - -0.609361	Background_rpf_2x0_par0
- - -0.189273	r
- - 0.0144012	Background_fail_HIGH_bin_5-1
- - 0.00938005	Background_fail_HIGH_bin_4-1
->> Attempt 2 failed, remove the variable with largest eigenvector component...
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 19 : -0.000310874
+ - 0.753911	Background_rpf_2x0_par3
+ - -0.503498	Background_rpf_2x0_par0
+ - -0.395383	r
+ - 0.13886	Background_rpf_2x0_par2
+ - 0.0312683	Background_fail_HIGH_bin_5-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 3)
+>> Verifying eigenvalues are all positive (iteration 2)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par2
      - Background_rpf_2x0_par1
      - Background_rpf_2x0_par3
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 13.8072  -13.8072/+36.1928  (68% CL)
+Best fit r: 0.60352  -0.60352/+49.3965  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 27 log messages saved to combine_logger.out
