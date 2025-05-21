@@ -381,7 +381,7 @@ if __name__ == "__main__":
     #signal_areas = ["Signal_M500GeV","Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV",]
     #tf_types = ['2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0',]
 
-    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
     tf_types = ['1x0','expo','2x0','sigmoid']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
