@@ -284,16 +284,16 @@ def test_FTest(poly1, poly2, signal=''):
     print("rpfSet1: " + str(rpfSet1))
     nRpfs1  = len(rpfSet1.index)
     print(" >>>>>> Num RPF parameters for poly1: " + str(nRpfs1))
-    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly1), card_or_w='card.txt')
-    gofFile1 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly1)
+    _gof_for_FTest(twoD, '{}-{}_area'.format(signal,poly1), card_or_w='card.txt')
+    gofFile1 = working_area+'/{}-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(signal,poly1)
 
     # Get number of RPF params and run GoF for poly2
     params2 = twoD.ledger.select(_select_signal, '{}'.format(signal), poly2).alphaParams
     rpfSet2 = params2[params2["name"].str.contains("rpf")]
     nRpfs2  = len(rpfSet2.index)
     print(" >>>>>> Num RPF parameters for poly2: " + str(nRpfs2))
-    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly2), card_or_w='card.txt')
-    gofFile2 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly2)
+    _gof_for_FTest(twoD, '{}-{}_area'.format(signal,poly2), card_or_w='card.txt')
+    gofFile2 = working_area+'/{}-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(signal,poly2)
 
 
     base_fstat = FstatCalc(gofFile1,gofFile2,nRpfs1,nRpfs2,nBins)
@@ -397,4 +397,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M500GeV")
+    test_FTest('1x0','2x0',"Signal_M3500GeV")
