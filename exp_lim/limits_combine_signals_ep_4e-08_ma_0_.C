@@ -4,7 +4,7 @@
 void limits_combine_signals_ep_4e-08_ma_0_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Tue May 27 05:29:43 2025) by ROOT version 6.30/07
+//=========  (Tue May 27 07:46:43 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -69,8 +69,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    
    Double_t Graph1_fx2[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
-   Double_t Graph1_fy2[18] = { 149.9807, 133.0023, 122.8166, 116.2226, 105.0085, 104.8654, 99.58526, 95.35879, 95.35879, 22.93167, 22.93167, 24.83635, 26.73798, 27.29568, 30.67017, 32.61261, 36.04889,
-   40.68375 };
+   Double_t Graph1_fy2[18] = { 149.9807, 133.1104, 122.8166, 116.2226, 105.0085, 104.8654, 99.58526, 95.35879, 95.35879, 22.93167, 22.93167, 24.83635, 26.73798, 27.29568, 30.67017, 32.61261, 36.04889,
+   40.98511 };
    graph = new TGraph(18,Graph1_fx2,Graph1_fy2);
    graph->SetName("Graph1");
    graph->SetTitle("Graph");
@@ -118,7 +118,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    Double_t Graph2_fx3[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
    Double_t Graph2_fy3[18] = { 109.7452, 97.24262, 89.25057, 84.05148, 75.57559, 75.109, 70.78342, 67.09394, 67.09394, 31.39772, 31.39772, 33.90855, 36.35327, 36.95917, 41.35966, 43.97911, 48.41775,
-   54.92777 };
+   54.82888 };
    graph = new TGraph(18,Graph2_fx3,Graph2_fy3);
    graph->SetName("Graph2");
    graph->SetTitle("Graph");
