@@ -10,77 +10,42 @@ Set Default Value of Parameter r To : 1
 >> Found 22 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -3.62298e-05
- - 0.750817	Background_rpf_2x0_par3
- - -0.651756	Background_rpf_2x0_par0
- - -0.0814736	Background_rpf_2x0_par2
- - -0.0696447	Background_rpf_2x0_par1
- - 0.000207269	Background_fail_LOW_bin_2-1
-Eigenvalue 21 : -0.00192654
- - -0.816466	Background_rpf_2x0_par1
- - 0.499985	Background_rpf_2x0_par2
- - 0.228372	Background_rpf_2x0_par0
- - 0.176762	Background_rpf_2x0_par3
- - 0.000499417	Background_fail_LOW_bin_1-1
+Eigenvalue 21 : -4.71656e-07
+ - -0.772156	Background_rpf_2x0_par3
+ - 0.558173	Background_rpf_2x0_par0
+ - 0.302905	Background_rpf_2x0_par1
+ - -0.0216178	Background_rpf_2x0_par2
+ - 5.38414e-05	Background_fail_LOW_bin_5-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 20 : -4.99175e-05
- - -0.733102	Background_rpf_2x0_par3
- - 0.668692	Background_rpf_2x0_par0
- - 0.124144	Background_rpf_2x0_par2
- - -0.000309749	Background_fail_LOW_bin_2-1
- - 0.000147435	Background_fail_LOW_bin_1-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
+>> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par1
      - Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 23 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
->> Parameter r does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 20 : -1.58149e-05
- - -0.765037	Background_rpf_2x0_par3
- - 0.634514	Background_rpf_2x0_par0
- - 0.0803689	Background_rpf_2x0_par2
- - 0.0751694	Background_rpf_2x0_par1
- - -0.000197268	Background_fail_LOW_bin_2-1
-Eigenvalue 21 : -0.00178766
- - 0.822235	Background_rpf_2x0_par1
- - -0.495818	Background_rpf_2x0_par2
- - -0.228529	Background_rpf_2x0_par0
- - -0.160838	Background_rpf_2x0_par3
- - -0.000470627	Background_fail_LOW_bin_1-1
+Eigenvalue 22 : -3.06822e-06
+ - -0.776729	Background_rpf_2x0_par3
+ - 0.552999	Background_rpf_2x0_par0
+ - 0.299906	Background_rpf_2x0_par1
+ - -0.0301452	Background_rpf_2x0_par2
+ - 0.00556167	r
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping Background_rpf_2x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 20 : -3.05345e-05
- - 0.747242	Background_rpf_2x0_par3
- - -0.652563	Background_rpf_2x0_par0
- - -0.12566	Background_rpf_2x0_par2
- - 0.00030395	Background_fail_LOW_bin_2-1
- - -0.000136177	Background_fail_LOW_bin_1-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
+>> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
-     - r
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - Background_rpf_2x0_par1
      - Background_rpf_2x0_par3
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Done! s+b fit and b-only fit should be identical
+Best fit r: 0.000263505  -0.000263505/+49.9997  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-27 log messages saved to combine_logger.out
+25 log messages saved to combine_logger.out
