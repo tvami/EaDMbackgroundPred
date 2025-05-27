@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.50004   
-pass_LOW                  0.50318   
-pass_SIG                  0.50027   
+pass_HIGH                 0.50010   
+pass_LOW                  0.50997   
+pass_SIG                  0.50069   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M4500GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50027
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01857   
-fail_LOW                  0.00865   
-fail_SIG                  0.02378   
-pass_HIGH                 0.16132   
-pass_LOW                  0.19825   
-pass_SIG                  0.19199   
+fail_HIGH                 0.00846   
+fail_LOW                  0.00203   
+fail_SIG                  0.00751   
+pass_HIGH                 0.47664   
+pass_LOW                  0.48801   
+pass_SIG                  0.47514   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 Background           0.99885   
-fail_HIGH                 Signal_M4500GeV_SR   49.88123  
+fail_HIGH                 Background           0.99999   
+fail_HIGH                 Signal_M4500GeV_SR   0.99999   
 fail_LOW                  Background           1.00000   
-fail_LOW                  Signal_M4500GeV_SR   50.04934  
+fail_LOW                  Signal_M4500GeV_SR   1.00000   
 fail_SIG                  Background           1.00000   
-fail_SIG                  Signal_M4500GeV_SR   50.04934  
-pass_HIGH                 Background_2x0       0.58884   
-pass_HIGH                 Signal_M4500GeV_SR   50.03690  
-pass_LOW                  Background_2x0       2.24918   
-pass_LOW                  Signal_M4500GeV_SR   50.03431  
-pass_SIG                  Background_2x0       0.93120   
-pass_SIG                  Signal_M4500GeV_SR   50.03108  
+fail_SIG                  Signal_M4500GeV_SR   1.00000   
+pass_HIGH                 Background_2x0       0.65768   
+pass_HIGH                 Signal_M4500GeV_SR   1.00000   
+pass_LOW                  Background_2x0       2.00209   
+pass_LOW                  Signal_M4500GeV_SR   1.00000   
+pass_SIG                  Background_2x0       0.91098   
+pass_SIG                  Signal_M4500GeV_SR   1.00000   

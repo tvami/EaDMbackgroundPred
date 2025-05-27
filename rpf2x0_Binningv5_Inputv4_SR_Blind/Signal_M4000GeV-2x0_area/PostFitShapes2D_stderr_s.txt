@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.50004   
-pass_LOW                  0.50318   
-pass_SIG                  0.50027   
+pass_HIGH                 0.50010   
+pass_LOW                  0.50997   
+pass_SIG                  0.50069   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M4000GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50027
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01959   
-fail_LOW                  0.00866   
-fail_SIG                  0.02386   
-pass_HIGH                 0.17777   
-pass_LOW                  0.23785   
-pass_SIG                  0.20551   
+fail_HIGH                 0.00846   
+fail_LOW                  0.00203   
+fail_SIG                  0.00751   
+pass_HIGH                 0.46440   
+pass_LOW                  0.47314   
+pass_SIG                  0.45550   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 Background           0.99870   
-fail_HIGH                 Signal_M4000GeV_SR   49.98364  
+fail_HIGH                 Background           0.99965   
+fail_HIGH                 Signal_M4000GeV_SR   1.00001   
 fail_LOW                  Background           1.00000   
-fail_LOW                  Signal_M4000GeV_SR   50.01617  
-fail_SIG                  Background           0.99981   
-fail_SIG                  Signal_M4000GeV_SR   49.40314  
-pass_HIGH                 Background_2x0       0.58102   
-pass_HIGH                 Signal_M4000GeV_SR   50.01096  
-pass_LOW                  Background_2x0       2.27306   
-pass_LOW                  Signal_M4000GeV_SR   49.98967  
-pass_SIG                  Background_2x0       0.92967   
-pass_SIG                  Signal_M4000GeV_SR   49.97473  
+fail_LOW                  Signal_M4000GeV_SR   1.00001   
+fail_SIG                  Background           1.00000   
+fail_SIG                  Signal_M4000GeV_SR   1.00001   
+pass_HIGH                 Background_2x0       0.65726   
+pass_HIGH                 Signal_M4000GeV_SR   1.00001   
+pass_LOW                  Background_2x0       1.99370   
+pass_LOW                  Signal_M4000GeV_SR   1.00001   
+pass_SIG                  Background_2x0       0.90301   
+pass_SIG                  Signal_M4000GeV_SR   1.00001   

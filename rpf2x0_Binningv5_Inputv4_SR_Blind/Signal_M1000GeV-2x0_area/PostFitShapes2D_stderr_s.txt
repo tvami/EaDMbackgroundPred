@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.50004   
-pass_LOW                  0.50318   
-pass_SIG                  0.50027   
+pass_HIGH                 0.50010   
+pass_LOW                  0.50997   
+pass_SIG                  0.50069   
 >> Doing postfit: fail_HIGH,Background
 >> Doing postfit: fail_HIGH,Signal_M1000GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50027
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01816   
-fail_LOW                  0.00793   
-fail_SIG                  0.03084   
-pass_HIGH                 0.17764   
-pass_LOW                  0.09414   
-pass_SIG                  0.09955   
+fail_HIGH                 0.00846   
+fail_LOW                  0.00203   
+fail_SIG                  0.00751   
+pass_HIGH                 0.42402   
+pass_LOW                  0.43951   
+pass_SIG                  0.40149   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 Background           1.00000   
-fail_HIGH                 Signal_M1000GeV_SR   2.41623   
-fail_LOW                  Background           0.99997   
-fail_LOW                  Signal_M1000GeV_SR   2.42277   
-fail_SIG                  Background           0.99999   
-fail_SIG                  Signal_M1000GeV_SR   2.38194   
-pass_HIGH                 Background_2x0       0.34194   
-pass_HIGH                 Signal_M1000GeV_SR   2.40419   
-pass_LOW                  Background_2x0       2.18377   
-pass_LOW                  Signal_M1000GeV_SR   2.42775   
-pass_SIG                  Background_2x0       0.72074   
-pass_SIG                  Signal_M1000GeV_SR   2.35179   
+fail_HIGH                 Background           0.99998   
+fail_HIGH                 Signal_M1000GeV_SR   0.99999   
+fail_LOW                  Background           1.00000   
+fail_LOW                  Signal_M1000GeV_SR   0.99999   
+fail_SIG                  Background           1.00000   
+fail_SIG                  Signal_M1000GeV_SR   0.99999   
+pass_HIGH                 Background_2x0       0.67047   
+pass_HIGH                 Signal_M1000GeV_SR   0.99999   
+pass_LOW                  Background_2x0       2.00158   
+pass_LOW                  Signal_M1000GeV_SR   0.99999   
+pass_SIG                  Background_2x0       0.91168   
+pass_SIG                  Signal_M1000GeV_SR   0.99997   
