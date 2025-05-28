@@ -981,13 +981,15 @@ def plot_gof(tag, subtag, seed=123456, condor=False):
 
         # Get toys
         if (gof_data < 1) : print("THe observed limit is less than 1, something seems wrong")
-        toy_limit_tree.Draw('limit>>hlimit','limit>1.0 && limit<%s && limit != %s'%(gof_data*2.0,gof_data)) 
+        toy_limit_tree.Draw('limit>>hlimit','limit<%s && limit != %s'%(gof_data*2.0,gof_data)) 
+        print(gof_data)
         htoy_gof = ROOT.gDirectory.Get('hlimit')
         time.sleep(1) # if you don't sleep the code moves too fast and won't perform the fit
         htoy_gof.Fit("gaus")
 
         # Fit toys and derive p-value
         gaus = htoy_gof.GetFunction("gaus")
+        print(gaus)
         pvalue = 1-(1/gaus.Integral(-float("inf"),float("inf")))*gaus.Integral(-float("inf"),gof_data)
 
         # Write out for reference
