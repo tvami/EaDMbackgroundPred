@@ -390,10 +390,10 @@ if __name__ == "__main__":
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       run_limits(signal,tf_type)
-      GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
+      GOF(signal,tf_type,condor=False,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
       plot_GOF(signal,tf_type,condor=False)
       for r in [0,0.1,0.5,1,2,3]:
-          SignalInjection(signal, tf_type, r=r, condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
+          SignalInjection(signal, tf_type, r=r, condor=False,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
           plot_SignalInjection(signal, tf_type, r=r, condor=False)
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
