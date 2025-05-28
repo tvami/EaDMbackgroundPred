@@ -218,7 +218,7 @@ def load_RPF(twoD):
     params_to_set = twoD.GetParamsOnMatch('rpf.*', 'Signal', 'b')
     return {k:v['val'] for k,v in params_to_set.items()}
 
-def SignalInjection(signal, tf, r, condor=False):
+def SignalInjection(signal, tf, r, condor=False,extra=''):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     #params = load_RPF(twoD)
@@ -230,7 +230,8 @@ def SignalInjection(signal, tf, r, condor=False):
 	#setParams = params,     # give the toys the same RPF params
 	verbosity = 0,		# you can change this if you need
 	njobs=10,
-	condor = condor
+	condor = condor,
+        extra = extra
     )
 
 def plot_SignalInjection(signal, tf, r, condor=False):
@@ -369,8 +370,8 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
-    tf_types = ['2x0']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
+    signal_areas = ["Signal_M3500GeV","Signal_M3500GeV"]#,"Signal_M1000GeV","Signal_M1500GeV","Signal_M2000GeV","Signal_M2500GeV","Signal_M3000GeV","Signal_M3500GeV","Signal_M4000GeV","Signal_M4500GeV","Signal_M5000GeV"]
+    tf_types = ['1x0','2x0']#,'2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0','2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -389,12 +390,12 @@ if __name__ == "__main__":
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       run_limits(signal,tf_type)
-      GOF(signal,tf_type,condor=False,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
+      GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
       plot_GOF(signal,tf_type,condor=False)
       for r in [0,0.1,0.5,1,2,3]:
-          SignalInjection(signal, tf_type, r=r, condor=False)
+          SignalInjection(signal, tf_type, r=r, condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_T_SIG=1,mask_M_SIG=1')
           plot_SignalInjection(signal, tf_type, r=r, condor=False)
-      Impacts(signal,tf_type,toys=100)
+      #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
     #test_FTest('1x0','2x0',"Signal_M3500GeV")
