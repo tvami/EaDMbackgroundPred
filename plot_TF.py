@@ -9,15 +9,16 @@ if __name__ == "__main__":
     
     binning = "v5"
     inVersion = "v4"
-    region = 'SR'
-    blinding = 'Blind'
+    region = 'VR'
+    blinding = 'Unblind'
+    extra = '3000GeV_normalized'
     
-    for MdM_val, tf in zip([3500, 3500, 3500], ['1x0', 'expo', '2x0']):
+    for MdM_val, tf in zip([3000,3000,3000,3000], ['expo', '0x0', '2x0', '1x0']):
         MdM_val = int(MdM_val)
         print(f"MdM: {MdM_val}")
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4'
-        rootdir = f'rpfmult_Binning{binning}_Input{inVersion}_{region}_{blinding}_3500GeV'
+        rootdir = f'rpfmult_Binning{binning}_Input{inVersion}_{region}_{blinding}_{extra}'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Unblind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_Extrapol'
         f = ROOT.TFile.Open(f"{rootdir}/Signal_M{MdM_val}GeV-{tf.lower()}_area/plots_fit_b/all_plots.root")
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         h_ratio.GetYaxis().SetTitleSize(0.05)
         tdrstyle.drawCMSInternal()
         # save the canvas
-        c.SaveAs(f"TF_plots/rpf{tf}_Binning{binning}_Input{inVersion}_{region}_{blinding}.png")
+        c.SaveAs(f"TF_plots/rpf{tf}_Binning{binning}_Input{inVersion}_{region}_{blinding}_{extra}.png")
         # close the file
         f.Close()
         print(f"DM: {MdM_val} GeV + {tf} TF is done.")
