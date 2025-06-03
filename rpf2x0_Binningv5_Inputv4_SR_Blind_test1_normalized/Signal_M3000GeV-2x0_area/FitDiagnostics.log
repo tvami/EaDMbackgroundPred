@@ -1,0 +1,56 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 22 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 23 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 21 : -9.87382e-05
+ - 0.775831	Background_rpf_2x0_par3
+ - -0.548674	Background_rpf_2x0_par0
+ - -0.203238	Background_rpf_2x0_par1
+ - -0.197072	r
+ - 0.117666	Background_rpf_2x0_par2
+Eigenvalue 22 : -0.0015206
+ - -0.693647	r
+ - 0.682167	Background_rpf_2x0_par1
+ - 0.129932	Background_fail_HIGH_bin_5-1
+ - 0.123965	Background_fail_HIGH_bin_6-1
+ - 0.0865294	Background_rpf_2x0_par2
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_2x0_par1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 21 : -0.000264046
+ - 0.658909	Background_rpf_2x0_par3
+ - -0.524994	r
+ - -0.451294	Background_rpf_2x0_par0
+ - 0.254813	Background_rpf_2x0_par2
+ - 0.0989789	Background_fail_HIGH_bin_5-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - Background_rpf_2x0_par1
+     - Background_rpf_2x0_par3
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 0.307636  -0.307636/+49.6924  (68% CL)
+Done in 0.00 min (cpu), 0.00 min (real)
+27 log messages saved to combine_logger.out
