@@ -26,10 +26,15 @@ def _generate_constraints(nparams):
     out = {}
     for i in range(nparams):
         if i == 0:
-            out[i] = {"MIN":0,"MAX":30}
-        else:
-            out[i] = {"MIN":-50,"MAX":50}
+            out[i] = {"MIN":0,"MAX":100}
+        if i == 1:
+            out[i] = {"MIN":50,"MAX":100}
+        if i == 2:
+            out[i] = {"MIN":-50,"MAX":0}
+        if i == 3:
+            out[i] = {"MIN":0,"MAX":0.1}
     return out
+
 
 # Dict to store transfer function forms and constraints
 _rpf_options = {
@@ -45,6 +50,14 @@ _rpf_options = {
             0: {"MIN": 0.0, "MAX": 50},
             1: {"MIN": -50, "MAX": 500}
         }
+    },
+    '1x0Prime': {
+        'form': '0.1*(@0+@1*x+@2/x)',
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": -50, "MAX": 500},
+            2: {"MIN": 0.0, "MAX": 1000}
+            }
     },
     '0x1': {
         'form': '0.1*(@0+@1*y)',
@@ -71,6 +84,16 @@ _rpf_options = {
         'constraints': {
             0: {"MIN": -1.0, "MAX": 50},
             1: {"MIN": -500, "MAX": 500}
+            }
+    },
+    'sigmoid': {
+        'form': '(@0+0.1*@4*x)/(@1+exp(-@2*x+@3))',
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": 0.0, "MAX": 500},
+            2: {"MIN": 0.0, "MAX": 500},
+            3: {"MIN": -5, "MAX": 5},
+            4: {"MIN": 0.0, "MAX": 50}
         }
     }
 }
@@ -169,8 +192,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Cosmic MC (250K Events)', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Cosmic MC (250K Events)', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -270,16 +293,16 @@ def test_FTest(poly1, poly2, signal=''):
     print("rpfSet1: " + str(rpfSet1))
     nRpfs1  = len(rpfSet1.index)
     print(" >>>>>> Num RPF parameters for poly1: " + str(nRpfs1))
-    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly1), card_or_w='card.txt')
-    gofFile1 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly1)
+    _gof_for_FTest(twoD, '{}-{}_area'.format(signal,poly1), card_or_w='card.txt')
+    gofFile1 = working_area+'/{}-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(signal,poly1)
 
     # Get number of RPF params and run GoF for poly2
     params2 = twoD.ledger.select(_select_signal, '{}'.format(signal), poly2).alphaParams
     rpfSet2 = params2[params2["name"].str.contains("rpf")]
     nRpfs2  = len(rpfSet2.index)
     print(" >>>>>> Num RPF parameters for poly2: " + str(nRpfs2))
-    _gof_for_FTest(twoD, 'Signal_M500GeV-{}_area'.format(poly2), card_or_w='card.txt')
-    gofFile2 = working_area+'/Signal_M500GeV-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(poly2)
+    _gof_for_FTest(twoD, '{}-{}_area'.format(signal,poly2), card_or_w='card.txt')
+    gofFile2 = working_area+'/{}-{}_area/higgsCombine_gof_data.GoodnessOfFit.mH120.root'.format(signal,poly2)
 
 
     base_fstat = FstatCalc(gofFile1,gofFile2,nRpfs1,nRpfs2,nBins)
@@ -344,7 +367,7 @@ def test_FTest(poly1, poly2, signal=''):
         latex.DrawLatex(0.12,0.91,"CMS")
         latex.SetTextSize(0.05)
         latex.SetTextFont(52)
-        latex.DrawLatex(0.23,0.91,"Preliminary")
+        latex.DrawLatex(0.23,0.91,"Work in Progress")
         latex.SetTextFont(42)
         latex.SetTextFont(52)
         latex.SetTextSize(0.045)
@@ -355,17 +378,12 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M500GeV"]
-    #signal_areas = ["Signal_B1_MD2000_MBH3000_n2"]
-    # signal_areas = ["Signal_B1_MD2000_MBH3000_n2","Signal_B1_MD2000_MBH4000_n2","Signal_B1_MD2000_MBH5000_n2","Signal_B1_MD2000_MBH6000_n2","Signal_B1_MD2000_MBH7000_n2","Signal_B1_MD2000_MBH8000_n2","Signal_B1_MD2000_MBH9000_n2","Signal_B1_MD2000_MBH10000_n2","Signal_B1_MD2000_MBH11000_n2"]
-    #signal_areas = ["Signal_B1_MD4000_MBH5000_n2","Signal_B1_MD4000_MBH6000_n2","Signal_B1_MD4000_MBH7000_n2","Signal_B1_MD4000_MBH8000_n2","Signal_B1_MD4000_MBH9000_n2","Signal_B1_MD4000_MBH10000_n2","Signal_B1_MD4000_MBH11000_n2"]
-
-    #tf_type = '0x0'
-    tf_types = ['1x0']
+    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
+    tf_types = ['0x0','1x0','2x0','expo']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # When there are 100 signals, let's make sure we only run on the ones we didnt do before
-      if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
+      # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
       rMax = 50
@@ -379,12 +397,12 @@ if __name__ == "__main__":
           rMax = rMax / 10.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
-      #GOF(signal,tf_type,condor=False)
-      #plot_GOF(signal,tf_type,condor=False)
+      #run_limits(signal,tf_type)
+      GOF(signal,tf_type,condor=False)
+      plot_GOF(signal,tf_type,condor=False)
       #SignalInjection(signal, tf_type, r=0, condor=False)
       #plot_SignalInjection(signal, tf_type, r=0, condor=False)
       #Impacts(signal,tf_type)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','expo',"Signal_M500GeV")
+    test_FTest('1x0','2x0',"Signal_M3000GeV")
