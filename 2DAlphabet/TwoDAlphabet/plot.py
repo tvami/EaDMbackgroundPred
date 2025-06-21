@@ -522,7 +522,7 @@ def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='
     bkgNames = list(dict.fromkeys([hist.GetTitle().split(',')[0] for hist in bkgs]))
     sigNames = list(dict.fromkeys([hist.GetTitle().split(',')[0] for hist in signals]))
     # Replace the ROOT latex "#" with standard latex "\" escape character for python rstring
-    bkgNamesLatex = [r'${}$'.format(bkgName.replace("#","\\")) for bkgName in bkgNames]
+    bkgNamesLatex = [r'${}$'.format(bkgName.replace("#","\\").replace("CMS_AN23122_","")) for bkgName in bkgNames] # Will updated to CADI # once we get it
     sigNamesLatex = [r'${}$'.format(sigName.replace("#","\\")) for sigName in sigNames]
     # Sum the common backgrounds and signals
     for bkg in bkgNames:
