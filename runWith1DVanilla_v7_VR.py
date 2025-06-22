@@ -24,17 +24,7 @@ def _get_other_region_names(pass_reg_name):
 # Change values as you see fit
 def _generate_constraints(nparams):
     out = {}
-    for i in range(nparams):
-        if i == 0:
-            out[i] = {"MIN":0,"MAX":100}
-        if i == 1:
-            out[i] = {"MIN":50,"MAX":100}
-        if i == 2:
-            out[i] = {"MIN":-50,"MAX":0}
-        if i == 3:
-            out[i] = {"MIN":0,"MAX":0.1}
     return out
-
 
 # Dict to store transfer function forms and constraints
 _rpf_options = {
@@ -53,11 +43,7 @@ _rpf_options = {
     },
     '1x0Prime': {
         'form': '0.1*(@0+@1*x+@2/x)',
-        'constraints': {
-            0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -50, "MAX": 500},
-            2: {"MIN": 0.0, "MAX": 1000}
-            }
+        'constraints': _generate_constraints(3)
     },
     '0x1': {
         'form': '0.1*(@0+@1*y)',
@@ -69,7 +55,12 @@ _rpf_options = {
     },
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
-        'constraints': _generate_constraints(4)
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 100},
+            1: {"MIN": 50, "MAX": 100},
+            2: {"MIN": -50, "MAX": 0},
+            3: {"MIN": 0, "MAX": 0.1}
+         }
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
@@ -85,7 +76,7 @@ _rpf_options = {
             0: {"MIN": -1.0, "MAX": 50},
             1: {"MIN": -500, "MAX": 500}
             }
-    },
+        },
     'sigmoid': {
         'form': '(@0+0.1*@4*x)/(@1+exp(-@2*x+@3))',
         'constraints': {
@@ -108,9 +99,9 @@ def _select_signal(row, args):
         else:
             return False
     elif 'Background' in row.process:
-        if row.process == 'Background_'+poly_order:
+        if row.process == 'CMS_AN23122_Background_'+poly_order:
             return True
-        elif row.process == 'Background':
+        elif row.process == 'CMS_AN23122_Background':
             return True
         else:
             return False
@@ -136,11 +127,11 @@ def make_workspace():
     # get the binning for the fail region
     binning_f, _ = twoD.GetBinningFor(f)
     # you can change the name as you see fit 
-    fail_name = 'Background_'+f
+    fail_name = 'CMS_AN23122_Background_'+f
     # this is the actual binned distribution of the fail
     bkg_f = BinnedDistribution(fail_name, bkg_hists[f], binning_f, constant=False)
     # now we add it to the 2DAlphabet ledger
-    twoD.AddAlphaObj('Background',f, bkg_f)
+    twoD.AddAlphaObj('CMS_AN23122_Background',f, bkg_f)
 
     # now construct all of the possible transfer functions, to be chosen and used later
     for opt_name, opt in _rpf_options.items():
@@ -155,7 +146,7 @@ def make_workspace():
            bkg_p = bkg_f.Multiply(fail_name.replace('fail','pass')+'_'+opt_name, bkg_rpf)
 
            # then add this to the 2DAlphabet ledger
-           twoD.AddAlphaObj('Background_'+opt_name,p,bkg_p,title='Background')
+           twoD.AddAlphaObj('CMS_AN23122_Background_'+opt_name,p,bkg_p,title='CMS_AN23122_Background')
 
     # and save it out
     twoD.Save()
@@ -192,8 +183,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.1","pass":"0.1 < RNNScore < 0.2"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9","pass":"RNNScore > 0.9"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9","pass":"RNNScore > 0.9"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -208,12 +199,12 @@ def GOF(signal,tf,condor=True, extra=''):
     if condor == False:
         twoD.GoodnessOfFit(
             signame+'-{}_area'.format(tf), ntoys=500, freezeSignal=0,
-            condor=False
+            condor=False, extra=extra
         )
     else:
         twoD.GoodnessOfFit(
             signame+'-{}_area'.format(tf), ntoys=500, freezeSignal=0,
-            condor=True, njobs=10
+            condor=True, njobs=10, extra=extra
         )
 
 def plot_GOF(signal, tf, condor=True):
@@ -227,7 +218,7 @@ def load_RPF(twoD):
     params_to_set = twoD.GetParamsOnMatch('rpf.*', 'Signal', 'b')
     return {k:v['val'] for k,v in params_to_set.items()}
 
-def SignalInjection(signal, tf, r, condor=False):
+def SignalInjection(signal, tf, r, condor=False,extra=''):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     #params = load_RPF(twoD)
@@ -239,18 +230,19 @@ def SignalInjection(signal, tf, r, condor=False):
 	#setParams = params,     # give the toys the same RPF params
 	verbosity = 0,		# you can change this if you need
 	njobs=10,
-	condor = condor
+	condor = condor,
+        extra = extra
     )
 
 def plot_SignalInjection(signal, tf, r, condor=False):
     working_area = workingArea
     plot.plot_signalInjection(working_area, '{}-{}_area'.format(signal, tf), injectedAmount=r, condor=condor)
 
-def Impacts(signal, tf):
+def Impacts(signal, tf, toys):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     #twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='card.txt', extra='-t 1')
-    twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='initialFitWorkspace.root --snapshotName initialFit', extra='-t 1')
+    twoD.Impacts('{}-{}_area'.format(signal, tf), cardOrW='initialFitWorkspace.root --snapshotName initialFit', extra=f'-t {toys}')
 
 def run_limits(signal, tf):
     working_area = workingArea
@@ -378,11 +370,11 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
-    tf_types = ['0x0','1x0','2x0','expo']
+    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
+    tf_types = ['2x0','1x0','0x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
-      # When there are 100 signals, let's make sure we only run on the ones we didnt do before
+      # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
       # if os.path.exists(workingArea + "/" + signal + f"-{tf_type}_area/done") : continue
       fitPassed = False
       # If the fit failed iterate on rMax
@@ -394,15 +386,16 @@ if __name__ == "__main__":
         with open(workingArea + "/" + signal + f"-{tf_type}_area/FitDiagnostics.log", 'r') as file:
           content = file.read()
           if not "Fit failed" in content: fitPassed = True
-          rMax = rMax / 10.
+          rMax = rMax / 2.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       #run_limits(signal,tf_type)
-      GOF(signal,tf_type,condor=False)
+      GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
       plot_GOF(signal,tf_type,condor=False)
-      #SignalInjection(signal, tf_type, r=0, condor=False)
-      #plot_SignalInjection(signal, tf_type, r=0, condor=False)
-      #Impacts(signal,tf_type)
+      #for r in [0,0.1,0.5,1,2,3]:
+      #    SignalInjection(signal, tf_type, r=r, condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
+      #    plot_SignalInjection(signal, tf_type, r=r, condor=False)
+      #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
     test_FTest('1x0','2x0',"Signal_M3000GeV")
