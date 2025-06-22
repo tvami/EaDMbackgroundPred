@@ -4,7 +4,7 @@
 void limits_combine_signals_ep_4e-08_ma_0_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Tue May 27 07:46:43 2025) by ROOT version 6.30/07
+//=========  (Sat Jun 21 21:54:12 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -23,7 +23,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    climits->SetFrameBorderMode(0);
    
    Double_t Graph0_fx1[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph0_fy1[8] = { 77.14844, 68.35938, 62.30469, 58.59375, 52.53906, 51.85547, 48.53516, 45.50781 };
+   Double_t Graph0_fy1[8] = { 53.32031, 40.625, 43.94531, 36.23047, 33.98438, 32.22656, 31.25, 29.88281 };
    TGraph *graph = new TGraph(8,Graph0_fx1,Graph0_fy1);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -69,8 +69,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    
    Double_t Graph1_fx2[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
-   Double_t Graph1_fy2[18] = { 149.9807, 133.1104, 122.8166, 116.2226, 105.0085, 104.8654, 99.58526, 95.35879, 95.35879, 22.93167, 22.93167, 24.83635, 26.73798, 27.29568, 30.67017, 32.61261, 36.04889,
-   40.98511 };
+   Double_t Graph1_fy2[18] = { 104.6422, 82.10262, 88.08352, 75.1316, 70.52609, 69.10762, 67.67531, 66.67117, 66.67117, 14.47449, 14.47449, 15.50293, 16.11328, 17.25769, 18.39828, 22.83096, 20.94727,
+   27.90985 };
    graph = new TGraph(18,Graph1_fx2,Graph1_fy2);
    graph->SetName("Graph1");
    graph->SetTitle("Graph");
@@ -85,8 +85,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph12 = new TH1F("Graph_Graph12","Graph",100,2.3,10.7);
-   Graph_Graph12->SetMinimum(10.22677);
-   Graph_Graph12->SetMaximum(162.6856);
+   Graph_Graph12->SetMinimum(5.457716);
+   Graph_Graph12->SetMaximum(113.659);
    Graph_Graph12->SetDirectory(nullptr);
    Graph_Graph12->SetStats(0);
    Graph_Graph12->SetLineWidth(2);
@@ -117,8 +117,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    
    Double_t Graph2_fx3[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
-   Double_t Graph2_fy3[18] = { 109.7452, 97.24262, 89.25057, 84.05148, 75.57559, 75.109, 70.78342, 67.09394, 67.09394, 31.39772, 31.39772, 33.90855, 36.35327, 36.95917, 41.35966, 43.97911, 48.41775,
-   54.82888 };
+   Double_t Graph2_fy3[18] = { 76.06178, 58.7615, 63.38895, 53.12716, 49.83357, 48.02671, 46.82048, 45.48677, 45.48677, 20.13223, 20.13223, 21.40808, 22.02988, 23.5302, 25.08535, 30.9138, 28.48015,
+   37.63729 };
    graph = new TGraph(18,Graph2_fx3,Graph2_fy3);
    graph->SetName("Graph2");
    graph->SetTitle("Graph");
@@ -131,8 +131,8 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph23 = new TH1F("Graph_Graph23","Graph",100,2.3,10.7);
-   Graph_Graph23->SetMinimum(23.56297);
-   Graph_Graph23->SetMaximum(117.58);
+   Graph_Graph23->SetMinimum(14.53928);
+   Graph_Graph23->SetMaximum(81.65473);
    Graph_Graph23->SetDirectory(nullptr);
    Graph_Graph23->SetStats(0);
    Graph_Graph23->SetLineWidth(2);
@@ -162,7 +162,7 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    graph->Draw("lf");
    
    Double_t Graph0_fx4[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph0_fy4[8] = { 77.14844, 68.35938, 62.30469, 58.59375, 52.53906, 51.85547, 48.53516, 45.50781 };
+   Double_t Graph0_fy4[8] = { 53.32031, 40.625, 43.94531, 36.23047, 33.98438, 32.22656, 31.25, 29.88281 };
    graph = new TGraph(8,Graph0_fx4,Graph0_fy4);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -397,13 +397,13 @@ void limits_combine_signals_ep_4e-08_ma_0_()
    line->SetLineWidth(2);
    line->SetNDC();
    line->Draw();
-   line = new TLine(6.493655,0,6.493655,55.52229);
+   line = new TLine(5.527741,0,5.527741,39.68875);
 
    ci = TColor::GetColor("#666666");
    line->SetLineColor(ci);
    line->SetLineStyle(2);
    line->Draw();
-   TLatex *   tex = new TLatex(6.488655,0,"  6.49 TeV");
+   TLatex *   tex = new TLatex(5.522741,0,"  5.53 TeV");
 
    ci = TColor::GetColor("#666666");
    tex->SetTextColor(ci);

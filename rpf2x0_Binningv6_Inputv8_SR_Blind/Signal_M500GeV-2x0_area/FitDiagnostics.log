@@ -1,0 +1,51 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 16 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 15 : -5.00607e-05
+ - -0.781777	CMS_AN23122_Background_rpf_2x0_par3
+ - 0.544691	CMS_AN23122_Background_rpf_2x0_par0
+ - 0.299082	CMS_AN23122_Background_rpf_2x0_par1
+ - -0.0518178	CMS_AN23122_Background_rpf_2x0_par2
+ - 0.000782632	CMS_AN23122_Background_fail_LOW_bin_3-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_rpf_2x0_par3
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 17 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 16 : -8.76506e-05
+ - 0.733203	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.477997	CMS_AN23122_Background_rpf_2x0_par1
+ - -0.423855	CMS_AN23122_Background_rpf_2x0_par0
+ - 0.196717	CMS_AN23122_Background_rpf_2x0_par2
+ - 0.12482	r
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_rpf_2x0_par3
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 4.25185e-07  -4.25185e-07/+50  (68% CL)
+Done in 0.00 min (cpu), 0.00 min (real)
+27 log messages saved to combine_logger.out
