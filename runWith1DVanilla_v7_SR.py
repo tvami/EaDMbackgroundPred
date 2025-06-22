@@ -183,8 +183,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.2","pass":"RNNScore > 0.2"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.2","pass":"RNNScore > 0.2"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9","pass":"RNNScore > 0.9"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9","pass":"RNNScore > 0.9"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -370,8 +370,8 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M5000GeV"]#,"Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
-    tf_types = ['2x0']#,'1x0','0x0','expo']
+    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
+    tf_types = ['2x0','1x0','0x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -389,7 +389,7 @@ if __name__ == "__main__":
           rMax = rMax / 2.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
+      #run_limits(signal,tf_type)
       GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
       plot_GOF(signal,tf_type,condor=False)
       #for r in [0,0.1,0.5,1,2,3]:
