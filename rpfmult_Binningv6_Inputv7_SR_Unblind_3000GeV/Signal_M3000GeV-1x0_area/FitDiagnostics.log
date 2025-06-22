@@ -10,52 +10,31 @@ Set Default Value of Parameter r To : 1
 >> Found 14 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 13 : -3.45042
- - -0.77821	CMS_AN23122_Background_rpf_1x0_par0
- - 0.627564	CMS_AN23122_Background_rpf_1x0_par1
- - -0.0234855	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.000605795	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.000491224	CMS_AN23122_Background_fail_LOW_bin_3-1
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_1x0_par0 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_rpf_1x0_par0
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 15 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 14 : -150.327
- - 0.707074	CMS_AN23122_Background_rpf_1x0_par0
- - 0.707069	CMS_AN23122_Background_rpf_1x0_par1
- - 0.00970892	r
- - 0.00237382	lumi
- - 0.00053378	CMS_AN23122_Background_fail_LOW_bin_1-1
+Eigenvalue 14 : -0.00328268
+ - 0.809456	CMS_AN23122_Background_rpf_1x0_par1
+ - -0.446571	r
+ - -0.345611	CMS_AN23122_Background_rpf_1x0_par0
+ - 0.15703	CMS_AN23122_Background_fail_HIGH_bin_2-1
+ - 0.0292903	CMS_AN23122_Background_fail_HIGH_bin_3-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_1x0_par0 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 13 : -0.800384
- - -0.719017	r
- - -0.672522	CMS_AN23122_Background_rpf_1x0_par1
- - -0.142733	lumi
- - 0.0771855	CMS_AN23122_Background_fail_HIGH_bin_2-1
- - 0.0529264	RNN
->> Attempt 1 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_1x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
+>> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_rpf_1x0_par0
      - CMS_AN23122_Background_rpf_1x0_par1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 27.4199  -27.4199/+22.5801  (68% CL)
+Best fit r: 3.78007  -3.78007/+46.2199  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-23 log messages saved to combine_logger.out
+25 log messages saved to combine_logger.out
