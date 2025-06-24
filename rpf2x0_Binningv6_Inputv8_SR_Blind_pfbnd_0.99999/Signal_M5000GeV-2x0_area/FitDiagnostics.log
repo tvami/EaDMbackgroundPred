@@ -1,0 +1,101 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 16 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 14 : -0.000668454
+ - 0.765401	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.61031	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.204165	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.000529796	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.000312924	CMS_AN23122_Background_fail_LOW_bin_2-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
+     - CMS_AN23122_Background_rpf_2x0_par2
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_rpf_2x0_par3
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+WARNING: underflow to inf in pdf_binfail_LOW_obsOnly for bin 0, weight 174553
+FASTEXIT from pdf_binfail_LOW_obsOnly
+WARNING: underflow to inf in pdf_binfail_HIGH_obsOnly for bin 0, weight 1189
+FASTEXIT from pdf_binfail_HIGH_obsOnly
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (84.5619) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=997698	CMS_AN23122_Background_fail_HIGH_bin_2-1=634292	CMS_AN23122_Background_fail_HIGH_bin_3-1=107040	CMS_AN23122_Background_fail_HIGH_bin_4-1=664862	CMS_AN23122_Background_fail_LOW_bin_1-1=212510	CMS_AN23122_Background_fail_LOW_bin_2-1=885344	CMS_AN23122_Background_fail_LOW_bin_3-1=623923	CMS_AN23122_Background_fail_SIG_bin_1-1=146881	CMS_AN23122_Background_rpf_2x0_par0=78.123	CMS_AN23122_Background_rpf_2x0_par1=90.595	CMS_AN23122_Background_rpf_2x0_par2=-4.4336	CMS_AN23122_Background_rpf_2x0_par3=0.010047	RNN=3923.65	lumi=-117.953	pT=624.038	r=31.539	t0=0
+RooAbsReal::fail_LOW[ params=(CMS_AN23122_Background_fail_LOW_bin_1-1,CMS_AN23122_Background_fail_LOW_bin_2-1,CMS_AN23122_Background_fail_LOW_bin_3-1,RNN,lumi,n_exp_binfail_LOW_proc_CMS_AN23122_Background,pT,r,t0) catParams=() ]
+     Number of events is negative or error @ params=(CMS_AN23122_Background_fail_LOW_bin_1-1 = 212510 +/- 419.335,CMS_AN23122_Background_fail_LOW_bin_2-1 = 885344 +/- 193.096,CMS_AN23122_Background_fail_LOW_bin_3-1 = 623923 +/- 93.8179,RNN = 3923.65 +/- 1.00003,lumi = -117.953 +/- 1.00018,n_exp_binfail_LOW_proc_CMS_AN23122_Background = 1,pT = 624.038 +/- 1.00023,r = 31.539 +/- 31.539,t0 = 0 +/- 1), catParams=()
+RooAbsReal::fail_HIGH[ params=(CMS_AN23122_Background_fail_HIGH_bin_1-1,CMS_AN23122_Background_fail_HIGH_bin_2-1,CMS_AN23122_Background_fail_HIGH_bin_3-1,CMS_AN23122_Background_fail_HIGH_bin_4-1,RNN,lumi,n_exp_binfail_HIGH_proc_CMS_AN23122_Background,pT,r,t0) catParams=() ]
+     Number of events is negative or error @ params=(CMS_AN23122_Background_fail_HIGH_bin_1-1 = 997698 +/- 34.4818,CMS_AN23122_Background_fail_HIGH_bin_2-1 = 634292 +/- 22.7597,CMS_AN23122_Background_fail_HIGH_bin_3-1 = 107040 +/- 16.5533,CMS_AN23122_Background_fail_HIGH_bin_4-1 = 664862 +/- 14.3533,RNN = 3923.65 +/- 1.00003,lumi = -117.953 +/- 1.00018,n_exp_binfail_HIGH_proc_CMS_AN23122_Background = 1,pT = 624.038 +/- 1.00023,r = 31.539 +/- 31.539,t0 = 0 +/- 1), catParams=()
+
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (84.5619) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=505924	CMS_AN23122_Background_fail_HIGH_bin_2-1=198856	CMS_AN23122_Background_fail_HIGH_bin_3-1=979360	CMS_AN23122_Background_fail_HIGH_bin_4-1=184754	CMS_AN23122_Background_fail_LOW_bin_1-1=819492	CMS_AN23122_Background_fail_LOW_bin_2-1=407202	CMS_AN23122_Background_fail_LOW_bin_3-1=218343	CMS_AN23122_Background_fail_SIG_bin_1-1=971863	CMS_AN23122_Background_rpf_2x0_par0=15.1861	CMS_AN23122_Background_rpf_2x0_par1=77.5459	CMS_AN23122_Background_rpf_2x0_par2=-4.19679	CMS_AN23122_Background_rpf_2x0_par3=0.00188672	RNN=1962.03	lumi=-58.9176	pT=311.936	r=31.539	t0=0
+
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (84.5619) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=864076	CMS_AN23122_Background_fail_HIGH_bin_2-1=946846	CMS_AN23122_Background_fail_HIGH_bin_3-1=450485	CMS_AN23122_Background_fail_HIGH_bin_4-1=964423	CMS_AN23122_Background_fail_LOW_bin_1-1=871426	CMS_AN23122_Background_fail_LOW_bin_2-1=170317	CMS_AN23122_Background_fail_LOW_bin_3-1=926789	CMS_AN23122_Background_fail_SIG_bin_1-1=443968	CMS_AN23122_Background_rpf_2x0_par0=99.6592	CMS_AN23122_Background_rpf_2x0_par1=52.9396	CMS_AN23122_Background_rpf_2x0_par2=-15.5731	CMS_AN23122_Background_rpf_2x0_par3=0.0997938	RNN=981.221	lumi=-29.3998	pT=155.885	r=31.539	t0=0
+
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (84.5619) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=667421	CMS_AN23122_Background_fail_HIGH_bin_2-1=383229	CMS_AN23122_Background_fail_HIGH_bin_3-1=144816	CMS_AN23122_Background_fail_HIGH_bin_4-1=562319	CMS_AN23122_Background_fail_LOW_bin_1-1=515884	CMS_AN23122_Background_fail_LOW_bin_2-1=82915.1	CMS_AN23122_Background_fail_LOW_bin_3-1=664749	CMS_AN23122_Background_fail_SIG_bin_1-1=146478	CMS_AN23122_Background_rpf_2x0_par0=38.8412	CMS_AN23122_Background_rpf_2x0_par1=99.8709	CMS_AN23122_Background_rpf_2x0_par2=-22.7906	CMS_AN23122_Background_rpf_2x0_par3=0.0500761	RNN=490.817	lumi=-14.6409	pT=77.8597	r=31.539	t0=0
+
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (84.5619) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=197077	CMS_AN23122_Background_fail_HIGH_bin_2-1=106377	CMS_AN23122_Background_fail_HIGH_bin_3-1=953359	CMS_AN23122_Background_fail_HIGH_bin_4-1=145630	CMS_AN23122_Background_fail_LOW_bin_1-1=318726	CMS_AN23122_Background_fail_LOW_bin_2-1=49960.6	CMS_AN23122_Background_fail_LOW_bin_3-1=236217	CMS_AN23122_Background_fail_SIG_bin_1-1=950445	CMS_AN23122_Background_rpf_2x0_par0=3.74283	CMS_AN23122_Background_rpf_2x0_par1=84.6761	CMS_AN23122_Background_rpf_2x0_par2=-26.5136	CMS_AN23122_Background_rpf_2x0_par3=0.0836291	RNN=245.615	lumi=-7.26144	pT=38.847	r=31.539	t0=0
+
+>> Found 17 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 14 : -0.000216011
+ - 0.693938	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.597386	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.326181	r
+ - 0.189089	CMS_AN23122_Background_fail_HIGH_bin_4-1
+ - 0.118855	CMS_AN23122_Background_fail_HIGH_bin_3-1
+Eigenvalue 15 : -0.00231903
+ - -0.718253	r
+ - 0.412011	CMS_AN23122_Background_fail_HIGH_bin_4-1
+ - -0.333798	CMS_AN23122_Background_rpf_2x0_par3
+ - 0.326121	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.258975	CMS_AN23122_Background_fail_HIGH_bin_3-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_HIGH_bin_4-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 14 : -0.00059386
+ - 0.771341	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.6023	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.204908	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.0156714	r
+ - -0.00569953	CMS_AN23122_Background_fail_HIGH_bin_3-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
+     - CMS_AN23122_Background_rpf_2x0_par2
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_fail_HIGH_bin_4-1
+     - CMS_AN23122_Background_rpf_2x0_par3
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 3.23492e-05  -3.23492e-05/+50  (68% CL)
+Done in 0.00 min (cpu), 0.00 min (real)
+29 log messages saved to combine_logger.out
