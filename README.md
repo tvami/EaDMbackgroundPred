@@ -59,7 +59,7 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
     - VR syst: t0, pT, signal yield (0.1% - tried removing but got segmentation error during limit calculation)
   - SR: cuts on pT [100,440], eta [-0.9,0.9], nTracks [1,2]
     - SR syst: t0, pT, signal yield (0.1% nomial; 5% for rpfmult dir)
-- v5: Run 3 Cosmics - TODO
+- v5: skipped
 - v6: 2023Dv1+v2 Cosmics (New CR/VR/SR definitions - [0,0.15), [0.15,0.3), [0.3,1] respectively)
   - VR: cuts on pT [50,inf], eta [-0.9,0.9], nTracks [1,2]
     - VR syst: t0, pT, signal yield (0.1%)
@@ -67,4 +67,4 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
     - SR syst: t0, pT, signal yield (0.1%)
 - v7: Cosmics MC with CR/VR/SR definitions - [0,0.45),[0.45,0.9],[0.9,1]
 - v8: 2023D Cosmics with CR/VR/SR - [0,0.45),[0.45,0.9],[0.9,1]
-
+- v9: Run 3 Cosmics
