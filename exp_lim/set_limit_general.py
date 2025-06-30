@@ -20,6 +20,10 @@ parser = OptionParser()
 #                 default   =   'dataBsOff',
 #                 dest      =   'tag',
 #                 help      =   'Tag ran over')
+parser.add_option('-L', '--lumiLabel',metavar='F', type='string', action='store',
+                default   =   '2023D Cosmics',
+                dest      =   'lumiLabel',
+                help      =   'Top right label of limit plot')
 parser.add_option('-s', '--signals', metavar='FILE', type='string', action='store',
                 default   =   'bstar_signalsLH.txt',
                 dest      =   'signals',
@@ -494,7 +498,7 @@ CMS_lumi.extraText = 'Internal'
 CMS_lumi.lumiTextSize     = 0.5
 
 CMS_lumi.cmsTextSize      = 0.8
-CMS_lumi.CMS_lumi(climits, 0, 11, sim=False)
+CMS_lumi.CMS_lumi(climits, options.lumiLabel, 0, 11, sim=False)
 
 
 filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr

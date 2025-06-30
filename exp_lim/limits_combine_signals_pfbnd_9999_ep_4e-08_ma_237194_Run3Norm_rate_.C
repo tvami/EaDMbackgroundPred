@@ -4,7 +4,7 @@
 void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Fri Jun 27 19:49:57 2025) by ROOT version 6.30/07
+//=========  (Mon Jun 30 08:19:01 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -23,7 +23,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    climits->SetFrameBorderMode(0);
    
    Double_t Graph0_fx1[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph0_fy1[8] = { 57.12891, 47.07031, 50.97656, 44.53125, 43.55469, 42.38281, 42.08984, 43.06641 };
+   Double_t Graph0_fy1[8] = { 4.132209, 3.404658, 3.687202, 3.221004, 3.150368, 3.065604, 3.044414, 3.11505 };
    TGraph *graph = new TGraph(8,Graph0_fx1,Graph0_fy1);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -69,8 +69,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    
    Double_t Graph1_fx2[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
-   Double_t Graph1_fy2[18] = { 128.1281, 112.1781, 118.6507, 111.9493, 110.4715, 111.9035, 114.9513, 121.4115, 121.4115, 17.66396, 17.66396, 17.92107, 18.37692, 19.73572, 20.17822, 24.29352, 22.24808,
-   28.11813 };
+   Double_t Graph1_fy2[18] = { 9.267673, 8.113992, 8.582163, 8.097439, 7.990549, 8.094125, 8.314582, 8.781853, 8.781853, 1.277657, 1.277657, 1.296254, 1.329227, 1.42751, 1.459517, 1.757182, 1.609233,
+   2.033822 };
    graph = new TGraph(18,Graph1_fx2,Graph1_fy2);
    graph->SetName("Graph1");
    graph->SetTitle("Graph");
@@ -85,8 +85,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph12 = new TH1F("Graph_Graph12","Graph",100,2.3,10.7);
-   Graph_Graph12->SetMinimum(6.617543);
-   Graph_Graph12->SetMaximum(139.1745);
+   Graph_Graph12->SetMinimum(0.4786555);
+   Graph_Graph12->SetMaximum(10.06667);
    Graph_Graph12->SetDirectory(nullptr);
    Graph_Graph12->SetStats(0);
    Graph_Graph12->SetLineWidth(2);
@@ -117,8 +117,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    
    Double_t Graph2_fx3[18] = { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4,
    3 };
-   Double_t Graph2_fy3[18] = { 86.61842, 73.61915, 78.71265, 71.51178, 70.29076, 69.75104, 70.4433, 73.45103, 73.45103, 26.39605, 26.39605, 26.22908, 26.81649, 28.29566, 28.93009, 34.0912, 31.16857,
-   38.77053 };
+   Double_t Graph2_fy3[18] = { 6.265224, 5.32497, 5.693389, 5.172541, 5.084223, 5.045184, 5.095256, 5.312809, 5.312809, 1.909261, 1.909261, 1.897184, 1.939672, 2.046662, 2.092552, 2.465861, 2.254463,
+   2.804323 };
    graph = new TGraph(18,Graph2_fx3,Graph2_fy3);
    graph->SetName("Graph2");
    graph->SetTitle("Graph");
@@ -131,8 +131,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.9);
    
    TH1F *Graph_Graph23 = new TH1F("Graph_Graph23","Graph",100,2.3,10.7);
-   Graph_Graph23->SetMinimum(20.19015);
-   Graph_Graph23->SetMaximum(92.65736);
+   Graph_Graph23->SetMinimum(1.46038);
+   Graph_Graph23->SetMaximum(6.702028);
    Graph_Graph23->SetDirectory(nullptr);
    Graph_Graph23->SetStats(0);
    Graph_Graph23->SetLineWidth(2);
@@ -162,7 +162,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("lf");
    
    Double_t Graph0_fx4[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph0_fy4[8] = { 57.12891, 47.07031, 50.97656, 44.53125, 43.55469, 42.38281, 42.08984, 43.06641 };
+   Double_t Graph0_fy4[8] = { 4.132209, 3.404658, 3.687202, 3.221004, 3.150368, 3.065604, 3.044414, 3.11505 };
    graph = new TGraph(8,Graph0_fx4,Graph0_fy4);
    graph->SetName("Graph0");
    graph->SetTitle("");
@@ -207,7 +207,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx5[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy5[8] = { 58.6263, 215.2925, 438.0265, 671.2676, 880.813, 1053.318, 1187.323, 1286.636 };
+   Double_t Graph_fy5[8] = { 4.240517, 15.57239, 31.68303, 48.55367, 63.71036, 76.18789, 85.88065, 93.06409 };
    graph = new TGraph(8,Graph_fx5,Graph_fy5);
    graph->SetName("");
    graph->SetTitle("");
@@ -219,8 +219,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph5 = new TH1F("Graph_Graph5","",100,2.3,10.7);
-   Graph_Graph5->SetMinimum(52.76367);
-   Graph_Graph5->SetMaximum(1409.437);
+   Graph_Graph5->SetMinimum(3.816465);
+   Graph_Graph5->SetMaximum(101.9464);
    Graph_Graph5->SetDirectory(nullptr);
    Graph_Graph5->SetStats(0);
    Graph_Graph5->SetLineWidth(2);
@@ -250,7 +250,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx6[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy6[8] = { 52.76367, 193.7633, 394.2238, 604.1409, 792.7317, 947.9864, 1068.591, 1157.973 };
+   Double_t Graph_fy6[8] = { 3.816465, 14.01515, 28.51473, 43.6983, 57.33932, 68.5691, 77.29258, 83.75768 };
    graph = new TGraph(8,Graph_fx6,Graph_fy6);
    graph->SetName("");
    graph->SetTitle("");
@@ -263,8 +263,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph6 = new TH1F("Graph_Graph6","",100,2.3,10.7);
-   Graph_Graph6->SetMinimum(47.4873);
-   Graph_Graph6->SetMaximum(1268.493);
+   Graph_Graph6->SetMinimum(3.434819);
+   Graph_Graph6->SetMaximum(91.7518);
    Graph_Graph6->SetDirectory(nullptr);
    Graph_Graph6->SetStats(0);
    Graph_Graph6->SetLineWidth(2);
@@ -294,7 +294,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx7[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy7[8] = { 64.48893, 236.8218, 481.8291, 738.3944, 968.8943, 1158.65, 1306.056, 1415.3 };
+   Double_t Graph_fy7[8] = { 4.664569, 17.12963, 34.85133, 53.40904, 70.0814, 83.80668, 94.46871, 102.3705 };
    graph = new TGraph(8,Graph_fx7,Graph_fy7);
    graph->SetName("");
    graph->SetTitle("");
@@ -307,8 +307,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph7 = new TH1F("Graph_Graph7","",100,2.3,10.7);
-   Graph_Graph7->SetMinimum(58.04003);
-   Graph_Graph7->SetMaximum(1550.381);
+   Graph_Graph7->SetMinimum(4.198112);
+   Graph_Graph7->SetMaximum(112.1411);
    Graph_Graph7->SetDirectory(nullptr);
    Graph_Graph7->SetStats(0);
    Graph_Graph7->SetLineWidth(2);
@@ -444,7 +444,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    Graph_copy->GetZaxis()->SetTitleOffset(1.1);
    Graph_copy->GetZaxis()->SetTitleFont(42);
    Graph_copy->Draw("sameaxis");
-      tex = new TLatex(0.95,0.915,"2023D Cosmics");
+      tex = new TLatex(0.95,0.915,"Run 3 Cosmics");
    tex->SetNDC();
    tex->SetTextAlign(31);
    tex->SetTextFont(42);
