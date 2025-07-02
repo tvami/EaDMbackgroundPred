@@ -7,13 +7,13 @@ tdrstyle.setTDRStyle()
 
 if __name__ == "__main__":
     
-    binning = "v5"
-    inVersion = "v4"
+    binning = "v6"
+    inVersion = "v9"
     region = 'VR'
     blinding = 'Unblind'
-    extra = '3000GeV_normalized'
+    extra = '3000GeV'
     
-    for MdM_val, tf in zip([3000,3000,3000,3000], ['expo', '0x0', '2x0', '1x0']):
+    for MdM_val, tf in zip([3000,3000,3000], ['0x0', '2x0', '1x0']):
         MdM_val = int(MdM_val)
         print(f"MdM: {MdM_val}")
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_FullScan_MD2TeV'
