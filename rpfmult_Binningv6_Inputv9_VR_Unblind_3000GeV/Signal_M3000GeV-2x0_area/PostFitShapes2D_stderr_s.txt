@@ -42,8 +42,8 @@ fail_HIGH                 0.00000
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
 pass_HIGH                 0.50002   
-pass_LOW                  0.50324   
-pass_SIG                  0.50011   
+pass_LOW                  0.50380   
+pass_SIG                  0.50010   
 >> Doing postfit: fail_HIGH,CMS_AN23122_Background
 >> Doing postfit: fail_HIGH,Signal_M3000GeV_VR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50011
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.00963   
-fail_LOW                  0.00120   
+fail_HIGH                 0.00967   
+fail_LOW                  0.00104   
 fail_SIG                  0.00779   
-pass_HIGH                 0.05536   
-pass_LOW                  0.01430   
-pass_SIG                  0.02735   
+pass_HIGH                 0.05285   
+pass_LOW                  0.01282   
+pass_SIG                  0.02590   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 CMS_AN23122_Background 0.99931   
+fail_HIGH                 CMS_AN23122_Background 0.99893   
 fail_HIGH                 Signal_M3000GeV_VR   0.00000   
 fail_LOW                  CMS_AN23122_Background 1.00004   
 fail_LOW                  Signal_M3000GeV_VR   0.00000   
-fail_SIG                  CMS_AN23122_Background 0.99931   
+fail_SIG                  CMS_AN23122_Background 0.99897   
 fail_SIG                  Signal_M3000GeV_VR   0.00000   
-pass_HIGH                 CMS_AN23122_Background_2x0 0.15691   
+pass_HIGH                 CMS_AN23122_Background_2x0 0.15713   
 pass_HIGH                 Signal_M3000GeV_VR   0.00000   
-pass_LOW                  CMS_AN23122_Background_2x0 0.74642   
+pass_LOW                  CMS_AN23122_Background_2x0 0.73004   
 pass_LOW                  Signal_M3000GeV_VR   0.00000   
-pass_SIG                  CMS_AN23122_Background_2x0 0.27987   
+pass_SIG                  CMS_AN23122_Background_2x0 0.27485   
 pass_SIG                  Signal_M3000GeV_VR   0.00000   
