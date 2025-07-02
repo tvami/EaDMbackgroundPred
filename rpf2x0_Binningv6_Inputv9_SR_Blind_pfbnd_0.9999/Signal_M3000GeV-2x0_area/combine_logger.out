@@ -19,23 +19,22 @@ ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
 ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
 ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_HIGH_obsOnly: in 4 x-bins
 ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
-AsymptoticLimits.cc[428] : (in function: runLimitExpected) - Median for expected limits = 0.445312, Sigma for expected limits = 0.227204
-AsymptoticLimits.cc[191] : (in function: runLimit) - NLL at global minimum of data = -23765 (r=2.55837e-06)
-AsymptoticLimits.cc[211] : (in function: runLimit) - NLL at global minimum of asimov = -23764.7 (r=9.4103e-05)
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1.200003:	q_mu = 14.25993	q_A  = 14.22079	Pmu = 0.00008	1-Pb  = 0.49793	CLs  = 0.00016
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.600003:	q_mu = 5.98567	q_A  = 5.84558	Pmu = 0.00721	1-Pb  = 0.48844	CLs  = 0.01476
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.300003:	q_mu = 2.30690	q_A  = 2.12318	Pmu = 0.06424	1-Pb  = 0.47487	CLs  = 0.13527
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.450003:	q_mu = 4.06372	q_A  = 3.89781	Pmu = 0.02188	1-Pb  = 0.48324	CLs  = 0.04529
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.409143:	q_mu = 3.56495	q_A  = 3.39282	Pmu = 0.02947	1-Pb  = 0.48137	CLs  = 0.06122
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.431091:	q_mu = 3.83107	q_A  = 3.66227	Pmu = 0.02513	1-Pb  = 0.48241	CLs  = 0.05208
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.439292:	q_mu = 3.93157	q_A  = 3.76410	Pmu = 0.02367	1-Pb  = 0.48279	CLs  = 0.04902
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.435515:	q_mu = 3.88521	q_A  = 3.71710	Pmu = 0.02433	1-Pb  = 0.48261	CLs  = 0.05041
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.437156:	q_mu = 3.90536	q_A  = 3.73756	Pmu = 0.02404	1-Pb  = 0.48269	CLs  = 0.04980
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436399:	q_mu = 3.89608	q_A  = 3.72812	Pmu = 0.02417	1-Pb  = 0.48265	CLs  = 0.05008
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436728:	q_mu = 3.90013	q_A  = 3.73227	Pmu = 0.02411	1-Pb  = 0.48267	CLs  = 0.04996
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436575:	q_mu = 3.89825	q_A  = 3.73033	Pmu = 0.02414	1-Pb  = 0.48266	CLs  = 0.05002
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436640:	q_mu = 3.89908	q_A  = 3.73123	Pmu = 0.02413	1-Pb  = 0.48267	CLs  = 0.04999
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436608:	q_mu = 3.89868	q_A  = 3.73078	Pmu = 0.02413	1-Pb  = 0.48267	CLs  = 0.05000
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436621:	q_mu = 3.89887	q_A  = 3.73103	Pmu = 0.02413	1-Pb  = 0.48267	CLs  = 0.05000
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436614:	q_mu = 3.89877	q_A  = 3.73088	Pmu = 0.02413	1-Pb  = 0.48267	CLs  = 0.05000
-AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.436616:	q_mu = 3.89883	q_A  = 3.73090	Pmu = 0.02413	1-Pb  = 0.48266	CLs  = 0.05000
+AsymptoticLimits.cc[428] : (in function: runLimitExpected) - Median for expected limits = 0.470703, Sigma for expected limits = 0.240159
+AsymptoticLimits.cc[191] : (in function: runLimit) - NLL at global minimum of data = -18299.4 (r=1.13163e-05)
+AsymptoticLimits.cc[211] : (in function: runLimit) - NLL at global minimum of asimov = -18298.9 (r=1.67421e-06)
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1.200011:	q_mu = 13.85936	q_A  = 13.67225	Pmu = 0.00010	1-Pb  = 0.48991	CLs  = 0.00020
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.600011:	q_mu = 5.70576	q_A  = 5.47138	Pmu = 0.00844	1-Pb  = 0.48002	CLs  = 0.01759
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.300011:	q_mu = 2.13754	q_A  = 1.90522	Pmu = 0.07154	1-Pb  = 0.46647	CLs  = 0.15336
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.450011:	q_mu = 3.83222	q_A  = 3.59198	Pmu = 0.02508	1-Pb  = 0.47473	CLs  = 0.05283
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.486010:	q_mu = 4.26986	q_A  = 4.03020	Pmu = 0.01936	1-Pb  = 0.47620	CLs  = 0.04065
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.463252:	q_mu = 3.99195	q_A  = 3.75181	Pmu = 0.02281	1-Pb  = 0.47529	CLs  = 0.04799
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.456071:	q_mu = 3.90506	q_A  = 3.66487	Pmu = 0.02401	1-Pb  = 0.47499	CLs  = 0.05056
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.458727:	q_mu = 3.93712	q_A  = 3.69698	Pmu = 0.02356	1-Pb  = 0.47510	CLs  = 0.04959
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457292:	q_mu = 3.91984	q_A  = 3.67961	Pmu = 0.02380	1-Pb  = 0.47504	CLs  = 0.05011
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457822:	q_mu = 3.92618	q_A  = 3.68601	Pmu = 0.02371	1-Pb  = 0.47506	CLs  = 0.04992
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457537:	q_mu = 3.92272	q_A  = 3.68264	Pmu = 0.02376	1-Pb  = 0.47506	CLs  = 0.05002
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457642:	q_mu = 3.92400	q_A  = 3.68385	Pmu = 0.02375	1-Pb  = 0.47506	CLs  = 0.04998
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457586:	q_mu = 3.92338	q_A  = 3.68317	Pmu = 0.02375	1-Pb  = 0.47505	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457605:	q_mu = 3.92355	q_A  = 3.68340	Pmu = 0.02375	1-Pb  = 0.47506	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457595:	q_mu = 3.92342	q_A  = 3.68328	Pmu = 0.02375	1-Pb  = 0.47506	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 0.457601:	q_mu = 3.92348	q_A  = 3.68343	Pmu = 0.02375	1-Pb  = 0.47507	CLs  = 0.05000

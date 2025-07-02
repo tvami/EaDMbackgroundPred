@@ -11,12 +11,12 @@ Set Default Value of Parameter r To : 1
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 14 : -0.00061787
- - -0.782218	CMS_AN23122_Background_rpf_2x0_par3
- - 0.566995	CMS_AN23122_Background_rpf_2x0_par0
- - 0.258168	CMS_AN23122_Background_rpf_2x0_par1
- - -0.000283032	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.000104522	CMS_AN23122_Background_fail_LOW_bin_2-1
+Eigenvalue 14 : -0.000312061
+ - 0.763017	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.620235	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.181973	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.00021885	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -8.51444e-05	CMS_AN23122_Background_fail_LOW_bin_1-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -33,12 +33,12 @@ Running Minos for POI r
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 15 : -0.000652431
- - -0.780299	CMS_AN23122_Background_rpf_2x0_par3
- - 0.557621	CMS_AN23122_Background_rpf_2x0_par0
- - 0.282669	CMS_AN23122_Background_rpf_2x0_par1
- - -0.0170385	r
- - -0.000478134	CMS_AN23122_Background_fail_LOW_bin_3-1
+Eigenvalue 15 : -0.000326064
+ - 0.761837	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.618665	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.191646	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.0113834	r
+ - 0.00030144	CMS_AN23122_Background_fail_LOW_bin_3-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -52,6 +52,6 @@ Eigenvalue 15 : -0.000652431
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.000110557  -0.000110557/+49.9999  (68% CL)
+Best fit r: 0.000109682  -0.000109682/+49.9999  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-31 log messages saved to combine_logger.out
+29 log messages saved to combine_logger.out
