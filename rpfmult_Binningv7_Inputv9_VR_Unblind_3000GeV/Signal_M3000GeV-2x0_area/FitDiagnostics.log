@@ -8,12 +8,12 @@ Set Default Value of Parameter r To : 1
 >> Found 17 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 16 : -0.000518926
- - 0.738856	CMS_AN23122_Background_rpf_2x0_par3
- - -0.471924	CMS_AN23122_Background_rpf_2x0_par1
- - -0.4327	CMS_AN23122_Background_rpf_2x0_par0
- - 0.210111	CMS_AN23122_Background_rpf_2x0_par2
- - 0.000968446	CMS_AN23122_Background_fail_LOW_bin_3-1
+Eigenvalue 16 : -0.000477262
+ - 0.736982	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.492643	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.419753	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.194846	CMS_AN23122_Background_rpf_2x0_par2
+ - 0.000761278	CMS_AN23122_Background_fail_LOW_bin_3-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -27,12 +27,12 @@ Running Minos for POI r
 >> Found 18 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 17 : -0.000516134
- - -0.748343	CMS_AN23122_Background_rpf_2x0_par3
- - 0.461456	CMS_AN23122_Background_rpf_2x0_par1
- - 0.427766	CMS_AN23122_Background_rpf_2x0_par0
- - -0.205814	CMS_AN23122_Background_rpf_2x0_par2
- - -0.0409565	r
+Eigenvalue 17 : -0.000473723
+ - 0.733918	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.486084	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.430594	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.197694	CMS_AN23122_Background_rpf_2x0_par2
+ - 0.0241905	r
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -44,6 +44,6 @@ Eigenvalue 17 : -0.000516134
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 4.26211e-07  -4.26211e-07/+50  (68% CL)
+Best fit r: 2.40141e-08  -2.40141e-08/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 25 log messages saved to combine_logger.out
