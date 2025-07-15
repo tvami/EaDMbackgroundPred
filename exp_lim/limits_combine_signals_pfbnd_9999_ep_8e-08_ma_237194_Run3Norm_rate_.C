@@ -1,10 +1,10 @@
 #ifdef __CLING__
 #pragma cling optimize(0)
 #endif
-void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
+void limits_combine_signals_pfbnd_9999_ep_8e-08_ma_237194_Run3Norm_rate_()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Mon Jul 14 22:35:27 2025) by ROOT version 6.30/07
+//=========  (Mon Jul 14 22:35:54 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -207,7 +207,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx5[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy5[8] = { 4.240517, 15.57239, 31.68303, 48.55367, 63.71036, 76.18789, 85.88065, 93.06409 };
+   Double_t Graph_fy5[8] = { 9.268613e-05, 5e-05, 0.00243, 0.02871, 0.1619, 0.57784, 1.52466, 3.26245 };
    graph = new TGraph(8,Graph_fx5,Graph_fy5);
    graph->SetName("");
    graph->SetTitle("");
@@ -219,8 +219,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph5 = new TH1F("Graph_Graph5","",100,2.3,10.7);
-   Graph_Graph5->SetMinimum(3.816465);
-   Graph_Graph5->SetMaximum(101.9464);
+   Graph_Graph5->SetMinimum(4.5e-05);
+   Graph_Graph5->SetMaximum(3.58869);
    Graph_Graph5->SetDirectory(nullptr);
    Graph_Graph5->SetStats(0);
    Graph_Graph5->SetLineWidth(2);
@@ -250,7 +250,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx6[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy6[8] = { 3.816465, 14.01515, 28.51473, 43.6983, 57.33932, 68.5691, 77.29258, 83.75768 };
+   Double_t Graph_fy6[8] = { 8.341752e-05, 4.5e-05, 0.002187, 0.025839, 0.14571, 0.520056, 1.372194, 2.936205 };
    graph = new TGraph(8,Graph_fx6,Graph_fy6);
    graph->SetName("");
    graph->SetTitle("");
@@ -263,8 +263,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph6 = new TH1F("Graph_Graph6","",100,2.3,10.7);
-   Graph_Graph6->SetMinimum(3.434819);
-   Graph_Graph6->SetMaximum(91.7518);
+   Graph_Graph6->SetMinimum(4.05e-05);
+   Graph_Graph6->SetMaximum(3.229821);
    Graph_Graph6->SetDirectory(nullptr);
    Graph_Graph6->SetStats(0);
    Graph_Graph6->SetLineWidth(2);
@@ -294,7 +294,7 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->Draw("l");
    
    Double_t Graph_fx7[8] = { 3, 4, 5, 6, 7, 8, 9, 10 };
-   Double_t Graph_fy7[8] = { 4.664569, 17.12963, 34.85133, 53.40904, 70.0814, 83.80668, 94.46871, 102.3705 };
+   Double_t Graph_fy7[8] = { 0.0001019547, 5.5e-05, 0.002673, 0.031581, 0.17809, 0.635624, 1.677126, 3.588695 };
    graph = new TGraph(8,Graph_fx7,Graph_fy7);
    graph->SetName("");
    graph->SetTitle("");
@@ -307,8 +307,8 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    graph->SetMarkerSize(0.5);
    
    TH1F *Graph_Graph7 = new TH1F("Graph_Graph7","",100,2.3,10.7);
-   Graph_Graph7->SetMinimum(4.198112);
-   Graph_Graph7->SetMaximum(112.1411);
+   Graph_Graph7->SetMinimum(4.95e-05);
+   Graph_Graph7->SetMaximum(3.947559);
    Graph_Graph7->SetDirectory(nullptr);
    Graph_Graph7->SetStats(0);
    Graph_Graph7->SetLineWidth(2);
@@ -397,13 +397,13 @@ void limits_combine_signals_pfbnd_9999_ep_4e-08_ma_237194_Run3Norm_rate_()
    line->SetLineWidth(2);
    line->SetNDC();
    line->Draw();
-   line = new TLine(3.438661,0,3.438661,7.50299);
+   line = new TLine(-1,0,-1,-1);
 
    ci = TColor::GetColor("#666666");
    line->SetLineColor(ci);
    line->SetLineStyle(2);
    line->Draw();
-   TLatex *   tex = new TLatex(3.433661,0,"  3.44 TeV");
+   TLatex *   tex = new TLatex(-1.005,0,"  -1.00 TeV");
 
    ci = TColor::GetColor("#666666");
    tex->SetTextColor(ci);
