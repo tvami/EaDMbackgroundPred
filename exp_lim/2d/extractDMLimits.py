@@ -11,14 +11,21 @@ ma_arr = df['ma'].to_numpy()
 mx_arr = df['mx'].to_numpy()
 epsilon_arr = df['epsilon'].to_numpy()
 
-inputFolder = "/Users/sanjitmasanam/Documents/CodingProjects/git_repos/EaDMbackgroundPred/rpf2x0_Binningv3_Inputv4_SR_Blind"
+inputFolder = "./../../rpf2x0_Binningv6_Inputv9_SR_Blind_pfbnd_0.9999"
 
 outputPoints = []
 
-for dmMass in [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]:
+for epsilon in [1.000000e-08,2.000000e-08,3.000000e-08,4.000000e-08,5.000000e-08,6.000000e-08,7.000000e-08,8.000000e-08,9.000000e-08,1.000000e-07]:
+	print(epsilon)
+	for dmMass in [3000,4000,5000,6000,7000,8000,9000,10000]:
+                ######### HACK TO CORRECT LIMITS #########
+                print(float(rate_CMS_arr[(np.isclose(ma_arr, np.full(ma_arr.shape, 0.237194))) & (np.isclose(mx_arr, np.full(mx_arr.shape, dmMass))) & (np.isclose(epsilon_arr, np.full(epsilon_arr.shape, epsilon), rtol=5e-10, atol=5e-10))]))
+
+for dmMass in [3000,4000,5000,6000,7000,8000,9000,10000]:
 	for epsilon in [1.000000e-08,2.000000e-08,3.000000e-08,4.000000e-08,5.000000e-08,6.000000e-08,7.000000e-08,8.000000e-08,9.000000e-08,1.000000e-07]:
-		######### HACK FOR WRONG XS NUMBERS. SET TO ONE AFTER FIXED. #########
-		scale = float(0.01 * 2 * rate_CMS_arr[(np.isclose(ma_arr, np.full(ma_arr.shape, 0.237194))) & (np.isclose(mx_arr, np.full(mx_arr.shape, dmMass))) & (np.isclose(epsilon_arr, np.full(epsilon_arr.shape, epsilon), rtol=5e-10, atol=5e-10))])
+		######### HACK TO CORRECT LIMITS #########
+		print(float(rate_CMS_arr[(np.isclose(ma_arr, np.full(ma_arr.shape, 0.237194))) & (np.isclose(mx_arr, np.full(mx_arr.shape, dmMass))) & (np.isclose(epsilon_arr, np.full(epsilon_arr.shape, epsilon), rtol=5e-10, atol=5e-10))]))
+		scale = 100
 		print("Scale: ", scale)
 
 		limitInfo = {}
@@ -28,13 +35,13 @@ for dmMass in [1000,2000,3000,4000,5000,6000,7000,8000,9000,10000]:
 		inputTree = inputFile.Get("limit")
 
 		tmpDict = {}
-		tmpDict["m1"] = dmMass
-		tmpDict["m2"] = epsilon
+		tmpDict["m2"] = dmMass
+		tmpDict["m1"] = epsilon
 		#tmpDict["dm"] = tmpDict["m1"]-tmpDict["m2"]
 
 		# inputTree.Print()
 		for entry in inputTree:
-			# print(entry.)
+			# print(entry)
 			# print(entry.limit)
 			# print(entry.quantileExpected)
 
