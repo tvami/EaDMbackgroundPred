@@ -37,8 +37,8 @@ _rpf_options = {
     '1x0': {
         'form': '0.1*(@0+@1*x)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -50, "MAX": 500}
+            0: {"MIN": -10, "MAX": 50},
+            1: {"MIN": 0.0, "MAX": 500}
         }
     },
     '1x0Prime': {
@@ -370,8 +370,8 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
-    tf_types = ['2x0','1x0','0x0']
+    signal_areas = ["Signal_M3000GeV"]#,"Signal_M3000GeV","Signal_M3000GeV"]
+    tf_types = ['1x0']#,'1x0','0x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -398,4 +398,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    test_FTest('1x0','2x0',"Signal_M3000GeV")
+    #test_FTest('1x0','2x0',"Signal_M3000GeV")
