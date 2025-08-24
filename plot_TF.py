@@ -8,10 +8,10 @@ tdrstyle.setTDRStyle()
 if __name__ == "__main__":
     
     binning = "v6"
-    inVersion = "v9"
-    region = 'VR'
+    inVersion = "v10"
+    region = 'SR'
     blinding = 'Unblind'
-    extra = '3000GeV'
+    extra = '3000GeV_normalized'
     
     for MdM_val, tf in zip([3000,3000,3000], ['0x0', '2x0', '1x0']):
         MdM_val = int(MdM_val)
