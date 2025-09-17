@@ -38,7 +38,7 @@ _rpf_options = {
         'form': '0.1*(@0+@1*x)',
         'constraints': {
             0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -10, "MAX": 10}
+            1: {"MIN": -0.1, "MAX": 0.1}
         }
     },
     '1x0Prime': {
@@ -398,4 +398,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    test_FTest('0x0','2x0',"Signal_M3000GeV")
+    test_FTest('1x0','2x0',"Signal_M3000GeV")
