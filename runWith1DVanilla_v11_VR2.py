@@ -38,7 +38,7 @@ _rpf_options = {
         'form': '0.1*(@0+@1*x)',
         'constraints': {
             0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -50, "MAX": 500}
+            1: {"MIN": -10, "MAX": 10}
         }
     },
     '1x0Prime': {
