@@ -8,8 +8,8 @@ tdrstyle.setTDRStyle()
 if __name__ == "__main__":
     
     binning = "v6"
-    inVersion = "v10"
-    region = 'SR'
+    inVersion = "v11"
+    region = 'VR2'
     blinding = 'Unblind'
     extra = '3000GeV_normalized'
     
