@@ -11,12 +11,12 @@ Set Default Value of Parameter r To : 1
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 14 : -0.000167699
- - 0.734839	CMS_AN23122_Background_rpf_2x0_par3
- - -0.665864	CMS_AN23122_Background_rpf_2x0_par0
- - -0.128983	CMS_AN23122_Background_rpf_2x0_par1
- - 0.000383121	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.000174586	CMS_AN23122_Background_fail_LOW_bin_1-1
+Eigenvalue 14 : -0.00023929
+ - -0.743854	CMS_AN23122_Background_rpf_2x0_par3
+ - 0.656694	CMS_AN23122_Background_rpf_2x0_par0
+ - 0.124232	CMS_AN23122_Background_rpf_2x0_par1
+ - -0.000318043	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.000185677	CMS_AN23122_Background_fail_LOW_bin_2-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -33,25 +33,14 @@ Running Minos for POI r
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 15 : -0.00244086
- - 0.643414	r
- - -0.508077	CMS_AN23122_Background_rpf_2x0_par1
- - -0.435989	CMS_AN23122_Background_fail_HIGH_bin_2-1
- - 0.313717	CMS_AN23122_Background_rpf_2x0_par3
- - -0.139973	CMS_AN23122_Background_fail_HIGH_bin_3-1
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_2x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
      - CMS_AN23122_Background_rpf_2x0_par2
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_rpf_2x0_par1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 2.03445e-05  -2.03445e-05/+50  (68% CL)
+Best fit r: 0.0066089  -0.0066089/+49.9934  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-31 log messages saved to combine_logger.out
+29 log messages saved to combine_logger.out
