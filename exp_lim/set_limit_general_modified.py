@@ -245,7 +245,7 @@ for theory_xsecs in total_theory_xsec_list:
             g_mclimit.SetMinimum(2e-6) #0.005
             g_mclimit.SetMaximum(0.02)
         else:
-            g_mclimit.GetXaxis().SetRangeUser(0.5, 3.0)
+            g_mclimit.GetXaxis().SetRangeUser(0.5, 10.0)
             g_mclimit.SetMinimum(2e-1) #0.005
             g_mclimit.SetMaximum(1e5)
         if ("Prime" in cstr) :
