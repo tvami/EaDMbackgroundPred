@@ -119,7 +119,7 @@ for theory_xsecs in total_theory_xsec_list:
         this_xsec = signal_xsecs[this_index]
         this_mass = signal_mass[this_index]
         print('Processing ' + this_name + ' with mass ' + str(this_mass) + ' and xsec ' + str(this_xsec))
-        this_output = TFile.Open(options.outdir+"/"+this_name+'/higgsCombineTest.AsymptoticLimits.mH120.root')
+        this_output = TFile.Open(this_name+'/higgsCombineTest.AsymptoticLimits.mH120.root')
         if not this_output: continue
         this_tree = this_output.Get('limit')
 
@@ -216,50 +216,50 @@ for theory_xsecs in total_theory_xsec_list:
         g_limit.SetLineWidth(2)
         g_limit.SetMarkerSize(1) #0.5
         if ("tau" in cstr) :
-        g_limit.GetXaxis().SetRangeUser(0.1, 1.5)
-        g_limit.SetMinimum(5e-6) #0.005
-        g_limit.SetMaximum(0.02)
+            g_limit.GetXaxis().SetRangeUser(0.1, 1.5)
+            g_limit.SetMinimum(5e-6) #0.005
+            g_limit.SetMaximum(0.02)
         else:
-        g_limit.GetXaxis().SetRangeUser(0.8, 3.0)
-        g_limit.SetMinimum(5e-5) #0.005
-        g_limit.SetMaximum(0.2)
+            g_limit.GetXaxis().SetRangeUser(0.8, 3.0)
+            g_limit.SetMinimum(5e-5) #0.005
+            g_limit.SetMaximum(0.2)
         if ("Prime" in cstr) :
-        g_limit.GetXaxis().SetRangeUser(0.8, 3.0)
-        g_limit.SetMinimum(5e-6) #0.005
-        g_limit.SetMaximum(0.02)
+            g_limit.GetXaxis().SetRangeUser(0.8, 3.0)
+            g_limit.SetMinimum(5e-6) #0.005
+            g_limit.SetMaximum(0.02)
         if ("ZPrime" in cstr) :
-        g_limit.GetXaxis().SetRangeUser(3.0, 7.0)
-        g_limit.SetMinimum(5e-7) #0.005
-        g_limit.SetMaximum(0.002)
+            g_limit.GetXaxis().SetRangeUser(3.0, 7.0)
+            g_limit.SetMinimum(5e-7) #0.005
+            g_limit.SetMaximum(0.002)
         if ("BH" in cstr) :
-        #   g_limit.GetXaxis().SetRangeUser(2.5, 11.5)
-        g_limit.GetXaxis().SetRangeUser(4.5, 11.5)
-        g_limit.SetMaximum(1)
-        g_limit.SetMinimum(1e-5)
+            #g_limit.GetXaxis().SetRangeUser(2.5, 11.5)
+            g_limit.GetXaxis().SetRangeUser(4.5, 11.5)
+            g_limit.SetMaximum(1)
+            g_limit.SetMinimum(1e-5)
     else:
         print('Blinded')
         g_mclimit.GetXaxis().SetTitle("M("+options.particle+") [TeV]")  # NOT GENERIC
         g_mclimit.GetYaxis().SetTitle("Cross Section [pb]") # NOT GENERIC
         if ("tau" in cstr) :
-        g_mclimit.GetXaxis().SetRangeUser(0.1, 1.5)
-        g_mclimit.SetMinimum(2e-6) #0.005
-        g_mclimit.SetMaximum(0.02)
+            g_mclimit.GetXaxis().SetRangeUser(0.1, 1.5)
+            g_mclimit.SetMinimum(2e-6) #0.005
+            g_mclimit.SetMaximum(0.02)
         else:
-        g_mclimit.GetXaxis().SetRangeUser(0.5, 3.0)
-        g_mclimit.SetMinimum(2e-1) #0.005
-        g_mclimit.SetMaximum(1e5)
+            g_mclimit.GetXaxis().SetRangeUser(0.5, 3.0)
+            g_mclimit.SetMinimum(2e-1) #0.005
+            g_mclimit.SetMaximum(1e5)
         if ("Prime" in cstr) :
-        g_mclimit.GetXaxis().SetRangeUser(0.8, 3.0)
-        g_mclimit.SetMinimum(5e-6) #0.005
-        g_mclimit.SetMaximum(0.02)
+            g_mclimit.GetXaxis().SetRangeUser(0.8, 3.0)
+            g_mclimit.SetMinimum(5e-6) #0.005
+            g_mclimit.SetMaximum(0.02)
         if ("ZPrime" in cstr) :
-        g_mclimit.GetXaxis().SetRangeUser(3.0, 7.0)
-        g_mclimit.SetMinimum(5e-7) #0.005
-        g_mclimit.SetMaximum(0.002)
+            g_mclimit.GetXaxis().SetRangeUser(3.0, 7.0)
+            g_mclimit.SetMinimum(5e-7) #0.005
+            g_mclimit.SetMaximum(0.002)
         if ("BH" in cstr) :
-        g_mclimit.GetXaxis().SetRangeUser(2.5, 11.5)
-        g_mclimit.SetMaximum(1)
-        g_mclimit.SetMinimum(1e-5)
+            g_mclimit.GetXaxis().SetRangeUser(2.5, 11.5)
+            g_mclimit.SetMaximum(1)
+            g_mclimit.SetMinimum(1e-5)
     # Expected
     # g_mclimit = TGraph(len(x_mass), x_mass, y_mclimit)
     # g_mclimit.SetTitle("")
@@ -337,7 +337,7 @@ for theory_xsecs in total_theory_xsec_list:
     q = 0
     for index,mass in enumerate(signal_mass):
         rt_xsec = 0.9*theory_xsecs[index]
-        graphWPdown.SetPoint(q,    mass ,   rt_xsec    )
+
         q+=1
 
     graphWPup.SetLineStyle(2 )
@@ -516,7 +516,14 @@ for theory_xsecs in total_theory_xsec_list:
     print("Will save: ", expectedMassLimit)
     exp_lim.append(expectedMassLimit)
 
+    if not os.path.exists(options.outdir):
+        os.mkdir(options.outdir)
+
     filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr+str(labels[label_counter])
     climits.SaveAs(os.path.join(options.outdir, filename+".pdf"))
     climits.SaveAs(os.path.join(options.outdir, filename+".C"))
     label_counter += 1
+    print(label_counter)
+
+print(labels)
+print(exp_lim)
