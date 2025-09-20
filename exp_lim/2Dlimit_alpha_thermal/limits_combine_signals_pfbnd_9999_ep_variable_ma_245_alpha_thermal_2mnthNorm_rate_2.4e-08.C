@@ -4,12 +4,12 @@
 void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNorm_rate_2.4e-08()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Fri Sep 19 15:02:12 2025) by ROOT version 6.30/07
+//=========  (Fri Sep 19 18:40:25 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
    climits->SetHighLightColor(2);
-   climits->Range(-0.23185,-1.838764,5.73515,5.759863);
+   climits->Range(-0.30575,-1.838764,10.57525,5.759863);
    climits->SetFillColor(0);
    climits->SetBorderMode(0);
    climits->SetBorderSize(2);
@@ -22,8 +22,8 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    climits->SetFrameLineWidth(2);
    climits->SetFrameBorderMode(0);
    
-   Double_t Graph0_fx15[28] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5 };
+   Double_t Graph0_fx15[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
    Double_t Graph0_fy15[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 0.00743866, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
    15.91797, 16.01562, 17.72461, 15.625, 15.33203, 15.47852, 15.33203, 15.52734, 15.82031, 16.25977, 17.1875 };
    TGraph *graph = new TGraph(28,Graph0_fx15,Graph0_fy15);
@@ -35,7 +35,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(21);
    graph->SetMarkerSize(0);
    
-   TH1F *Graph_Graph015 = new TH1F("Graph_Graph015","",100,0.71,5.39);
+   TH1F *Graph_Graph015 = new TH1F("Graph_Graph015","",100,1.42,10.78);
    Graph_Graph015->SetMinimum(0.2);
    Graph_Graph015->SetMaximum(100000);
    Graph_Graph015->SetDirectory(nullptr);
@@ -44,7 +44,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    Graph_Graph015->SetMarkerStyle(20);
    Graph_Graph015->SetMarkerSize(0.9);
    Graph_Graph015->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph015->GetXaxis()->SetRange(0,101);
+   Graph_Graph015->GetXaxis()->SetRange(0,92);
    Graph_Graph015->GetXaxis()->SetLabelFont(42);
    Graph_Graph015->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph015->GetXaxis()->SetLabelSize(0.05);
@@ -69,10 +69,10 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    
    graph->Draw("al");
    
-   Double_t Graph1_fx16[58] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5, 5, 5, 4.75, 4.5,
-   4.25, 4, 3.75, 3.5, 3.25, 3, 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1, 2,
-   1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1 };
+   Double_t Graph1_fx16[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10, 10, 10, 9.5, 9,
+   8.5, 8, 7.5, 7, 6.5, 6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2, 4,
+   3.8, 3.6, 3.4, 3.2, 3, 2.8, 2.6, 2.4, 2.2 };
    Double_t Graph1_fy16[58] = { 58.779, 51.64776, 45.92929, 43.98549, 45.6157, 46.96366, 45.67817, 0.01811666, 42.26104, 41.07864, 41.22047, 41.3882, 41.46952, 41.86501, 42.41551, 41.4595, 41.57227,
    40.74936, 41.49311, 44.80825, 40.66233, 40.35588, 41.43917, 41.70946, 42.87254, 44.21722, 46.20752, 49.26201, 49.26201, 6.848145, 6.848145, 6.60553, 6.4888,
    6.429291, 6.468201, 6.650925, 6.707764, 6.896973, 7.89299, 7.006836, 7.026291, 7.349396, 7.544708, 7.989883, 8.102417, 8.010864, 7.787323, 7.609749, 7.587433,
@@ -90,7 +90,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(20);
    graph->SetMarkerSize(0.9);
    
-   TH1F *Graph_Graph116 = new TH1F("Graph_Graph116","Graph",100,0.71,5.39);
+   TH1F *Graph_Graph116 = new TH1F("Graph_Graph116","Graph",100,1.42,10.78);
    Graph_Graph116->SetMinimum(0.003138185);
    Graph_Graph116->SetMaximum(64.65655);
    Graph_Graph116->SetDirectory(nullptr);
@@ -121,10 +121,10 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    
    graph->Draw("lf");
    
-   Double_t Graph2_fx17[58] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5, 5, 5, 5, 4.75, 4.5,
-   4.25, 4, 3.75, 3.5, 3.25, 3, 2.9, 2.8, 2.7, 2.6, 2.5, 2.4, 2.3, 2.2, 2.1, 2,
-   1.9, 1.8, 1.7, 1.6, 1.5, 1.4, 1.3, 1.2, 1.1 };
+   Double_t Graph2_fx17[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10, 10, 10, 9.5, 9,
+   8.5, 8, 7.5, 7, 6.5, 6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2, 4,
+   3.8, 3.6, 3.4, 3.2, 3, 2.8, 2.6, 2.4, 2.2 };
    Double_t Graph2_fy17[58] = { 41.08932, 34.68272, 30.43059, 29.10126, 30.56705, 31.66236, 30.49195, 0.01194558, 27.44781, 26.52774, 26.5394, 26.79385, 26.96737, 27.20667, 27.4908, 26.67214, 26.60195,
    25.87957, 26.19794, 28.60487, 25.59011, 25.23252, 25.72039, 25.66032, 26.23477, 26.91895, 27.92595, 29.65634, 29.65634, 10.4023, 10.4023, 9.924173, 9.696507,
    9.556746, 9.515142, 9.685409, 9.739733, 9.96542, 11.42623, 10.17399, 10.187, 10.6393, 10.81706, 11.34792, 11.40246, 11.27362, 11.06023, 10.7881, 10.82689,
@@ -140,7 +140,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(20);
    graph->SetMarkerSize(0.9);
    
-   TH1F *Graph_Graph217 = new TH1F("Graph_Graph217","Graph",100,0.71,5.39);
+   TH1F *Graph_Graph217 = new TH1F("Graph_Graph217","Graph",100,1.42,10.78);
    Graph_Graph217->SetMinimum(0.004694201);
    Graph_Graph217->SetMaximum(45.19773);
    Graph_Graph217->SetDirectory(nullptr);
@@ -171,8 +171,8 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    
    graph->Draw("lf");
    
-   Double_t Graph0_fx18[28] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5 };
+   Double_t Graph0_fx18[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
    Double_t Graph0_fy18[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 0.00743866, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
    15.91797, 16.01562, 17.72461, 15.625, 15.33203, 15.47852, 15.33203, 15.52734, 15.82031, 16.25977, 17.1875 };
    graph = new TGraph(28,Graph0_fx18,Graph0_fy18);
@@ -184,7 +184,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(21);
    graph->SetMarkerSize(0);
    
-   TH1F *Graph_Graph018 = new TH1F("Graph_Graph018","",100,0.71,5.39);
+   TH1F *Graph_Graph018 = new TH1F("Graph_Graph018","",100,1.42,10.78);
    Graph_Graph018->SetMinimum(0.2);
    Graph_Graph018->SetMaximum(100000);
    Graph_Graph018->SetDirectory(nullptr);
@@ -193,7 +193,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    Graph_Graph018->SetMarkerStyle(20);
    Graph_Graph018->SetMarkerSize(0.9);
    Graph_Graph018->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph018->GetXaxis()->SetRange(0,101);
+   Graph_Graph018->GetXaxis()->SetRange(0,92);
    Graph_Graph018->GetXaxis()->SetLabelFont(42);
    Graph_Graph018->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph018->GetXaxis()->SetLabelSize(0.05);
@@ -218,8 +218,8 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    
    graph->Draw("l");
    
-   Double_t Graph_fx19[28] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5 };
+   Double_t Graph_fx19[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
    Double_t Graph_fy19[28] = { 2.306593, 2.46898, 2.695331, 2.823448, 2.896114, 2.962375, 2.97428, 2.988568, 2.968711, 2.943437, 2.902728, 2.854565, 2.799859, 2.740612, 2.6784, 2.614022, 2.548686,
    2.4828, 2.417076, 2.351868, 2.162458, 2.043189, 1.876538, 1.773855, 1.632164, 1.545524, 1.426428, 1.353728 };
    graph = new TGraph(28,Graph_fx19,Graph_fy19);
@@ -232,7 +232,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(23);
    graph->SetMarkerSize(0.5);
    
-   TH1F *Graph_Graph19 = new TH1F("Graph_Graph19","",100,0.71,5.39);
+   TH1F *Graph_Graph19 = new TH1F("Graph_Graph19","",100,1.42,10.78);
    Graph_Graph19->SetMinimum(1.190244);
    Graph_Graph19->SetMaximum(3.152052);
    Graph_Graph19->SetDirectory(nullptr);
@@ -275,8 +275,8 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerSize(0.5);
    graph->Draw("l");
    
-   Double_t Graph_fx21[28] = { 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7,
-   2.8, 2.9, 3, 3.25, 3.5, 3.75, 4, 4.25, 4.5, 4.75, 5 };
+   Double_t Graph_fx21[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
    Double_t Graph_fy21[28] = { 2.537253, 2.715878, 2.964865, 3.105793, 3.185725, 3.258613, 3.271708, 3.287425, 3.265582, 3.23778, 3.193001, 3.140022, 3.079845, 3.014673, 2.94624, 2.875424, 2.803554,
    2.73108, 2.658784, 2.587055, 2.378704, 2.247508, 2.064192, 1.951241, 1.79538, 1.700076, 1.569071, 1.489101 };
    graph = new TGraph(28,Graph_fx21,Graph_fy21);
@@ -290,7 +290,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(23);
    graph->SetMarkerSize(0.5);
    
-   TH1F *Graph_Graph21 = new TH1F("Graph_Graph21","",100,0.71,5.39);
+   TH1F *Graph_Graph21 = new TH1F("Graph_Graph21","",100,1.42,10.78);
    Graph_Graph21->SetMinimum(1.309269);
    Graph_Graph21->SetMaximum(3.467257);
    Graph_Graph21->SetDirectory(nullptr);
@@ -381,13 +381,13 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    line->SetLineWidth(2);
    line->SetNDC();
    line->Draw();
-   line = new TLine(1.724033,0,1.724033,2.977708);
+   line = new TLine(3.448067,0,3.448067,2.977708);
 
    ci = TColor::GetColor("#666666");
    line->SetLineColor(ci);
    line->SetLineStyle(2);
    line->Draw();
-   TLatex *   tex = new TLatex(1.719033,0,"  1.72 TeV");
+   TLatex *   tex = new TLatex(3.443067,0,"  3.45 TeV");
 
    ci = TColor::GetColor("#666666");
    tex->SetTextColor(ci);
@@ -397,7 +397,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    tex->SetLineWidth(2);
    tex->Draw();
    
-   TH1F *Graph_copy = new TH1F("Graph_copy","",100,0.71,5.39);
+   TH1F *Graph_copy = new TH1F("Graph_copy","",100,1.42,10.78);
    Graph_copy->SetMinimum(1e-06);
    Graph_copy->SetMaximum(1000);
    Graph_copy->SetDirectory(nullptr);
@@ -406,7 +406,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    Graph_copy->SetMarkerStyle(20);
    Graph_copy->SetMarkerSize(0.9);
    Graph_copy->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_copy->GetXaxis()->SetRange(0,101);
+   Graph_copy->GetXaxis()->SetRange(0,92);
    Graph_copy->GetXaxis()->SetLabelFont(42);
    Graph_copy->GetXaxis()->SetLabelOffset(0.015);
    Graph_copy->GetXaxis()->SetLabelSize(0.05);
