@@ -33,24 +33,15 @@ Running Minos for POI r
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 15 : -0.00145254
- - -0.59791	CMS_AN23122_Background_rpf_2x0_par3
- - 0.56298	CMS_AN23122_Background_rpf_2x0_par1
- - -0.445975	r
- - 0.308765	CMS_AN23122_Background_rpf_2x0_par0
- - 0.167921	CMS_AN23122_Background_fail_HIGH_bin_1-1
+Eigenvalue 15 : -0.00129409
+ - 0.621376	CMS_AN23122_Background_rpf_2x0_par3
+ - -0.536247	CMS_AN23122_Background_rpf_2x0_par1
+ - 0.42536	r
+ - -0.345816	CMS_AN23122_Background_rpf_2x0_par0
+ - -0.152395	CMS_AN23122_Background_fail_HIGH_bin_1-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 14 : -3.18392e-05
- - 0.668074	CMS_AN23122_Background_rpf_2x0_par1
- - -0.629673	r
- - -0.306325	CMS_AN23122_Background_rpf_2x0_par0
- - 0.238787	CMS_AN23122_Background_fail_HIGH_bin_1-1
- - 0.0715521	CMS_AN23122_Background_fail_SIG_bin_1-1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_2x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
@@ -58,10 +49,9 @@ Eigenvalue 14 : -3.18392e-05
      - CMS_AN23122_Background_rpf_2x0_par2
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
      - CMS_AN23122_Background_rpf_2x0_par3
-     - CMS_AN23122_Background_rpf_2x0_par1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 2.87669e-10  -2.87669e-10/+50  (68% CL)
+Best fit r: 7.05122e-12  -7.05122e-12/+50  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-30 log messages saved to combine_logger.out
+29 log messages saved to combine_logger.out
