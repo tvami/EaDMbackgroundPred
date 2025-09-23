@@ -81,6 +81,8 @@ num_rate = options.num_rate
 total_theory_xsec_list = []
 labels = [4.00e-09, 1.40e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2.0e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.40e-08, 3.40e-08, 4.40e-08, 5.40e-08, 6.40e-08, 7.40e-08, 8.40e-08, 9.40e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07]
 exp_lim = []
+exp_lim_upper = []
+exp_lim_lower = []
 
 # Open signal file
 signal_file = open(options.signals,'r')
@@ -515,6 +517,8 @@ for theory_xsecs in total_theory_xsec_list:
 
     print("Will save: ", expectedMassLimit)
     exp_lim.append(expectedMassLimit)
+    exp_lim_upper.append(upLimit)
+    exp_lim_lower.append(lowLimit)
 
     if not os.path.exists(options.outdir):
         os.mkdir(options.outdir)
@@ -526,4 +530,6 @@ for theory_xsecs in total_theory_xsec_list:
     print(label_counter)
 
 print(labels)
-print(exp_lim)
+print("Exp lim: ", exp_lim)
+print("Lower Exp limt: ", exp_lim_lower)
+print("Upper Exp limit: ", exp_lim_upper)
