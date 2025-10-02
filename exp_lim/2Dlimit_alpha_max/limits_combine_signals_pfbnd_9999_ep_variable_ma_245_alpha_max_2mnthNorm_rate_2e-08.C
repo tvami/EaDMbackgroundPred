@@ -4,7 +4,7 @@
 void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_2mnthNorm_rate_2e-08()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Fri Sep 19 20:08:04 2025) by ROOT version 6.30/07
+//=========  (Wed Oct  1 19:53:54 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -43,7 +43,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_2mnthNorm_ra
    Graph_Graph050->SetLineWidth(2);
    Graph_Graph050->SetMarkerStyle(20);
    Graph_Graph050->SetMarkerSize(0.9);
-   Graph_Graph050->GetXaxis()->SetTitle("m(X) [TeV]");
+   Graph_Graph050->GetXaxis()->SetTitle("m(#chi) [TeV]");
    Graph_Graph050->GetXaxis()->SetRange(0,92);
    Graph_Graph050->GetXaxis()->SetLabelFont(42);
    Graph_Graph050->GetXaxis()->SetLabelOffset(0.015);
@@ -192,7 +192,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_2mnthNorm_ra
    Graph_Graph053->SetLineWidth(2);
    Graph_Graph053->SetMarkerStyle(20);
    Graph_Graph053->SetMarkerSize(0.9);
-   Graph_Graph053->GetXaxis()->SetTitle("m(X) [TeV]");
+   Graph_Graph053->GetXaxis()->SetTitle("m(#chi) [TeV]");
    Graph_Graph053->GetXaxis()->SetRange(0,92);
    Graph_Graph053->GetXaxis()->SetLabelFont(42);
    Graph_Graph053->GetXaxis()->SetLabelOffset(0.015);
@@ -405,7 +405,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_2mnthNorm_ra
    Graph_copy->SetLineWidth(2);
    Graph_copy->SetMarkerStyle(20);
    Graph_copy->SetMarkerSize(0.9);
-   Graph_copy->GetXaxis()->SetTitle("m(X) [TeV]");
+   Graph_copy->GetXaxis()->SetTitle("m(#chi) [TeV]");
    Graph_copy->GetXaxis()->SetRange(0,92);
    Graph_copy->GetXaxis()->SetLabelFont(42);
    Graph_copy->GetXaxis()->SetLabelOffset(0.015);

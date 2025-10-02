@@ -4,7 +4,7 @@
 void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNorm_rate_1.24e-07()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Fri Sep 19 19:22:07 2025) by ROOT version 6.30/07
+//=========  (Wed Oct  1 19:55:48 2025) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -22,11 +22,11 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    climits->SetFrameLineWidth(2);
    climits->SetFrameBorderMode(0);
    
-   Double_t Graph0_fx85[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph0_fx148[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
-   Double_t Graph0_fy85[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 18.50586, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
+   Double_t Graph0_fy148[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 18.50586, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
    15.91797, 16.01562, 17.72461, 15.625, 15.33203, 15.47852, 15.33203, 15.52734, 15.82031, 16.25977, 17.1875 };
-   TGraph *graph = new TGraph(28,Graph0_fx85,Graph0_fy85);
+   TGraph *graph = new TGraph(28,Graph0_fx148,Graph0_fy148);
    graph->SetName("Graph0");
    graph->SetTitle("");
    graph->SetFillStyle(1000);
@@ -35,49 +35,49 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(21);
    graph->SetMarkerSize(0);
    
-   TH1F *Graph_Graph085 = new TH1F("Graph_Graph085","",100,1.42,10.78);
-   Graph_Graph085->SetMinimum(0.2);
-   Graph_Graph085->SetMaximum(100000);
-   Graph_Graph085->SetDirectory(nullptr);
-   Graph_Graph085->SetStats(0);
-   Graph_Graph085->SetLineWidth(2);
-   Graph_Graph085->SetMarkerStyle(20);
-   Graph_Graph085->SetMarkerSize(0.9);
-   Graph_Graph085->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph085->GetXaxis()->SetRange(0,92);
-   Graph_Graph085->GetXaxis()->SetLabelFont(42);
-   Graph_Graph085->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph085->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph085->GetXaxis()->SetTitleSize(0.055);
-   Graph_Graph085->GetXaxis()->SetTitleOffset(1.25);
-   Graph_Graph085->GetXaxis()->SetTitleFont(42);
-   Graph_Graph085->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
-   Graph_Graph085->GetYaxis()->SetLabelFont(42);
-   Graph_Graph085->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph085->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph085->GetYaxis()->SetTitleSize(0.05);
-   Graph_Graph085->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph085->GetYaxis()->SetTitleOffset(1.5);
-   Graph_Graph085->GetYaxis()->SetTitleFont(42);
-   Graph_Graph085->GetZaxis()->SetLabelFont(42);
-   Graph_Graph085->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph085->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph085->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph085->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph085->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph085);
+   TH1F *Graph_Graph0148 = new TH1F("Graph_Graph0148","",100,1.42,10.78);
+   Graph_Graph0148->SetMinimum(0.2);
+   Graph_Graph0148->SetMaximum(100000);
+   Graph_Graph0148->SetDirectory(nullptr);
+   Graph_Graph0148->SetStats(0);
+   Graph_Graph0148->SetLineWidth(2);
+   Graph_Graph0148->SetMarkerStyle(20);
+   Graph_Graph0148->SetMarkerSize(0.9);
+   Graph_Graph0148->GetXaxis()->SetTitle("m(#Chi) [TeV]");
+   Graph_Graph0148->GetXaxis()->SetRange(0,92);
+   Graph_Graph0148->GetXaxis()->SetLabelFont(42);
+   Graph_Graph0148->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph0148->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph0148->GetXaxis()->SetTitleSize(0.055);
+   Graph_Graph0148->GetXaxis()->SetTitleOffset(1.25);
+   Graph_Graph0148->GetXaxis()->SetTitleFont(42);
+   Graph_Graph0148->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
+   Graph_Graph0148->GetYaxis()->SetLabelFont(42);
+   Graph_Graph0148->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph0148->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph0148->GetYaxis()->SetTitleSize(0.05);
+   Graph_Graph0148->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph0148->GetYaxis()->SetTitleOffset(1.5);
+   Graph_Graph0148->GetYaxis()->SetTitleFont(42);
+   Graph_Graph0148->GetZaxis()->SetLabelFont(42);
+   Graph_Graph0148->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph0148->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph0148->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph0148->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph0148->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph0148);
    
    graph->Draw("al");
    
-   Double_t Graph1_fx86[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph1_fx149[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10, 10, 10, 9.5, 9,
    8.5, 8, 7.5, 7, 6.5, 6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2, 4,
    3.8, 3.6, 3.4, 3.2, 3, 2.8, 2.6, 2.4, 2.2 };
-   Double_t Graph1_fy86[58] = { 58.779, 51.64776, 45.92929, 43.98549, 45.6157, 46.96366, 45.67817, 44.11966, 42.26104, 41.07864, 41.22047, 41.3882, 41.46952, 41.86501, 42.41551, 41.4595, 41.57227,
+   Double_t Graph1_fy149[58] = { 58.779, 51.64776, 45.92929, 43.98549, 45.6157, 46.96366, 45.67817, 44.11966, 42.26104, 41.07864, 41.22047, 41.3882, 41.46952, 41.86501, 42.41551, 41.4595, 41.57227,
    40.74936, 41.49311, 44.80825, 40.66233, 40.35588, 41.43917, 41.70946, 42.87254, 44.21722, 46.20752, 49.26201, 49.26201, 6.848145, 6.848145, 6.60553, 6.4888,
    6.429291, 6.468201, 6.650925, 6.707764, 6.896973, 7.89299, 7.006836, 7.026291, 7.349396, 7.544708, 7.989883, 8.102417, 8.010864, 7.787323, 7.609749, 7.587433,
    7.967377, 8.674622, 9.602356, 10.23788, 9.626007, 8.935547, 9.307861, 10.86216, 13.86166 };
-   graph = new TGraph(58,Graph1_fx86,Graph1_fy86);
+   graph = new TGraph(58,Graph1_fx149,Graph1_fy149);
    graph->SetName("Graph1");
    graph->SetTitle("Graph");
 
@@ -90,46 +90,46 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(20);
    graph->SetMarkerSize(0.9);
    
-   TH1F *Graph_Graph186 = new TH1F("Graph_Graph186","Graph",100,1.42,10.78);
-   Graph_Graph186->SetMinimum(1.19432);
-   Graph_Graph186->SetMaximum(64.01397);
-   Graph_Graph186->SetDirectory(nullptr);
-   Graph_Graph186->SetStats(0);
-   Graph_Graph186->SetLineWidth(2);
-   Graph_Graph186->SetMarkerStyle(20);
-   Graph_Graph186->SetMarkerSize(0.9);
-   Graph_Graph186->GetXaxis()->SetLabelFont(42);
-   Graph_Graph186->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph186->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph186->GetXaxis()->SetTitleSize(0.065);
-   Graph_Graph186->GetXaxis()->SetTitleOffset(1.1);
-   Graph_Graph186->GetXaxis()->SetTitleFont(42);
-   Graph_Graph186->GetYaxis()->SetLabelFont(42);
-   Graph_Graph186->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph186->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph186->GetYaxis()->SetTitleSize(0.065);
-   Graph_Graph186->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph186->GetYaxis()->SetTitleOffset(1.1);
-   Graph_Graph186->GetYaxis()->SetTitleFont(42);
-   Graph_Graph186->GetZaxis()->SetLabelFont(42);
-   Graph_Graph186->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph186->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph186->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph186->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph186->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph186);
+   TH1F *Graph_Graph1149 = new TH1F("Graph_Graph1149","Graph",100,1.42,10.78);
+   Graph_Graph1149->SetMinimum(1.19432);
+   Graph_Graph1149->SetMaximum(64.01397);
+   Graph_Graph1149->SetDirectory(nullptr);
+   Graph_Graph1149->SetStats(0);
+   Graph_Graph1149->SetLineWidth(2);
+   Graph_Graph1149->SetMarkerStyle(20);
+   Graph_Graph1149->SetMarkerSize(0.9);
+   Graph_Graph1149->GetXaxis()->SetLabelFont(42);
+   Graph_Graph1149->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph1149->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph1149->GetXaxis()->SetTitleSize(0.065);
+   Graph_Graph1149->GetXaxis()->SetTitleOffset(1.1);
+   Graph_Graph1149->GetXaxis()->SetTitleFont(42);
+   Graph_Graph1149->GetYaxis()->SetLabelFont(42);
+   Graph_Graph1149->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph1149->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph1149->GetYaxis()->SetTitleSize(0.065);
+   Graph_Graph1149->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph1149->GetYaxis()->SetTitleOffset(1.1);
+   Graph_Graph1149->GetYaxis()->SetTitleFont(42);
+   Graph_Graph1149->GetZaxis()->SetLabelFont(42);
+   Graph_Graph1149->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph1149->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph1149->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph1149->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph1149->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph1149);
    
    graph->Draw("lf");
    
-   Double_t Graph2_fx87[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph2_fx150[58] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10, 10, 10, 10, 9.5, 9,
    8.5, 8, 7.5, 7, 6.5, 6, 5.8, 5.6, 5.4, 5.2, 5, 4.8, 4.6, 4.4, 4.2, 4,
    3.8, 3.6, 3.4, 3.2, 3, 2.8, 2.6, 2.4, 2.2 };
-   Double_t Graph2_fy87[58] = { 41.08932, 34.68272, 30.43059, 29.10126, 30.56705, 31.66236, 30.49195, 28.98051, 27.44781, 26.52774, 26.5394, 26.79385, 26.96737, 27.20667, 27.4908, 26.67214, 26.60195,
+   Double_t Graph2_fy150[58] = { 41.08932, 34.68272, 30.43059, 29.10126, 30.56705, 31.66236, 30.49195, 28.98051, 27.44781, 26.52774, 26.5394, 26.79385, 26.96737, 27.20667, 27.4908, 26.67214, 26.60195,
    25.87957, 26.19794, 28.60487, 25.59011, 25.23252, 25.72039, 25.66032, 26.23477, 26.91895, 27.92595, 29.65634, 29.65634, 10.4023, 10.4023, 9.924173, 9.696507,
    9.556746, 9.515142, 9.685409, 9.739733, 9.96542, 11.42623, 10.17399, 10.187, 10.6393, 10.81706, 11.34792, 11.40246, 11.27362, 11.06023, 10.7881, 10.82689,
    11.31595, 12.20772, 13.27584, 14.11645, 13.38859, 12.46262, 13.06176, 15.17487, 19.31883 };
-   graph = new TGraph(58,Graph2_fx87,Graph2_fy87);
+   graph = new TGraph(58,Graph2_fx150,Graph2_fy150);
    graph->SetName("Graph2");
    graph->SetTitle("Graph");
 
@@ -140,42 +140,42 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(20);
    graph->SetMarkerSize(0.9);
    
-   TH1F *Graph_Graph287 = new TH1F("Graph_Graph287","Graph",100,1.42,10.78);
-   Graph_Graph287->SetMinimum(6.357724);
-   Graph_Graph287->SetMaximum(44.24674);
-   Graph_Graph287->SetDirectory(nullptr);
-   Graph_Graph287->SetStats(0);
-   Graph_Graph287->SetLineWidth(2);
-   Graph_Graph287->SetMarkerStyle(20);
-   Graph_Graph287->SetMarkerSize(0.9);
-   Graph_Graph287->GetXaxis()->SetLabelFont(42);
-   Graph_Graph287->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph287->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph287->GetXaxis()->SetTitleSize(0.065);
-   Graph_Graph287->GetXaxis()->SetTitleOffset(1.1);
-   Graph_Graph287->GetXaxis()->SetTitleFont(42);
-   Graph_Graph287->GetYaxis()->SetLabelFont(42);
-   Graph_Graph287->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph287->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph287->GetYaxis()->SetTitleSize(0.065);
-   Graph_Graph287->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph287->GetYaxis()->SetTitleOffset(1.1);
-   Graph_Graph287->GetYaxis()->SetTitleFont(42);
-   Graph_Graph287->GetZaxis()->SetLabelFont(42);
-   Graph_Graph287->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph287->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph287->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph287->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph287->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph287);
+   TH1F *Graph_Graph2150 = new TH1F("Graph_Graph2150","Graph",100,1.42,10.78);
+   Graph_Graph2150->SetMinimum(6.357724);
+   Graph_Graph2150->SetMaximum(44.24674);
+   Graph_Graph2150->SetDirectory(nullptr);
+   Graph_Graph2150->SetStats(0);
+   Graph_Graph2150->SetLineWidth(2);
+   Graph_Graph2150->SetMarkerStyle(20);
+   Graph_Graph2150->SetMarkerSize(0.9);
+   Graph_Graph2150->GetXaxis()->SetLabelFont(42);
+   Graph_Graph2150->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph2150->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph2150->GetXaxis()->SetTitleSize(0.065);
+   Graph_Graph2150->GetXaxis()->SetTitleOffset(1.1);
+   Graph_Graph2150->GetXaxis()->SetTitleFont(42);
+   Graph_Graph2150->GetYaxis()->SetLabelFont(42);
+   Graph_Graph2150->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph2150->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph2150->GetYaxis()->SetTitleSize(0.065);
+   Graph_Graph2150->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph2150->GetYaxis()->SetTitleOffset(1.1);
+   Graph_Graph2150->GetYaxis()->SetTitleFont(42);
+   Graph_Graph2150->GetZaxis()->SetLabelFont(42);
+   Graph_Graph2150->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph2150->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph2150->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph2150->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph2150->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph2150);
    
    graph->Draw("lf");
    
-   Double_t Graph0_fx88[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph0_fx151[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
-   Double_t Graph0_fy88[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 18.50586, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
+   Double_t Graph0_fy151[28] = { 27.83203, 22.60742, 19.53125, 18.75, 19.87305, 20.80078, 19.82422, 18.50586, 17.28516, 16.60156, 16.65039, 16.89453, 17.08984, 17.28516, 17.33398, 16.65039, 16.50391,
    15.91797, 16.01562, 17.72461, 15.625, 15.33203, 15.47852, 15.33203, 15.52734, 15.82031, 16.25977, 17.1875 };
-   graph = new TGraph(28,Graph0_fx88,Graph0_fy88);
+   graph = new TGraph(28,Graph0_fx151,Graph0_fy151);
    graph->SetName("Graph0");
    graph->SetTitle("");
    graph->SetFillStyle(1000);
@@ -184,45 +184,45 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(21);
    graph->SetMarkerSize(0);
    
-   TH1F *Graph_Graph088 = new TH1F("Graph_Graph088","",100,1.42,10.78);
-   Graph_Graph088->SetMinimum(0.2);
-   Graph_Graph088->SetMaximum(100000);
-   Graph_Graph088->SetDirectory(nullptr);
-   Graph_Graph088->SetStats(0);
-   Graph_Graph088->SetLineWidth(2);
-   Graph_Graph088->SetMarkerStyle(20);
-   Graph_Graph088->SetMarkerSize(0.9);
-   Graph_Graph088->GetXaxis()->SetTitle("m(X) [TeV]");
-   Graph_Graph088->GetXaxis()->SetRange(0,92);
-   Graph_Graph088->GetXaxis()->SetLabelFont(42);
-   Graph_Graph088->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph088->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph088->GetXaxis()->SetTitleSize(0.055);
-   Graph_Graph088->GetXaxis()->SetTitleOffset(1.25);
-   Graph_Graph088->GetXaxis()->SetTitleFont(42);
-   Graph_Graph088->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
-   Graph_Graph088->GetYaxis()->SetLabelFont(42);
-   Graph_Graph088->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph088->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph088->GetYaxis()->SetTitleSize(0.05);
-   Graph_Graph088->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph088->GetYaxis()->SetTitleOffset(1.5);
-   Graph_Graph088->GetYaxis()->SetTitleFont(42);
-   Graph_Graph088->GetZaxis()->SetLabelFont(42);
-   Graph_Graph088->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph088->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph088->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph088->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph088->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph088);
+   TH1F *Graph_Graph0151 = new TH1F("Graph_Graph0151","",100,1.42,10.78);
+   Graph_Graph0151->SetMinimum(0.2);
+   Graph_Graph0151->SetMaximum(100000);
+   Graph_Graph0151->SetDirectory(nullptr);
+   Graph_Graph0151->SetStats(0);
+   Graph_Graph0151->SetLineWidth(2);
+   Graph_Graph0151->SetMarkerStyle(20);
+   Graph_Graph0151->SetMarkerSize(0.9);
+   Graph_Graph0151->GetXaxis()->SetTitle("m(#Chi) [TeV]");
+   Graph_Graph0151->GetXaxis()->SetRange(0,92);
+   Graph_Graph0151->GetXaxis()->SetLabelFont(42);
+   Graph_Graph0151->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph0151->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph0151->GetXaxis()->SetTitleSize(0.055);
+   Graph_Graph0151->GetXaxis()->SetTitleOffset(1.25);
+   Graph_Graph0151->GetXaxis()->SetTitleFont(42);
+   Graph_Graph0151->GetYaxis()->SetTitle("Monthly DM-induced muon rate");
+   Graph_Graph0151->GetYaxis()->SetLabelFont(42);
+   Graph_Graph0151->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph0151->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph0151->GetYaxis()->SetTitleSize(0.05);
+   Graph_Graph0151->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph0151->GetYaxis()->SetTitleOffset(1.5);
+   Graph_Graph0151->GetYaxis()->SetTitleFont(42);
+   Graph_Graph0151->GetZaxis()->SetLabelFont(42);
+   Graph_Graph0151->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph0151->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph0151->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph0151->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph0151->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph0151);
    
    graph->Draw("l");
    
-   Double_t Graph_fx89[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph_fx152[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
-   Double_t Graph_fy89[28] = { 3.182257e-33, 3.303702e-30, 1.163206e-27, 1.752794e-25, 1.340475e-23, 5.911881e-22, 1.6578e-20, 3.188839e-19, 4.467088e-18, 4.780698e-17, 4.062986e-16, 2.8303e-15, 1.658822e-14, 8.359802e-14, 3.689376e-13, 1.448027e-12, 5.121253e-12,
-   1.650597e-11, 4.895347e-11, 1.34726e-10, 1.920537e-09, 8.690263e-09, 6.140394e-08, 1.908346e-07, 8.505422e-07, 2.05139e-06, 6.65027e-06, 1.341192e-05 };
-   graph = new TGraph(28,Graph_fx89,Graph_fy89);
+   Double_t Graph_fy152[28] = { 1.111286e-105, 1.510647e-96, 7.976312e-89, 3.284234e-82, 1.757836e-76, 1.794053e-71, 4.679733e-67, 3.917947e-63, 1.260161e-59, 1.797921e-56, 1.278302e-53, 4.981449e-51, 1.151015e-48, 1.683665e-46, 1.647285e-44, 1.129351e-42, 5.644787e-41,
+   2.128006e-39, 6.230407e-38, 1.453088e-36, 5.795524e-33, 6.559812e-31, 3.071701e-28, 1.102247e-26, 1.257962e-24, 2.072991e-23, 8.888982e-22, 8.440765e-21 };
+   graph = new TGraph(28,Graph_fx152,Graph_fy152);
    graph->SetName("");
    graph->SetTitle("");
    graph->SetFillStyle(1000);
@@ -232,34 +232,34 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(23);
    graph->SetMarkerSize(0.5);
    
-   TH1F *Graph_Graph89 = new TH1F("Graph_Graph89","",100,1.42,10.78);
-   Graph_Graph89->SetMinimum(2.864031e-33);
-   Graph_Graph89->SetMaximum(1.475311e-05);
-   Graph_Graph89->SetDirectory(nullptr);
-   Graph_Graph89->SetStats(0);
-   Graph_Graph89->SetLineWidth(2);
-   Graph_Graph89->SetMarkerStyle(20);
-   Graph_Graph89->SetMarkerSize(0.9);
-   Graph_Graph89->GetXaxis()->SetLabelFont(42);
-   Graph_Graph89->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph89->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph89->GetXaxis()->SetTitleSize(0.065);
-   Graph_Graph89->GetXaxis()->SetTitleOffset(1.1);
-   Graph_Graph89->GetXaxis()->SetTitleFont(42);
-   Graph_Graph89->GetYaxis()->SetLabelFont(42);
-   Graph_Graph89->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph89->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph89->GetYaxis()->SetTitleSize(0.065);
-   Graph_Graph89->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph89->GetYaxis()->SetTitleOffset(1.1);
-   Graph_Graph89->GetYaxis()->SetTitleFont(42);
-   Graph_Graph89->GetZaxis()->SetLabelFont(42);
-   Graph_Graph89->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph89->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph89->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph89->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph89->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph89);
+   TH1F *Graph_Graph152 = new TH1F("Graph_Graph152","",100,1.42,10.78);
+   Graph_Graph152->SetMinimum(1.000158e-105);
+   Graph_Graph152->SetMaximum(9.284842e-21);
+   Graph_Graph152->SetDirectory(nullptr);
+   Graph_Graph152->SetStats(0);
+   Graph_Graph152->SetLineWidth(2);
+   Graph_Graph152->SetMarkerStyle(20);
+   Graph_Graph152->SetMarkerSize(0.9);
+   Graph_Graph152->GetXaxis()->SetLabelFont(42);
+   Graph_Graph152->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph152->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph152->GetXaxis()->SetTitleSize(0.065);
+   Graph_Graph152->GetXaxis()->SetTitleOffset(1.1);
+   Graph_Graph152->GetXaxis()->SetTitleFont(42);
+   Graph_Graph152->GetYaxis()->SetLabelFont(42);
+   Graph_Graph152->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph152->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph152->GetYaxis()->SetTitleSize(0.065);
+   Graph_Graph152->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph152->GetYaxis()->SetTitleOffset(1.1);
+   Graph_Graph152->GetYaxis()->SetTitleFont(42);
+   Graph_Graph152->GetZaxis()->SetLabelFont(42);
+   Graph_Graph152->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph152->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph152->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph152->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph152->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph152);
    
    graph->Draw("l");
    
@@ -275,11 +275,11 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerSize(0.5);
    graph->Draw("l");
    
-   Double_t Graph_fx91[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
+   Double_t Graph_fx154[28] = { 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.2, 4.4, 4.6, 4.8, 5, 5.2, 5.4,
    5.6, 5.8, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10 };
-   Double_t Graph_fy91[28] = { 3.500483e-33, 3.634072e-30, 1.279526e-27, 1.928074e-25, 1.474522e-23, 6.503069e-22, 1.82358e-20, 3.507723e-19, 4.913797e-18, 5.258767e-17, 4.469285e-16, 3.11333e-15, 1.824704e-14, 9.195783e-14, 4.058313e-13, 1.59283e-12, 5.633379e-12,
-   1.815657e-11, 5.384882e-11, 1.481986e-10, 2.11259e-09, 9.559289e-09, 6.754433e-08, 2.099181e-07, 9.355964e-07, 2.256529e-06, 7.315297e-06, 1.475311e-05 };
-   graph = new TGraph(28,Graph_fx91,Graph_fy91);
+   Double_t Graph_fy154[28] = { 1.222415e-105, 1.661711e-96, 8.773943e-89, 3.612657e-82, 1.93362e-76, 1.973458e-71, 5.147706e-67, 4.309742e-63, 1.386177e-59, 1.977713e-56, 1.406132e-53, 5.479593e-51, 1.266117e-48, 1.852032e-46, 1.812014e-44, 1.242287e-42, 6.209266e-41,
+   2.340807e-39, 6.853447e-38, 1.598397e-36, 6.375076e-33, 7.215793e-31, 3.378871e-28, 1.212472e-26, 1.383758e-24, 2.28029e-23, 9.77788e-22, 9.284842e-21 };
+   graph = new TGraph(28,Graph_fx154,Graph_fy154);
    graph->SetName("");
    graph->SetTitle("");
    graph->SetFillStyle(1000);
@@ -290,34 +290,34 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    graph->SetMarkerStyle(23);
    graph->SetMarkerSize(0.5);
    
-   TH1F *Graph_Graph91 = new TH1F("Graph_Graph91","",100,1.42,10.78);
-   Graph_Graph91->SetMinimum(3.150434e-33);
-   Graph_Graph91->SetMaximum(1.622842e-05);
-   Graph_Graph91->SetDirectory(nullptr);
-   Graph_Graph91->SetStats(0);
-   Graph_Graph91->SetLineWidth(2);
-   Graph_Graph91->SetMarkerStyle(20);
-   Graph_Graph91->SetMarkerSize(0.9);
-   Graph_Graph91->GetXaxis()->SetLabelFont(42);
-   Graph_Graph91->GetXaxis()->SetLabelOffset(0.015);
-   Graph_Graph91->GetXaxis()->SetLabelSize(0.05);
-   Graph_Graph91->GetXaxis()->SetTitleSize(0.065);
-   Graph_Graph91->GetXaxis()->SetTitleOffset(1.1);
-   Graph_Graph91->GetXaxis()->SetTitleFont(42);
-   Graph_Graph91->GetYaxis()->SetLabelFont(42);
-   Graph_Graph91->GetYaxis()->SetLabelOffset(0.015);
-   Graph_Graph91->GetYaxis()->SetLabelSize(0.05);
-   Graph_Graph91->GetYaxis()->SetTitleSize(0.065);
-   Graph_Graph91->GetYaxis()->SetTickLength(0.02);
-   Graph_Graph91->GetYaxis()->SetTitleOffset(1.1);
-   Graph_Graph91->GetYaxis()->SetTitleFont(42);
-   Graph_Graph91->GetZaxis()->SetLabelFont(42);
-   Graph_Graph91->GetZaxis()->SetLabelOffset(0.015);
-   Graph_Graph91->GetZaxis()->SetLabelSize(0.05);
-   Graph_Graph91->GetZaxis()->SetTitleSize(0.065);
-   Graph_Graph91->GetZaxis()->SetTitleOffset(1.1);
-   Graph_Graph91->GetZaxis()->SetTitleFont(42);
-   graph->SetHistogram(Graph_Graph91);
+   TH1F *Graph_Graph154 = new TH1F("Graph_Graph154","",100,1.42,10.78);
+   Graph_Graph154->SetMinimum(1.100174e-105);
+   Graph_Graph154->SetMaximum(1.021333e-20);
+   Graph_Graph154->SetDirectory(nullptr);
+   Graph_Graph154->SetStats(0);
+   Graph_Graph154->SetLineWidth(2);
+   Graph_Graph154->SetMarkerStyle(20);
+   Graph_Graph154->SetMarkerSize(0.9);
+   Graph_Graph154->GetXaxis()->SetLabelFont(42);
+   Graph_Graph154->GetXaxis()->SetLabelOffset(0.015);
+   Graph_Graph154->GetXaxis()->SetLabelSize(0.05);
+   Graph_Graph154->GetXaxis()->SetTitleSize(0.065);
+   Graph_Graph154->GetXaxis()->SetTitleOffset(1.1);
+   Graph_Graph154->GetXaxis()->SetTitleFont(42);
+   Graph_Graph154->GetYaxis()->SetLabelFont(42);
+   Graph_Graph154->GetYaxis()->SetLabelOffset(0.015);
+   Graph_Graph154->GetYaxis()->SetLabelSize(0.05);
+   Graph_Graph154->GetYaxis()->SetTitleSize(0.065);
+   Graph_Graph154->GetYaxis()->SetTickLength(0.02);
+   Graph_Graph154->GetYaxis()->SetTitleOffset(1.1);
+   Graph_Graph154->GetYaxis()->SetTitleFont(42);
+   Graph_Graph154->GetZaxis()->SetLabelFont(42);
+   Graph_Graph154->GetZaxis()->SetLabelOffset(0.015);
+   Graph_Graph154->GetZaxis()->SetLabelSize(0.05);
+   Graph_Graph154->GetZaxis()->SetTitleSize(0.065);
+   Graph_Graph154->GetZaxis()->SetTitleOffset(1.1);
+   Graph_Graph154->GetZaxis()->SetTitleFont(42);
+   graph->SetHistogram(Graph_Graph154);
    
    graph->Draw("l");
    
@@ -405,7 +405,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_thermal_2mnthNor
    Graph_copy->SetLineWidth(2);
    Graph_copy->SetMarkerStyle(20);
    Graph_copy->SetMarkerSize(0.9);
-   Graph_copy->GetXaxis()->SetTitle("m(X) [TeV]");
+   Graph_copy->GetXaxis()->SetTitle("m(#Chi) [TeV]");
    Graph_copy->GetXaxis()->SetRange(0,92);
    Graph_copy->GetXaxis()->SetLabelFont(42);
    Graph_copy->GetXaxis()->SetLabelOffset(0.015);
