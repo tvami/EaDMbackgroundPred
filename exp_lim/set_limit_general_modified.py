@@ -49,7 +49,7 @@ parser.add_option('-m', '--mod', metavar='F', type='string', action='store',
                 dest          =       'mod',
                 help          =       'Modification to limit title on y-axis. For example, different handedness of the signal')
 parser.add_option('-p', '--particle', type='string', action='store',
-                default       =       "#Chi",
+                default       =       "#chi",
                 dest          =       'particle',
                 help          =       'Name of Dark Photon. e.g. A^{#prime}')
 parser.add_option('-x', '--process', type='string', action='store',
