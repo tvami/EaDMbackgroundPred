@@ -1,0 +1,73 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 41 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 39 : -5.55001e-17
+ - 0.713509	CMS_AN23122_Background_fail_HIGH_bin_23-1
+ - -0.700646	CMS_AN23122_Background_fail_HIGH_bin_29-1
+ - -6.52467e-12	CMS_AN23122_Background_fail_HIGH_bin_22-1
+ - -6.52451e-12	CMS_AN23122_Background_fail_HIGH_bin_27-1
+ - -3.91163e-12	CMS_AN23122_Background_fail_HIGH_bin_3-1
+Eigenvalue 40 : -1.88864e-16
+ - 0.713509	CMS_AN23122_Background_fail_HIGH_bin_29-1
+ - 0.700646	CMS_AN23122_Background_fail_HIGH_bin_23-1
+ - -7.17318e-10	CMS_AN23122_Background_fail_HIGH_bin_22-1
+ - -7.17318e-10	CMS_AN23122_Background_fail_HIGH_bin_27-1
+ - -4.30035e-10	CMS_AN23122_Background_fail_HIGH_bin_3-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_HIGH_bin_29-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_fail_HIGH_bin_29-1
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 42 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 40 : -3.20142e-10
+ - 0.707107	CMS_AN23122_Background_fail_HIGH_bin_23-1
+ - -0.707107	CMS_AN23122_Background_fail_HIGH_bin_29-1
+ - 2.56332e-16	CMS_AN23122_Background_fail_HIGH_bin_25-1
+ - 1.86998e-16	CMS_AN23122_Background_fail_HIGH_bin_10-1
+ - 1.71575e-16	CMS_AN23122_Background_fail_HIGH_bin_14-1
+Eigenvalue 41 : -0.00225267
+ - 0.925782	r
+ - 0.23021	CMS_AN23122_Background_rpf_expo_par0
+ - -0.0912396	CMS_AN23122_Background_fail_HIGH_bin_17-1
+ - -0.0750899	CMS_AN23122_Background_fail_HIGH_bin_28-1
+ - -0.0750745	CMS_AN23122_Background_fail_HIGH_bin_26-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_expo_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 40 : -3.20142e-10
+ - -0.707107	CMS_AN23122_Background_fail_HIGH_bin_23-1
+ - 0.707107	CMS_AN23122_Background_fail_HIGH_bin_29-1
+ - 8.98587e-16	r
+ - -2.64545e-16	CMS_AN23122_Background_fail_HIGH_bin_25-1
+ - 2.41127e-16	CMS_AN23122_Background_fail_HIGH_bin_10-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_HIGH_bin_23-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_rpf_expo_par0
+     - CMS_AN23122_Background_fail_HIGH_bin_23-1
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 0.00017234  -0.00017234/+49.9998  (68% CL)
+Done in 0.01 min (cpu), 0.01 min (real)
+32 log messages saved to combine_logger.out
