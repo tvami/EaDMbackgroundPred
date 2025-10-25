@@ -18,23 +18,39 @@ Running Minos for POI r
 >> Found 16 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 15 : -0.00210111
- - -0.7334	r
- - -0.481284	CMS_AN23122_Background_rpf_expo_par0
- - 0.462397	CMS_AN23122_Background_fail_HIGH_bin_5-1
- - 0.0674865	CMS_AN23122_Background_fail_HIGH_bin_4-1
- - 0.0659422	CMS_AN23122_Background_fail_HIGH_bin_3-1
+Eigenvalue 14 : -0.00559341
+ - 0.916744	CMS_AN23122_Background_rpf_expo_par0
+ - 0.371914	CMS_AN23122_Background_rpf_expo_par1
+ - 0.119226	r
+ - -0.0746496	RNN
+ - 0.0285461	CMS_AN23122_Background_fail_HIGH_bin_5-1
+Eigenvalue 15 : -0.17463
+ - -0.819491	CMS_AN23122_Background_fail_HIGH_bin_5-1
+ - -0.545302	pT
+ - 0.133712	r
+ - 0.103772	RNN
+ - 0.0260996	CMS_AN23122_Background_rpf_expo_par0
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_expo_par0 from the hessian
+>> Dropping CMS_AN23122_Background_fail_HIGH_bin_5-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 14 : -0.00581048
+ - 0.917123	CMS_AN23122_Background_rpf_expo_par0
+ - 0.371766	CMS_AN23122_Background_rpf_expo_par1
+ - 0.123752	r
+ - -0.0711853	RNN
+ - -0.00858134	CMS_AN23122_Background_fail_HIGH_bin_2-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_expo_par0 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_fail_HIGH_bin_5-1
      - CMS_AN23122_Background_rpf_expo_par0
-Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+Fit S+B, status = 3, numBadNLL = 2, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 0.0416974  -0.0416974/+49.9583  (68% CL)
+Best fit r: 49.9743  -49.9743/+0.0257042  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-23 log messages saved to combine_logger.out
+21 log messages saved to combine_logger.out

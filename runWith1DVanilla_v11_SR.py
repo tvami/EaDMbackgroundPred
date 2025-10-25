@@ -36,7 +36,10 @@ _rpf_options = {
     },
     '1x0': {
         'form': '0.1*(@0+@1*x)',
-        'constraints': _generate_constraints(2) 
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": -50, "MAX": 500}
+        }
     },
     '1x0Prime': {
         'form': '0.1*(@0+@1*x+@2/x)',
@@ -52,7 +55,12 @@ _rpf_options = {
     },
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
-        'constraints': _generate_constraints(4)
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 100},
+            1: {"MIN": 50, "MAX": 100},
+            2: {"MIN": -50, "MAX": 0},
+            3: {"MIN": 0, "MAX": 0.1}
+        }
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
