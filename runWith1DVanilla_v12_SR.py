@@ -396,4 +396,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M3000GeV")
+    test_FTest('1x0','2x0',"Signal_M3000GeV")
