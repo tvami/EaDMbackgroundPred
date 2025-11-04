@@ -367,9 +367,9 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
     
-    signal_areas = ["Signal_M3000GeV", "Signal_M3000GeV", "Signal_M3000GeV"]#"Signal_M900GeV","Signal_M1000GeV","Signal_M1100GeV","Signal_M1200GeV","Signal_M1300GeV","Signal_M1400GeV",]
-    #signal_areas = ["Signal_M1500GeV","Signal_M1600GeV","Signal_M1700GeV","Signal_M1800GeV","Signal_M1900GeV","Signal_M2000GeV"]#,"Signal_M2100GeV","Signal_M2200GeV","Signal_M2300GeV","Signal_M2400GeV","Signal_M2500GeV","Signal_M2600GeV","Signal_M2700GeV","Signal_M2800GeV","Signal_M2900GeV","Signal_M3000GeV","Signal_M3250GeV","Signal_M3500GeV","Signal_M3750GeV","Signal_M4000GeV","Signal_M4250GeV","Signal_M4500GeV","Signal_M4750GeV","Signal_M5000GeV"]
-    tf_types = ['0x0', '1x0', '2x0']
+    #signal_areas = ["Signal_M3000GeV", "Signal_M3000GeV", "Signal_M3000GeV"]#"Signal_M900GeV","Signal_M1000GeV","Signal_M1100GeV","Signal_M1200GeV","Signal_M1300GeV","Signal_M1400GeV",]
+    signal_areas = ["Signal_M1100GeV","Signal_M1200GeV","Signal_M1300GeV","Signal_M1400GeV","Signal_M1500GeV","Signal_M1600GeV","Signal_M1700GeV","Signal_M1800GeV","Signal_M1900GeV","Signal_M2000GeV","Signal_M2100GeV","Signal_M2200GeV","Signal_M2300GeV","Signal_M2400GeV","Signal_M2500GeV","Signal_M2600GeV","Signal_M2700GeV","Signal_M2800GeV","Signal_M2900GeV","Signal_M3000GeV","Signal_M3250GeV","Signal_M3500GeV","Signal_M3750GeV","Signal_M4000GeV","Signal_M4250GeV","Signal_M4500GeV","Signal_M4750GeV","Signal_M5000GeV"]
+    tf_types = ['2x0'] * 28
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -396,4 +396,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    test_FTest('1x0','2x0',"Signal_M3000GeV")
+    #test_FTest('1x0','2x0',"Signal_M3000GeV")
