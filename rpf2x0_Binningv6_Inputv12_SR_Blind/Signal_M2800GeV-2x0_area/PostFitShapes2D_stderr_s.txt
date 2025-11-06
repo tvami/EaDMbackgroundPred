@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 0.50002   
-pass_LOW                  0.50377   
-pass_SIG                  0.50010   
+pass_HIGH                 0.50004   
+pass_LOW                  0.50590   
+pass_SIG                  0.50030   
 >> Doing postfit: fail_HIGH,CMS_AN23122_Background
 >> Doing postfit: fail_HIGH,Signal_M2800GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  0.50010
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.01594   
-fail_LOW                  0.00114   
-fail_SIG                  0.00796   
-pass_HIGH                 1.01573   
-pass_LOW                  0.71658   
-pass_SIG                  0.79147   
+fail_HIGH                 0.00596   
+fail_LOW                  0.00117   
+fail_SIG                  0.00439   
+pass_HIGH                 1.55253   
+pass_LOW                  0.74677   
+pass_SIG                  0.91518   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 CMS_AN23122_Background 1.00000   
-fail_HIGH                 Signal_M2800GeV_SR   0.00192   
+fail_HIGH                 CMS_AN23122_Background 0.99963   
+fail_HIGH                 Signal_M2800GeV_SR   2.68441   
 fail_LOW                  CMS_AN23122_Background 1.00000   
-fail_LOW                  Signal_M2800GeV_SR   0.00192   
-fail_SIG                  CMS_AN23122_Background 1.00000   
-fail_SIG                  Signal_M2800GeV_SR   0.00192   
-pass_HIGH                 CMS_AN23122_Background_2x0 0.00228   
-pass_HIGH                 Signal_M2800GeV_SR   0.00192   
-pass_LOW                  CMS_AN23122_Background_2x0 0.01038   
-pass_LOW                  Signal_M2800GeV_SR   0.00192   
-pass_SIG                  CMS_AN23122_Background_2x0 0.00307   
-pass_SIG                  Signal_M2800GeV_SR   0.00192   
+fail_LOW                  Signal_M2800GeV_SR   2.68419   
+fail_SIG                  CMS_AN23122_Background 0.99999   
+fail_SIG                  Signal_M2800GeV_SR   2.68429   
+pass_HIGH                 CMS_AN23122_Background_2x0 0.00226   
+pass_HIGH                 Signal_M2800GeV_SR   2.68358   
+pass_LOW                  CMS_AN23122_Background_2x0 0.01246   
+pass_LOW                  Signal_M2800GeV_SR   2.68344   
+pass_SIG                  CMS_AN23122_Background_2x0 0.00384   
+pass_SIG                  Signal_M2800GeV_SR   2.68345   
