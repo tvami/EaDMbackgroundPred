@@ -7,7 +7,7 @@ tdrstyle.setTDRStyle()
 
 if __name__ == "__main__":
     
-    binning = "v6"
+    binning = "v6alt"
     inVersion = "v11"
     region = 'VR2'
     blinding = 'Unblind'
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         h_ratio.GetYaxis().SetTitleSize(0.05)
         tdrstyle.drawCMSInternal()
         # save the canvas
-        c.SaveAs(f"TF_plots/rpf{tf}_Binning{binning}_Input{inVersion}_{region}_{blinding}_{extra}.png")
+        c.SaveAs(f"TF_plots/rpf{tf}_Binning{binning}_Input{inVersion}_{region}_{blinding}_{extra}_TF.png")
         # close the file
         f.Close()
         print(f"DM: {MdM_val} GeV + {tf} TF is done.")
