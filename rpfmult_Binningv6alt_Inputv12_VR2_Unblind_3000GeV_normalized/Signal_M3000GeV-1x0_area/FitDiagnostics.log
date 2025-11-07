@@ -8,240 +8,194 @@ Set Default Value of Parameter r To : 1
 >> Found 13 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 11 : -2.7086e-07
- - -0.766799	CMS_AN23122_Background_fail_LOW_bin_2-1
- - 0.589592	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.190411	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.157964	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.0563083	CMS_AN23122_Background_fail_LOW_bin_5-1
-Eigenvalue 12 : -5.86931e-07
- - 0.652781	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.633208	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.40112	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.107338	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.0213787	CMS_AN23122_Background_fail_LOW_bin_2-1
+Eigenvalue 10 : -8.4343e-08
+ - -0.740334	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.399392	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.371103	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - 0.283298	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - 0.272794	CMS_AN23122_Background_fail_LOW_bin_3-1
+Eigenvalue 11 : -2.35376e-07
+ - 0.614832	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - -0.552406	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.535362	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.151674	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 0.0849171	CMS_AN23122_Background_fail_LOW_bin_4-1
+Eigenvalue 12 : -1.3663e-06
+ - -0.709084	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - -0.503755	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.396235	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.283041	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.079477	CMS_AN23122_Background_fail_LOW_bin_2-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_3-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 10 : -2.28677e-08
- - 0.693776	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.572439	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.401226	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.162014	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.0515851	CMS_AN23122_Background_rpf_1x0_par0
-Eigenvalue 11 : -3.08463e-07
- - 0.623612	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.597602	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.480989	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.150408	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.00203193	CMS_AN23122_Background_rpf_1x0_par1
->> Attempt 1 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_2-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 2)
-Eigenvalue 10 : -1.87465e-07
- - -0.673479	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.657938	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.33674	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.0100662	CMS_AN23122_Background_rpf_1x0_par1
- - 0.00699639	CMS_AN23122_Background_rpf_1x0_par0
->> Attempt 2 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_1-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 3)
-Eigenvalue 9 : -3.90318e-08
- - -0.939721	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.341091	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.0190108	CMS_AN23122_Background_rpf_1x0_par1
- - -0.0148232	CMS_AN23122_Background_rpf_1x0_par0
- - 1.80977e-06	CMS_AN23122_Background_fail_SIG_bin_1-1
->> Attempt 3 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_fail_LOW_bin_4-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 10 : -2.199e-07
+ - -0.697257	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.505424	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.483621	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - -0.156493	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 2.4886e-06	CMS_AN23122_Background_rpf_1x0_par0
+Eigenvalue 11 : -4.3034e-07
+ - -0.714625	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.51353	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.394904	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.263912	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - 2.13788e-06	CMS_AN23122_Background_rpf_1x0_par0
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_LOW_bin_1-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+Eigenvalue 10 : -2.32498e-07
+ - 0.660862	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.543595	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - -0.517461	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 1.6463e-06	CMS_AN23122_Background_rpf_1x0_par0
+ - 3.98947e-07	CMS_AN23122_Background_rpf_1x0_par1
+>> Attempt 2 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_LOW_bin_3-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 3)
+Eigenvalue 9 : -8.09218e-08
+ - -0.841883	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.53966	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - 3.3943e-06	CMS_AN23122_Background_rpf_1x0_par0
+ - 2.00693e-07	CMS_AN23122_Background_rpf_1x0_par1
+ - -1.4018e-08	CMS_AN23122_Background_fail_SIG_bin_1-1
+>> Attempt 3 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_fail_LOW_bin_5-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 4)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_fail_LOW_bin_3-1
-     - CMS_AN23122_Background_fail_LOW_bin_2-1
-     - CMS_AN23122_Background_fail_LOW_bin_1-1
      - CMS_AN23122_Background_fail_LOW_bin_4-1
+     - CMS_AN23122_Background_fail_LOW_bin_1-1
+     - CMS_AN23122_Background_fail_LOW_bin_3-1
+     - CMS_AN23122_Background_fail_LOW_bin_5-1
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 14 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 11 : -2.75604e-07
- - 0.693117	CMS_AN23122_Background_fail_LOW_bin_2-1
- - 0.474992	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.451652	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.295313	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.0526393	CMS_AN23122_Background_fail_LOW_bin_5-1
-Eigenvalue 12 : -9.35535e-07
- - -0.530739	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.509544	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.483013	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.427409	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.206575	CMS_AN23122_Background_fail_LOW_bin_2-1
-Eigenvalue 13 : -0.00030814
- - 0.999201	r
- - 0.0377761	RNN
- - 0.0127588	lumi
- - 0.0020646	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.00170373	CMS_AN23122_Background_fail_LOW_bin_4-1
+Eigenvalue 11 : -5.15303e-07
+ - -0.718173	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.568392	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.372565	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - -0.149406	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.00514065	CMS_AN23122_Background_fail_LOW_bin_2-1
+Eigenvalue 12 : -8.2366e-07
+ - -0.715857	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 0.473323	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - -0.399317	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - -0.301734	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.113904	CMS_AN23122_Background_fail_LOW_bin_3-1
+Eigenvalue 13 : -5.85866e-05
+ - -0.999705	r
+ - 0.013834	CMS_AN23122_Background_fail_LOW_bin_2-1
+ - -0.0111537	lumi
+ - -0.0103525	RNN
+ - 0.00717052	CMS_AN23122_Background_rpf_1x0_par1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping RNN from the hessian
+>> Dropping CMS_AN23122_Background_fail_LOW_bin_2-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
-Eigenvalue 10 : -2.72035e-07
- - 0.702735	CMS_AN23122_Background_fail_LOW_bin_2-1
- - 0.464556	CMS_AN23122_Background_fail_LOW_bin_1-1
- - -0.452746	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.287041	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.0530484	CMS_AN23122_Background_fail_LOW_bin_5-1
-Eigenvalue 11 : -9.35524e-07
- - 0.531159	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.509438	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.482693	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.427395	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.206531	CMS_AN23122_Background_fail_LOW_bin_2-1
-Eigenvalue 12 : -2.32922e-05
- - 0.99926	r
- - 0.0270401	CMS_AN23122_Background_fail_LOW_bin_1-1
- - 0.0221981	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.0110351	CMS_AN23122_Background_fail_LOW_bin_2-1
- - 0.0109678	lumi
+Eigenvalue 10 : -5.152e-07
+ - -0.729728	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.573228	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.353557	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - -0.117887	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 0.00232039	r
+Eigenvalue 11 : -5.7516e-07
+ - 0.821268	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 0.490196	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - -0.24253	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.162499	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.000277047	r
+Eigenvalue 12 : -5.85754e-05
+ - -0.9998	r
+ - -0.0111548	lumi
+ - -0.0103535	RNN
+ - 0.00720186	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - 0.00717119	CMS_AN23122_Background_rpf_1x0_par1
 >> Attempt 1 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_1-1 from the hessian
+>> Dropping lumi from the hessian
 >> Verifying eigenvalues are all positive (iteration 2)
-Eigenvalue 9 : -3.67058e-08
- - 0.983128	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.132747	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.092384	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.0828097	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.0129825	r
-Eigenvalue 10 : -6.61205e-07
- - -0.669198	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.610525	CMS_AN23122_Background_fail_LOW_bin_4-1
- - -0.42319	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.0166207	r
- - 0.00650179	CMS_AN23122_Background_rpf_1x0_par1
-Eigenvalue 11 : -2.32753e-05
- - -0.999614	r
- - -0.0224178	CMS_AN23122_Background_fail_LOW_bin_4-1
- - 0.011448	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.0109717	lumi
- - 0.00343353	CMS_AN23122_Background_fail_LOW_bin_3-1
+Eigenvalue 9 : -5.14941e-07
+ - 0.729381	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.572983	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.354707	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - 0.117724	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.00421519	r
+Eigenvalue 10 : -5.75155e-07
+ - -0.821128	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.490106	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - 0.24296	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.162837	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.000519085	r
+Eigenvalue 11 : -3.24833e-05
+ - 0.999737	r
+ - -0.0128329	CMS_AN23122_Background_fail_LOW_bin_4-1
+ - 0.01103	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - 0.0101572	RNN
+ - -0.00853267	CMS_AN23122_Background_fail_LOW_bin_5-1
 >> Attempt 2 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_fail_LOW_bin_4-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 3)
-Eigenvalue 8 : -2.33564e-08
- - 0.984067	CMS_AN23122_Background_fail_LOW_bin_2-1
- - 0.127413	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.118618	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.0307259	CMS_AN23122_Background_rpf_1x0_par0
- - -0.0150528	CMS_AN23122_Background_rpf_1x0_par1
-Eigenvalue 9 : -2.3222e-07
- - 0.927951	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.335581	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.161174	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.0136479	CMS_AN23122_Background_rpf_1x0_par1
- - -0.0112806	CMS_AN23122_Background_rpf_1x0_par0
-Eigenvalue 10 : -2.32635e-05
- - -0.999868	r
- - 0.0114211	CMS_AN23122_Background_fail_LOW_bin_2-1
- - -0.0109744	lumi
- - 0.00302752	CMS_AN23122_Background_fail_LOW_bin_3-1
- - 0.00151203	CMS_AN23122_Background_rpf_1x0_par1
+Eigenvalue 8 : -1.79289e-07
+ - -0.888871	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.426515	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - 0.166814	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.0129294	r
+ - 0.000131253	RNN
+Eigenvalue 9 : -5.37068e-07
+ - 0.709164	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.548306	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.443218	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.00227814	r
+ - -2.28546e-05	RNN
+Eigenvalue 10 : -3.2478e-05
+ - -0.999817	r
+ - -0.011224	CMS_AN23122_Background_fail_LOW_bin_1-1
+ - -0.010158	RNN
+ - 0.00865117	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.00703819	CMS_AN23122_Background_rpf_1x0_par1
 >> Attempt 3 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_2-1 from the hessian
+>> Dropping CMS_AN23122_Background_fail_LOW_bin_1-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 4)
-Eigenvalue 8 : -2.26775e-07
- - -0.937643	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.347062	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.01466	CMS_AN23122_Background_rpf_1x0_par1
- - 0.0121442	CMS_AN23122_Background_rpf_1x0_par0
- - -0.0032283	r
-Eigenvalue 9 : -2.32605e-05
- - 0.999933	r
- - 0.0109752	lumi
- - -0.00304823	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.00151245	CMS_AN23122_Background_rpf_1x0_par1
- - -0.0011506	CMS_AN23122_Background_fail_LOW_bin_5-1
+Eigenvalue 8 : -4.66019e-07
+ - 0.818303	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.574732	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - -0.00791811	r
+ - -8.01213e-05	RNN
+ - 5.66114e-05	CMS_AN23122_Background_rpf_1x0_par1
+Eigenvalue 9 : -3.24739e-05
+ - -0.999879	r
+ - -0.0101586	RNN
+ - 0.00871841	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.00703863	CMS_AN23122_Background_rpf_1x0_par1
+ - -0.00355323	CMS_AN23122_Background_fail_LOW_bin_3-1
 >> Attempt 4 failed, remove the variable with largest eigenvector component...
->> Dropping lumi from the hessian
+>> Dropping RNN from the hessian
 >> Verifying eigenvalues are all positive (iteration 5)
-Eigenvalue 7 : -7.58678e-08
- - 0.873213	r
- - 0.398935	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.218072	CMS_AN23122_Background_rpf_1x0_par1
- - 0.15384	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -0.0844266	CMS_AN23122_Background_rpf_1x0_par0
-Eigenvalue 8 : -2.62871e-07
- - 0.84545	CMS_AN23122_Background_fail_LOW_bin_3-1
- - -0.432179	r
- - 0.311881	CMS_AN23122_Background_fail_LOW_bin_5-1
- - 0.0334393	CMS_AN23122_Background_rpf_1x0_par1
- - 0.00690224	CMS_AN23122_Background_rpf_1x0_par0
+Eigenvalue 8 : -5.05029e-07
+ - 0.799529	CMS_AN23122_Background_fail_LOW_bin_3-1
+ - -0.582871	CMS_AN23122_Background_fail_LOW_bin_5-1
+ - 0.144963	r
+ - -0.00108138	CMS_AN23122_Background_rpf_1x0_par1
+ - 0.000126437	CMS_AN23122_Background_rpf_1x0_par0
 >> Attempt 5 failed, remove the variable with largest eigenvector component...
 >> Dropping CMS_AN23122_Background_fail_LOW_bin_3-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 6)
-Eigenvalue 7 : -1.11513e-07
- - 0.979701	r
- - -0.183269	CMS_AN23122_Background_rpf_1x0_par1
- - -0.0636238	CMS_AN23122_Background_rpf_1x0_par0
- - -0.0505002	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -2.54721e-05	CMS_AN23122_Background_fail_SIG_bin_1-1
->> Attempt 6 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_1x0_par1 from the hessian
->> Verifying eigenvalues are all positive (iteration 7)
-Eigenvalue 6 : -1.05665e-07
- - 0.992762	r
- - -0.106345	CMS_AN23122_Background_rpf_1x0_par0
- - -0.0558071	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -3.7394e-05	CMS_AN23122_Background_fail_SIG_bin_1-1
- - -3.51731e-05	CMS_AN23122_Background_fail_HIGH_bin_1-1
->> Attempt 7 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_rpf_1x0_par0 from the hessian
->> Verifying eigenvalues are all positive (iteration 8)
-Eigenvalue 5 : -1.04327e-07
- - 0.998313	r
- - -0.0580538	CMS_AN23122_Background_fail_LOW_bin_5-1
- - -4.11419e-05	CMS_AN23122_Background_fail_SIG_bin_1-1
- - -3.80815e-05	CMS_AN23122_Background_fail_HIGH_bin_1-1
- - 0	pT
->> Attempt 8 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_LOW_bin_5-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 9)
-Eigenvalue 4 : -1.02815e-07
- - -1	r
- - 4.12114e-05	CMS_AN23122_Background_fail_SIG_bin_1-1
- - 3.81458e-05	CMS_AN23122_Background_fail_HIGH_bin_1-1
- - -0	pT
- - -0	t0
->> Attempt 9 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_SIG_bin_1-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 10)
-Eigenvalue 3 : -1.0249e-07
- - -1	r
- - 3.81458e-05	CMS_AN23122_Background_fail_HIGH_bin_1-1
- - 0	pT
- - 0	t0
->> Attempt 10 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_HIGH_bin_1-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 11)
-Eigenvalue 2 : -1.02213e-07
- - 1	r
- - 0	pT
- - 0	t0
->> Attempt 11 failed, remove the variable with largest eigenvector component...
->> Dropping pT from the hessian
->> Verifying eigenvalues are all positive (iteration 12)
-Eigenvalue 1 : -1.02213e-07
- - 1	r
- - 0	t0
->> Attempt 12 failed, remove the variable with largest eigenvector component...
->> Dropping t0 from the hessian
->> Verifying eigenvalues are all positive (iteration 13)
-Eigenvalue 0 : -1.02213e-07
- - 1	r
->> Attempt 13 failed, remove the variable with largest eigenvector component...
->> Dropping r from the hessian
->> Verifying eigenvalues are all positive (iteration 14)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_fail_LOW_bin_2-1
+     - lumi
+     - CMS_AN23122_Background_fail_LOW_bin_4-1
+     - CMS_AN23122_Background_fail_LOW_bin_1-1
+     - RNN
+     - CMS_AN23122_Background_fail_LOW_bin_3-1
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 50  -50/+1.02327e-09  (68% CL)
+Done in 0.00 min (cpu), 0.00 min (real)
+33 log messages saved to combine_logger.out
