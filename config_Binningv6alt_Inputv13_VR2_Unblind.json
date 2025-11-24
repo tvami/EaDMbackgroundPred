@@ -6,7 +6,7 @@
         "HIST_UP": "h$region_$syst_up",
         "HIST_DOWN": "h$region_$syst_down",
         "path": "./histograms_for_2DAlphabet_v13",
-        "SIGNAME": ["Signal_M500GeV_VR2","Signal_M1000GeV_VR2","Signal_M1500GeV_VR2","Signal_M2000GeV_VR2","Signal_M2500GeV_VR2","Signal_M3000GeV_VR2","Signal_M3500GeV_VR2","Signal_M4000GeV_VR2","Signal_M4500GeV_VR2","Signal_M5000GeV_VR2"]
+        "SIGNAME": ["Signal_M1000GeV_SR","Signal_M1500GeV_SR","Signal_M2000GeV_SR","Signal_M2500GeV_SR","Signal_M3000GeV_SR","Signal_M3500GeV_SR","Signal_M4000GeV_SR","Signal_M4500GeV_SR"]
     },
     "REGIONS": {
         "pass": {
@@ -71,9 +71,9 @@
 		"BINSv1":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
 		"BINSv2":   [0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
                 "BINSv3":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
-                "BINS":   [10, 23, 35, 48, 61, 73, 86, 99, 111, 124, 137, 149, 162, 175, 187, 200],
-		"SIGSTART": 124,
-                "SIGEND": 162,
+		"BINS":   [10, 19, 34, 55, 82, 115, 155, 200],
+		"SIGSTART": 115,
+                "SIGEND": 155,
 		"NBINStest": 50,
 		"MINtest": 500,
 		"MAXtest": 5500
