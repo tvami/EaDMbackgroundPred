@@ -50,11 +50,11 @@ if __name__ == "__main__":
         # ===========================
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4'
-        rootdir = f'/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre4/src/rpfmult_Binningv6alt_Inputv11_VR2_Unblind_3000GeV_normalized'
+        rootdir = f'/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre4/src/rpfmult_Binningv6alt_Inputv12_VR2_Unblind_3000GeV_normalized'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Unblind_In{inVersion}_Multi4'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Unblind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_Extrapol'
-        f = ROOT.TFile.Open(f"/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre4/src/rpfmult_Binningv6alt_Inputv11_VR2_Unblind_3000GeV_normalized/Signal_M3000GeV-2x0_area/plots_fit_b/all_plots.root")
+        f = ROOT.TFile.Open(f"/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre4/src/rpfmult_Binningv6alt_Inputv12_VR2_Unblind_3000GeV_normalized/Signal_M3000GeV-2x0_area/plots_fit_b/all_plots.root")
         # get the histogram
         h_fail = f.Get("TotalBkg_fail_postfit_projx2")
         h_pass = f.Get("TotalBkg_pass_postfit_projx2")
@@ -190,7 +190,7 @@ if __name__ == "__main__":
         # Set the y range to [0, 2.5]
         #h_ratio.GetYaxis().SetRangeUser(0, 2.5)
         # h_ratio.GetYaxis().SetRangeUser(0, 0.2)
-        h_ratio.GetXaxis().SetTitle("S_{T} [TeV]")
+        h_ratio.GetXaxis().SetTitle("p_{T} [GeV]")
         h_ratio.GetYaxis().SetTitle("Transfer Factor")
         # h_ratio.GetYaxis().SetRangeUser(0, 1.5)
         h_ratio.GetXaxis().SetTitleSize(0.05)
