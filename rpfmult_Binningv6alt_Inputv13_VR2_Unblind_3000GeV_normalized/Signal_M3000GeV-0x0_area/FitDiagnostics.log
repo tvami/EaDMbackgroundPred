@@ -5,7 +5,7 @@
 Set Default Value of Parameter r To : 1
 >>> 0 out of 6 channels masked
 
->> Found 8 floating parameters
+>> Found 9 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
 >> All eigenvalues are positive
@@ -13,7 +13,7 @@ Set Default Value of Parameter r To : 1
 >> Matrix inverted
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
->> Found 9 floating parameters
+>> Found 10 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
 >> All eigenvalues are positive
@@ -22,6 +22,6 @@ Running Minos for POI r
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 50  -50/+3.05835e-09  (68% CL)
+Best fit r: 50  -50/+1.68392e-10  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
-25 log messages saved to combine_logger.out
+27 log messages saved to combine_logger.out
