@@ -56,10 +56,10 @@ _rpf_options = {
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 100},
-            1: {"MIN": 50, "MAX": 100},
-            2: {"MIN": -50, "MAX": 0},
-            3: {"MIN": 0, "MAX": 0.1}
+            0: {"MIN": 0.0, "MAX": 1},
+            1: {"MIN": 0.5, "MAX": 1},
+            2: {"MIN": -0.5, "MAX": 0},
+            3: {"MIN": 0, "MAX": 0.01}
          }
     },
     '2x1': {
@@ -370,8 +370,8 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
-    tf_types = ['0x0','1x0', '2x0']
+    signal_areas = ["Signal_M3000GeV"]
+    tf_types = ['1x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before

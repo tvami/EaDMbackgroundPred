@@ -38,7 +38,7 @@ _rpf_options = {
         'form': '0.1*(@0+@1*x)',
         'constraints': {
             0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -0.01, "MAX": 500}
+            1: {"MIN": -0.1, "MAX": 0.1}
         }
     },
     '1x0Prime': {
@@ -56,11 +56,11 @@ _rpf_options = {
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 100},
-            1: {"MIN": 50, "MAX": 100},
-            2: {"MIN": -50, "MAX": 0},
-            3: {"MIN": 0, "MAX": 0.1}
-        }
+            0: {"MIN": 0.0, "MAX": 1},
+            1: {"MIN": 0.5, "MAX": 1},
+            2: {"MIN": -0.5, "MAX": 0},
+            3: {"MIN": 0, "MAX": 1}
+         }
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
@@ -72,7 +72,10 @@ _rpf_options = {
     },
     'expo': {
         'form': 'exp(-@0*x+@1)',
-        'constraints': _generate_constraints(2)
+        'constraints': {
+            0: {"MIN": -1.0, "MAX": 50},
+            1: {"MIN": -500, "MAX": 500}
+            }
         },
     'sigmoid': {
         'form': '(@0+0.1*@4*x)/(@1+exp(-@2*x+@3))',
@@ -180,8 +183,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"0.45 < RNNScore < 0.9999"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"0.45 < RNNScore < 0.9999"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -366,10 +369,9 @@ def test_FTest(poly1, poly2, signal=''):
 
 if __name__ == "__main__":
     make_workspace()
-    
-    signal_areas = []#, "Signal_M3000GeV"]#, "Signal_M3000GeV"]#"Signal_M900GeV","Signal_M1000GeV","Signal_M1100GeV","Signal_M1200GeV","Signal_M1300GeV","Signal_M1400GeV",]
-    #signal_areas = ["Signal_M1100GeV","Signal_M1200GeV","Signal_M1300GeV","Signal_M1400GeV","Signal_M1500GeV","Signal_M1600GeV","Signal_M1700GeV","Signal_M1800GeV","Signal_M1900GeV","Signal_M2000GeV","Signal_M2100GeV","Signal_M2200GeV","Signal_M2300GeV","Signal_M2400GeV","Signal_M2500GeV","Signal_M2600GeV","Signal_M2700GeV","Signal_M2800GeV","Signal_M2900GeV","Signal_M3000GeV","Signal_M3250GeV","Signal_M3500GeV","Signal_M3750GeV","Signal_M4000GeV","Signal_M4250GeV","Signal_M4500GeV","Signal_M4750GeV","Signal_M5000GeV"]
-    tf_types = []#,'0x0']
+
+    signal_areas = ["Signal_M3000GeV","Signal_M3000GeV","Signal_M3000GeV"]
+    tf_types = ['2x0','1x0','0x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -387,7 +389,7 @@ if __name__ == "__main__":
           rMax = rMax / 2.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
+      #run_limits(signal,tf_type)
       GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
       plot_GOF(signal,tf_type,condor=False)
       #for r in [0,0.1,0.5,1,2,3]:
