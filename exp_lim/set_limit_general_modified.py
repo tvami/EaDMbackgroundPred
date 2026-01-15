@@ -89,9 +89,11 @@ signal_file = open(options.signals,'r')
 # Read in names of project spaces as a list of strings and strip whitespace
 signal_names = signal_file.readline().split(',')
 signal_names = [n.strip() for n in signal_names]
+print(len(signal_names))
 # Read in mass as a list of strings, strip whitespace, and convert to ints
 signal_mass = signal_file.readline().split(',')
 signal_mass = [float(m.strip())/1000 for m in signal_mass]
+print("min/max signal_mass (TeV):", min(signal_mass), max(signal_mass))
 # Read in rate 2DA is normalized to
 signal_xsecs = signal_file.readline().split(',')
 signal_xsecs = [float(x.strip()) for x in signal_xsecs]
@@ -118,6 +120,7 @@ for theory_xsecs in total_theory_xsec_list:
     # For each signal
     for this_index, this_name in enumerate(signal_names):
         # Setup call for one of the signal
+        print(this_index)
         this_xsec = signal_xsecs[this_index]
         this_mass = signal_mass[this_index]
         print('Processing ' + this_name + ' with mass ' + str(this_mass) + ' and xsec ' + str(this_xsec))
@@ -247,7 +250,7 @@ for theory_xsecs in total_theory_xsec_list:
             g_mclimit.SetMinimum(2e-6) #0.005
             g_mclimit.SetMaximum(0.02)
         else:
-            g_mclimit.GetXaxis().SetRangeUser(1.1, 10.0)
+            g_mclimit.GetXaxis().SetRangeUser(1.1, 100.0)
             g_mclimit.SetMinimum(2e-1) #0.005
             g_mclimit.SetMaximum(1e5)
         if ("Prime" in cstr) :
@@ -385,7 +388,7 @@ for theory_xsecs in total_theory_xsec_list:
         graphWP.Draw("l")
         g_mclimit.GetYaxis().SetTitleOffset(1.5)
         g_mclimit.GetXaxis().SetTitleOffset(1.25)
-        g_mclimit.GetXaxis().SetRangeUser(1.1, 10.0)
+        g_mclimit.GetXaxis().SetRangeUser(1.1, 100.0)
         g_mclimit.GetYaxis().SetRangeUser(0.000001, 1000.0)
 
     graphWPdown.Draw("l")
