@@ -250,7 +250,7 @@ for theory_xsecs in total_theory_xsec_list:
             g_mclimit.SetMinimum(2e-6) #0.005
             g_mclimit.SetMaximum(0.02)
         else:
-            g_mclimit.GetXaxis().SetRangeUser(1.1, 100.0)
+            g_mclimit.GetXaxis().SetRangeUser(1.1, 180.0)
             g_mclimit.SetMinimum(2e-1) #0.005
             g_mclimit.SetMaximum(1e5)
         if ("Prime" in cstr) :
@@ -388,7 +388,7 @@ for theory_xsecs in total_theory_xsec_list:
         graphWP.Draw("l")
         g_mclimit.GetYaxis().SetTitleOffset(1.5)
         g_mclimit.GetXaxis().SetTitleOffset(1.25)
-        g_mclimit.GetXaxis().SetRangeUser(1.1, 100.0)
+        g_mclimit.GetXaxis().SetRangeUser(1.1, 189.0)
         g_mclimit.GetYaxis().SetRangeUser(0.000001, 1000.0)
 
     graphWPdown.Draw("l")
