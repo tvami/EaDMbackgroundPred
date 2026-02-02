@@ -4,12 +4,12 @@
 void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_rate_1.44e-07()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Wed Jan 21 00:30:38 2026) by ROOT version 6.30/07
+//=========  (Wed Jan 21 01:50:46 2026) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
    climits->SetHighLightColor(2);
-   climits->Range(-35.6112,-1.838764,201.7968,5.759863);
+   climits->Range(-33.75645,-1.838764,191.2865,5.759863);
    climits->SetFillColor(0);
    climits->SetBorderMode(0);
    climits->SetBorderSize(2);
@@ -48,7 +48,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_r
    Graph_Graph0225->SetMarkerStyle(20);
    Graph_Graph0225->SetMarkerSize(0.9);
    Graph_Graph0225->GetXaxis()->SetTitle("m(#chi) [TeV]");
-   Graph_Graph0225->GetXaxis()->SetRange(1,96);
+   Graph_Graph0225->GetXaxis()->SetRange(1,91);
    Graph_Graph0225->GetXaxis()->SetLabelFont(42);
    Graph_Graph0225->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph0225->GetXaxis()->SetLabelSize(0.05);
@@ -213,7 +213,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_r
    Graph_Graph0228->SetMarkerStyle(20);
    Graph_Graph0228->SetMarkerSize(0.9);
    Graph_Graph0228->GetXaxis()->SetTitle("m(#chi) [TeV]");
-   Graph_Graph0228->GetXaxis()->SetRange(1,96);
+   Graph_Graph0228->GetXaxis()->SetRange(1,91);
    Graph_Graph0228->GetXaxis()->SetLabelFont(42);
    Graph_Graph0228->GetXaxis()->SetLabelOffset(0.015);
    Graph_Graph0228->GetXaxis()->SetLabelSize(0.05);
@@ -434,7 +434,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_r
    Graph_copy->SetMarkerStyle(20);
    Graph_copy->SetMarkerSize(0.9);
    Graph_copy->GetXaxis()->SetTitle("m(#chi) [TeV]");
-   Graph_copy->GetXaxis()->SetRange(1,96);
+   Graph_copy->GetXaxis()->SetRange(1,91);
    Graph_copy->GetXaxis()->SetLabelFont(42);
    Graph_copy->GetXaxis()->SetLabelOffset(0.015);
    Graph_copy->GetXaxis()->SetLabelSize(0.05);
@@ -456,7 +456,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_r
    Graph_copy->GetZaxis()->SetTitleOffset(1.1);
    Graph_copy->GetZaxis()->SetTitleFont(42);
    Graph_copy->Draw("sameaxis");
-      tex = new TLatex(0.95,0.915,"Run/");
+      tex = new TLatex(0.95,0.915,"Run 3 Cosmics");
    tex->SetNDC();
    tex->SetTextAlign(31);
    tex->SetTextFont(42);

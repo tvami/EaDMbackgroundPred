@@ -7,11 +7,11 @@ tdrstyle.setTDRStyle()
 
 if __name__ == "__main__":
     
-    binning = "v6alt"
-    inVersion = "v11"
-    region = 'VR2'
-    blinding = 'Unblind'
-    extra = '3000GeV_normalized'
+    binning = "v7"
+    inVersion = "v14"
+    region = 'SR'
+    blinding = 'Blind'
+    extra = '3000GeV'
     
     for MdM_val, tf in zip([3000,3000,3000], ['0x0', '2x0', '1x0']):
         MdM_val = int(MdM_val)
@@ -21,7 +21,7 @@ if __name__ == "__main__":
         rootdir = f'rpfmult_Binning{binning}_Input{inVersion}_{region}_{blinding}_{extra}'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Unblind_In{inVersion}_Multi4_FullScan_MD2TeV'
         # rootdir = f'/home/users/dazhang/works/phaseSpace/BlackHoleSearch/CMSSW_14_1_0_pre4/src/rpf{tf}_Binning{binning}_Blind_In{inVersion}_Multi4_Extrapol'
-        f = ROOT.TFile.Open(f"{rootdir}/Signal_M{MdM_val}GeV-{tf.lower()}_area/plots_fit_b/all_plots.root")
+        f = ROOT.TFile.Open(f"{rootdir}/Signal_M{MdM_val}GeV_SR-{tf.lower()}_area/plots_fit_b/all_plots.root")
         # get the histogram
         h_fail = f.Get("TotalBkg_fail_postfit_projx2")
         h_pass = f.Get("TotalBkg_pass_postfit_projx2")
