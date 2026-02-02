@@ -367,8 +367,9 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
     
-    signal_areas = ["Signal_M800GeV_SR","Signal_M900GeV_SR","Signal_M1000GeV_SR","Signal_M1100GeV_SR","Signal_M1300GeV_SR","Signal_M1400GeV_SR","Signal_M1500GeV_SR","Signal_M1600GeV_SR","Signal_M1700GeV_SR","Signal_M1800GeV_SR","Signal_M1900GeV_SR","Signal_M2000GeV_SR","Signal_M2100GeV_SR","Signal_M2200GeV_SR","Signal_M2300GeV_SR","Signal_M2400GeV_SR","Signal_M2500GeV_SR","Signal_M2700GeV_SR","Signal_M2800GeV_SR","Signal_M2900GeV_SR","Signal_M3000GeV_SR","Signal_M3250GeV_SR","Signal_M3500GeV_SR","Signal_M3750GeV_SR","Signal_M4000GeV_SR","Signal_M4250GeV_SR","Signal_M4500GeV_SR","Signal_M4750GeV_SR","Signal_M10000GeV_SR","Signal_M12500GeV_SR","Signal_M15000GeV_SR","Signal_M17500GeV_SR","Signal_M20000GeV_SR","Signal_M22500GeV_SR","Signal_M25000GeV_SR","Signal_M27500GeV_SR","Signal_M30000GeV_SR","Signal_M35000GeV_SR","Signal_M37500GeV_SR","Signal_M40000GeV_SR","Signal_M42500GeV_SR","Signal_M45000GeV_SR","Signal_M47500GeV_SR","Signal_M50000GeV_SR","Signal_M55000GeV_SR","Signal_M60000GeV_SR","Signal_M65000GeV_SR","Signal_M70000GeV_SR","Signal_M75000GeV_SR","Signal_M80000GeV_SR","Signal_M85000GeV_SR","Signal_M90000GeV_SR"]
-    tf_types = ['2x0'] * 52
+    #signal_areas = ["Signal_M800GeV_SR","Signal_M900GeV_SR","Signal_M1000GeV_SR","Signal_M1100GeV_SR","Signal_M1300GeV_SR","Signal_M1400GeV_SR","Signal_M1500GeV_SR","Signal_M1600GeV_SR","Signal_M1700GeV_SR","Signal_M1800GeV_SR","Signal_M1900GeV_SR","Signal_M2000GeV_SR","Signal_M2100GeV_SR","Signal_M2200GeV_SR","Signal_M2300GeV_SR","Signal_M2400GeV_SR","Signal_M2500GeV_SR","Signal_M2700GeV_SR","Signal_M2800GeV_SR","Signal_M2900GeV_SR","Signal_M3000GeV_SR","Signal_M3250GeV_SR","Signal_M3500GeV_SR","Signal_M3750GeV_SR","Signal_M4000GeV_SR","Signal_M4250GeV_SR","Signal_M4500GeV_SR","Signal_M4750GeV_SR","Signal_M10000GeV_SR","Signal_M12500GeV_SR","Signal_M15000GeV_SR","Signal_M17500GeV_SR","Signal_M20000GeV_SR","Signal_M22500GeV_SR","Signal_M25000GeV_SR","Signal_M27500GeV_SR","Signal_M30000GeV_SR","Signal_M35000GeV_SR","Signal_M37500GeV_SR","Signal_M40000GeV_SR","Signal_M42500GeV_SR","Signal_M45000GeV_SR","Signal_M47500GeV_SR","Signal_M50000GeV_SR","Signal_M55000GeV_SR","Signal_M60000GeV_SR","Signal_M65000GeV_SR","Signal_M70000GeV_SR","Signal_M75000GeV_SR","Signal_M80000GeV_SR","Signal_M85000GeV_SR","Signal_M90000GeV_SR"]
+    signal_areas = ["Signal_M3000GeV_SR", "Signal_M3000GeV_SR"]
+    tf_types = ['2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       # IGNORE: When there are 100 signals, let's make sure we only run on the ones we didnt do before
@@ -386,13 +387,13 @@ if __name__ == "__main__":
           rMax = rMax / 2.
       plot_fit(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
-      run_limits(signal,tf_type)
-      #GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
-      #plot_GOF(signal,tf_type,condor=False)
+      #run_limits(signal,tf_type)
+      GOF(signal,tf_type,condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
+      plot_GOF(signal,tf_type,condor=False)
       #for r in [0,0.1,0.5,1,2,3]:
       #    SignalInjection(signal, tf_type, r=r, condor=False)#,extra='--text2workspace --channel-masks --setParameters mask_pass_SIG=1,mask_pass_HIGH=1')
       #    plot_SignalInjection(signal, tf_type, r=r, condor=False)
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M3000GeV")
+    test_FTest('1x0','2x0',"Signal_M3000GeV_SR")
