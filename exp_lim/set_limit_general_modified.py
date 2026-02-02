@@ -526,6 +526,14 @@ for theory_xsecs in total_theory_xsec_list:
     if not os.path.exists(options.outdir):
         os.mkdir(options.outdir)
 
+    pave = ROOT.TPaveText(0.20, 0.75, 0.43, 0.88, "NDC")
+    pave.SetFillColor(0)
+    pave.SetBorderSize(0)
+    pave.SetTextAlign(12)  # left aligned
+    pave.AddText(f"#varepsilon = {labels[label_counter]}")
+    pave.AddText("#alpha_{#chi} = 0.245")
+    pave.Draw()
+
     filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr+str(labels[label_counter])
     climits.SaveAs(os.path.join(options.outdir, filename+".pdf"))
     climits.SaveAs(os.path.join(options.outdir, filename+".C"))

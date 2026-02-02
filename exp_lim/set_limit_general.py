@@ -500,6 +500,13 @@ CMS_lumi.lumiTextSize     = 0.5
 CMS_lumi.cmsTextSize      = 0.8
 CMS_lumi.CMS_lumi(climits, options.lumiLabel, 0, 11, sim=False)
 
+pave = ROOT.TPaveText(0.12, 0.75, 0.35, 0.88, "NDC")
+pave.SetFillColor(0)
+pave.SetBorderSize(0)
+pave.SetTextAlign(12)  # left aligned
+pave.AddText(f"#varepsilon = {labels[label_counter]}")
+pave.AddText("#alpha_{#chi} = 0.245")
+pave.Draw()
 
 filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr
 climits.SaveAs(os.path.join(options.outdir, filename+".pdf"))
