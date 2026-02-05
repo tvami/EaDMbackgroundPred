@@ -423,6 +423,7 @@ legend.AddEntry(g_error95, "Expected Limit #pm1#sigma, #pm2#sigma","f")
 # legend.AddEntry(g_error95, "#pm1#sigma, 2#sigma", "f")
 # legend.AddEntry(g_error95, "#pm2#sigma", "f")
 legend.AddEntry(graphWP, "#sigma^{"+options.xsorder+"}_{th}("+options.process+")#pm1#sigma", "l")   # NOT GENERIC
+legend.AddEntry
 
 legend.SetBorderSize(0)
 legend.SetFillStyle(0)
