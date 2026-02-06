@@ -118,7 +118,7 @@ labels = [
 ]
 
 # Define counter and file name to save hpf prep file to
-file_name = 'Data_hpf_run3_22_23_24_part25_with_tevMuon_chi2.root'
+file_name = 'Data_hpf_run3_22_23_24_25G_v1.root'
 n = 0
 
 # Loop over subdirectories
@@ -137,44 +137,61 @@ for file in subdirs:
     print(len(input_files))
 
     # Define all desired variables to feed into branches of root file
-    var_pt = numpy.zeros(1, dtype=float)
-    var_chi2 = numpy.zeros(1, dtype=float)
-    var_ndof = numpy.zeros(1, dtype=float)
-    var_tevMuon_chi2 = numpy.zeros(1, dtype=float)
-    var_tevMuon_ndof = numpy.zeros(1, dtype=float)
-    var_tevMuon_numberOfValidHits = numpy.zeros(1, dtype=float)
-    var_tevMuon_validFraction = numpy.zeros(1, dtype=float)
-    #var_gen_pt = numpy.zeros(1, dtype=float)
-    var_nHits = numpy.zeros(1, dtype=float)
-    var_nTrack = numpy.zeros(1, dtype=float)
-    var_rnn = numpy.zeros(1, dtype=float)
-    var_rnn_t0 = numpy.zeros(1, dtype=float)
-    var_eta = numpy.zeros(1, dtype=float)
-    var_energy = numpy.zeros(1, dtype=float)
     total = numpy.zeros(1, dtype=int)
     trigger_pass = numpy.zeros(1, dtype=int)
     presel_seg_pass = numpy.zeros(1, dtype=int)
-    presel_pT_pass = numpy.zeros(1, dtype=int)
+    presel_pT_pass = numpy.zeros(1, dtype=int)    
+    var_track_pt = numpy.zeros(1, dtype=float)
+    var_track_eta = numpy.zeros(1, dtype=float)
+    var_track_chi2 = numpy.zeros(1, dtype=float)
+    var_track_ndof = numpy.zeros(1, dtype=float)
+    var_track_numberOfValidHits = numpy.zeros(1, dtype=float)
+    var_track_validFraction = numpy.zeros(1, dtype=float)
+    var_track_ptErr = numpy.zeros(1, dtype=float)
+    var_muon_energy = numpy.zeros(1, dtype=float)
+    var_muon_chi2 = numpy.zeros(1, dtype=float)
+    var_muon_comb_ndof = numpy.zeros(1, dtype=float)
+    var_muon_hasMatchedGenTrack = numpy.zeros(1, dtype=int)
+    var_muon_fromGenTrack_Pt = numpy.zeros(1, dtype=float)
+    var_muon_fromGenTrack_PtErr = numpy.zeros(1, dtype=float)
+    var_muon_fromGenTrack_Chi2 = numpy.zeros(1, dtype=float)
+    var_muon_fromGenTrack_Ndof = numpy.zeros(1, dtype=float)
+    var_muon_fromGenTrack_NumValidHits = numpy.zeros(1, dtype=float)
+    var_muon_fromGenTrack_ValidFraction = numpy.zeros(1, dtype=float)
+    var_nSeg = numpy.zeros(1, dtype=float)
+    var_nTrack = numpy.zeros(1, dtype=float)
+    var_rnn = numpy.zeros(1, dtype=float)
+    var_rnn_t0 = numpy.zeros(1, dtype=float)
+
+
+
+    #var_gen_pt = numpy.zeros(1, dtype=float)
 
     # Define tree branches to save desired variables
-    tree.Branch("pT", var_pt, "pT/D") # The "/D" specifies the type as double
-    tree.Branch("chi2", var_chi2, "chi2/D")
-    tree.Branch("ndof", var_ndof, "ndof/D")
-    tree.Branch("tevMuon_chi2", var_tevMuon_chi2, "tevMuon_chi2/D")
-    tree.Branch("tevMuon_ndof", var_tevMuon_ndof, "tevMuon_ndof/D")
-    tree.Branch("tevMuon_numberOfValidHits", var_tevMuon_numberOfValidHits, "tevMuon_numberOfValidHits/D")
-    tree.Branch("tevMuon_validFraction", var_tevMuon_validFraction, "tevMuon_validFraction/D")
-    #tree.Branch("gen_pt", var_gen_pt, "gen_pt/D")
-    tree.Branch("nHits", var_nHits, "nHits/D")
-    tree.Branch("nTracks", var_nTrack, "nTracks/D")
-    tree.Branch("RNNscore", var_rnn, "RNNscore/D")
-    tree.Branch("RNNscore_t0", var_rnn_t0, "RNNscore_t0/D")
-    tree.Branch("eta", var_eta, "eta/D")
-    tree.Branch("energy", var_energy, "energy/D")
     tree.Branch("totalEvents", total, "totalEvents/I")
     tree.Branch("triggerPass", trigger_pass, "triggerPass/I")
     tree.Branch("segPass", presel_seg_pass, "segPass/I")
     tree.Branch("validpTPass", presel_pT_pass, "validpTPass/I")
+    tree.Branch("track_pt", var_track_pt, "track_pt/D") # The "/D" specifies the type as double
+    tree.Branch("track_eta", var_track_eta, "track_eta/D")
+    tree.Branch("track_chi2", var_track_chi2, "track_chi2/D")
+    tree.Branch("track_ndof", var_track_ndof, "track_ndof/D")
+    tree.Branch("track_numberOfValidHits", var_track_numberOfValidHits, "track_numberOfValidHits/D")
+    tree.Branch("track_validFraction", var_track_validFraction, "track_validFraction/D")
+    tree.Branch("muon_chi2", var_muon_chi2, "muon_chi2/D")
+    tree.Branch("muon_comb_ndof", var_muon_comb_ndof, "muon_comb_ndof/D")
+    tree.Branch("muon_energy", var_muon_energy, "muon_energy/D")
+    tree.Branch("muon_hasMatchedGenTrack", var_muon_hasMatchedGenTrack, "muon_hasMatchedGenTrack/I")
+    tree.Branch("muon_fromGenTrack_Pt", var_muon_fromGenTrack_Pt, "muon_fromGenTrack_Pt/D")
+    tree.Branch("muon_fromGenTrack_Chi2", var_muon_fromGenTrack_Chi2, "muon_fromGenTrack_Chi2/D")
+    tree.Branch("muon_fromGenTrack_Ndof", var_muon_fromGenTrack_Ndof, "muon_fromGenTrack_Ndof/D")
+    tree.Branch("muon_fromGenTrack_NumValidHits", var_muon_fromGenTrack_NumValidHits, "muon_fromGenTrack_NumValidHits/D")
+    tree.Branch("muon_fromGenTrack_ValidFraction", var_muon_fromGenTrack_ValidFraction, "muon_fromGenTrack_ValidFraction/D")
+    tree.Branch("nSeg", var_nSeg, "nSeg/D")
+    tree.Branch("nTracks", var_nTrack, "nTracks/D")
+    tree.Branch("RNNscore", var_rnn, "RNNscore/D")
+    tree.Branch("RNNscore_t0", var_rnn_t0, "RNNscore_t0/D")
+    #tree.Branch("gen_pt", var_gen_pt, "gen_pt/D")
 
     # Define helper variables to diagnose preselection efficiencies
     event_num = 0
@@ -188,54 +205,70 @@ for file in subdirs:
             ntuple2 = uproot.open(file)
             # Convert leafs to numpy arrays
             tree2 = ntuple2["muonPhiAnalyzer/tree"]
+            HLT_L1SingleMuCosmics = numpy.asarray(tree2["HLT_L1SingleMuCosmics"])
             run = numpy.asarray(tree2["run"])
             ls = numpy.asarray(tree2["ls"])
             event = numpy.asarray(tree2["event"])
-            pt = numpy.asarray(tree2["track_pt"])
-            chi2 = numpy.asarray(tree2["muon_chi2"])
-            ndof = numpy.asarray(tree2["muon_comb_ndof"])
-            tevMuon_chi2 = numpy.asarray(tree2["track_chi2"])
-            tevMuon_ndof = numpy.asarray(tree2["track_ndof"])
-            tevMuon_numberOfValidHits = numpy.asarray(tree2["track_numberOfValidHits"])
-            tevMuon_validFraction = numpy.asarray(tree2["track_validFraction"])
+            track_pt = numpy.asarray(tree2["track_pt"])
+            track_chi2 = numpy.asarray(tree2["track_chi2"])
+            track_ndof = numpy.asarray(tree2["track_ndof"])
+            track_numberOfValidHits = numpy.asarray(tree2["track_numberOfValidHits"])
+            track_validFraction = numpy.asarray(tree2["track_validFraction"])
+            track_ptErr = numpy.asarray(tree2["track_ptErr"])
+            track_eta = numpy.asarray(tree2["track_eta"])
+            muon_chi2 = numpy.asarray(tree2["muon_chi2"])
+            muon_comb_ndof = numpy.asarray(tree2["muon_comb_ndof"])
+            muon_energy = numpy.asarray(tree2["muon_energy"])
+            muon_dtSeg_t0timing = numpy.asarray(tree2["muon_dtSeg_t0timing"])
+            muon_dtSeg_globX = numpy.asarray(tree2["muon_dtSeg_globX"])
+            muon_dtSeg_globY = numpy.asarray(tree2["muon_dtSeg_globY"])
+            muon_dtSeg_globZ = numpy.asarray(tree2["muon_dtSeg_globZ"])
+            muon_hasMatchedGenTrack = numpy.asarray(tree2["muon_hasMatchedGenTrack"])
+            muon_fromGenTrack_Pt = numpy.asarray(tree2["muon_fromGenTrack_Pt"])
+            muon_fromGenTrack_PtErr = numpy.asarray(tree2["muon_fromGenTrack_PtErr"])
+            muon_fromGenTrack_Chi2 = numpy.asarray(tree2["muon_fromGenTrack_Chi2"])
+            muon_fromGenTrack_Ndof = numpy.asarray(tree2["muon_fromGenTrack_Ndof"])
+            muon_fromGenTrack_NumValidHits = numpy.asarray(tree2["muon_fromGenTrack_NumValidHits"])
+            muon_fromGenTrack_ValidFraction = numpy.asarray(tree2["muon_fromGenTrack_ValidFraction"])
             #gen_pt = numpy.asarray(tree2["gen_pt"])
-            eta = numpy.asarray(tree2["track_eta"])
-            energy = numpy.asarray(tree2["muon_energy"])
-            trigger = numpy.asarray(tree2["HLT_L1SingleMuCosmics"])
-            t0 = numpy.asarray(tree2["muon_dtSeg_t0timing"])
-            x = numpy.asarray(tree2["muon_dtSeg_globX"])
-            y = numpy.asarray(tree2["muon_dtSeg_globY"])
-            z = numpy.asarray(tree2["muon_dtSeg_globZ"])
 
             # Define lists to save leaf data that passes preselection in a given file. This step is necessary to ensure RNN
             # isn't classifying too many events at once. The bottle neck is converting all the data into a tensor so
             # this naturally divides up events by file which is a manageable size to convert to a tensor.
-            rnn_data = []
-            rnn_t0 = []
-            pt_data = []
-            chi2_data = []
-            ndof_data = []
-            tevMuon_chi2_data = []
-            tevMuon_ndof_data = []
-            tevMuon_numberOfValidHits_data = []
-            tevMuon_validFraction_data = []
-            #gen_pt_data = []
-            n_data = []
-            nTrack_data = []
-            eta_data = []
-            energy_data = []
             total_data = []
             trigger_cut_data = []
             seg_cut_data = []
             pT_cut_data = []
+            track_pt_data = []
+            track_eta_data = []
+            track_chi2_data = []
+            track_ndof_data = []
+            track_numberOfValidHits_data = []
+            track_validFraction_data = []
+            track_ptErr_data = []
+            muon_energy_data = []
+            muon_chi2_data = []
+            muon_comb_ndof_data = []
+            muon_hasMatchedGenTrack_data = []
+            muon_fromGenTrack_Pt_data = []
+            muon_fromGenTrack_PtErr_data = []
+            muon_fromGenTrack_Chi2_data = []
+            muon_fromGenTrack_Ndof_data = []
+            muon_fromGenTrack_NumValidHits_data = []
+            muon_fromGenTrack_ValidFraction_data = []
+            n_data = []
+            nTrack_data = []
+            rnn_data = []
+            rnn_t0 = []
+            #gen_pt_data = []
 
             # To reduce overhead, for each ntuple file, redefine nMax so padding isn't unnecessarily large
             nMax = 0
-            for i in range(t0.shape[0]):
-                if t0[i][(t0[i] < 9998) & (t0[i] > -998)].shape[0] > nMax: nMax = t0[i][(t0[i] < 9998) & (t0[i] > -998)].shape[0]
+            for i in range(muon_dtSeg_t0timing.shape[0]):
+                if muon_dtSeg_t0timing[i][(muon_dtSeg_t0timing[i] < 9998) & (muon_dtSeg_t0timing[i] > -998)].shape[0] > nMax: nMax = muon_dtSeg_t0timing[i][(muon_dtSeg_t0timing[i] < 9998) & (muon_dtSeg_t0timing[i] > -998)].shape[0]
 
             # Loop over each event in ntuple
-            for i in range(t0.shape[0]):
+            for i in range(muon_dtSeg_t0timing.shape[0]):
                 if event_num % 50000 == 0 and event_num != 0:
                     ''' To keep track of progress '''
                     print(event_num, trigger_cut, seg_cut, pT_cut)
@@ -243,8 +276,8 @@ for file in subdirs:
                 
                 event_num += 1
                 
-                # If event doesn't pass trigger, indicate that and continue to next event
-                if trigger[i] == 0:
+                # If event doesn't pass HLT_L1SingleMuCosmics, indicate that and continue to next event
+                if HLT_L1SingleMuCosmics[i] == 0:
                     total_data.append(1)
                     trigger_cut_data.append(0)
                     seg_cut_data.append(0)
@@ -253,7 +286,7 @@ for file in subdirs:
 
                 trigger_cut += 1
 
-                cond = (t0[i] < 9998) & (t0[i] > -998)
+                cond = (muon_dtSeg_t0timing[i] < 9998) & (muon_dtSeg_t0timing[i] > -998)
                 
                 # If event doesn't pass nSeg preselection, indicate that and continue
                 if numpy.sum(cond) < 3:
@@ -266,7 +299,7 @@ for file in subdirs:
                 seg_cut += 1
                 
                 # If event doesn't pass nTrack preselection, indicate that and continue
-                if len(pt[i]) == 0:
+                if len(track_pt[i]) == 0:
                     total_data.append(1)
                     trigger_cut_data.append(1)
                     seg_cut_data.append(1)
@@ -275,38 +308,52 @@ for file in subdirs:
 
                 pT_cut += 1
 
-                # Create modified t0 timing to quantify t0 systematic
-                sys_t0 = t0[i][cond] + numpy.random.normal(0, 1, size=t0[i][cond].shape)
+                # Create modified muon_dtSeg_t0timing timing to quantify muon_dtSeg_t0timing systematic
+                sys_t0 = muon_dtSeg_t0timing[i][cond] + numpy.random.normal(0, 1, size=muon_dtSeg_t0timing[i][cond].shape)
 
                 # Index by timing and append desired variables to lists
-                ind = numpy.argsort(t0[i][cond])
+                ind = numpy.argsort(muon_dtSeg_t0timing[i][cond])
                 ind_sys_t0 = numpy.argsort(sys_t0)
-                rnn_data.append(numpy.expand_dims(numpy.swapaxes(pad_sequences(numpy.array([numpy.take_along_axis(t0[i][cond], ind, axis=-1), numpy.take_along_axis(x[i][cond], ind, axis=-1), numpy.take_along_axis(y[i][cond], ind, axis=-1), numpy.take_along_axis(z[i][cond], ind, axis=-1)]), dtype='float64', maxlen=nMax, padding='post', value=-9999.),0,1), axis=0))
-                rnn_t0.append(numpy.expand_dims(numpy.swapaxes(pad_sequences(numpy.array([numpy.take_along_axis(sys_t0, ind_sys_t0, axis=-1), numpy.take_along_axis(x[i][cond], ind_sys_t0, axis=-1), numpy.take_along_axis(y[i][cond], ind_sys_t0, axis=-1), numpy.take_along_axis(z[i][cond], ind_sys_t0, axis=-1)]), dtype='float64', maxlen=nMax, padding='post', value=-9999.),0,1), axis=0))
-                pt_data.append(numpy.max(pt[i]))
-                chi2_data.append(numpy.max(chi2[i]))
-                ndof_data.append(numpy.max(ndof[i]))
-                tevMuon_chi2_data.append(tevMuon_chi2[i][numpy.argmax(pt[i])])
-                tevMuon_ndof_data.append(tevMuon_ndof[i][numpy.argmax(pt[i])])
-                tevMuon_numberOfValidHits_data.append(tevMuon_numberOfValidHits[i][numpy.argmax(pt[i])])
-                tevMuon_validFraction_data.append(tevMuon_validFraction[i][numpy.argmax(pt[i])])
-                #gen_pt_data.append(numpy.max(gen_pt[i]))
-                eta_data.append(eta[i][numpy.argmax(numpy.abs(eta[i]))])
-                energy_data.append(numpy.max(energy[i]))
-                n_data.append(len(t0[i][cond]))
-                nTrack_data.append(len(pt[i]))
                 total_data.append(1)
                 trigger_cut_data.append(1)
                 seg_cut_data.append(1)
                 pT_cut_data.append(1)
-                if numpy.max(pt[i]) > 90000:
-                    '''To flag high-pT events'''
+                track_pt_data.append(numpy.max(track_pt[i]))
+                track_eta_data.append(track_eta[i][numpy.argmax(numpy.abs(track_eta[i]))])
+                track_chi2_data.append(track_chi2[i][numpy.argmax(track_pt[i])])
+                track_ndof_data.append(track_ndof[i][numpy.argmax(track_pt[i])])
+                track_numberOfValidHits_data.append(track_numberOfValidHits[i][numpy.argmax(track_pt[i])])
+                track_validFraction_data.append(track_validFraction[i][numpy.argmax(track_pt[i])])
+                track_ptErr_data.append(track_ptErr[i][numpy.argmax(track_pt[i])])
+                muon_chi2_data.append(numpy.max(muon_chi2[i]))
+                muon_comb_ndof_data.append(numpy.max(muon_comb_ndof[i]))
+                muon_energy_data.append(numpy.max(muon_energy[i]))
+                
+                # Check if there is a matched gen track; if not, entries equal -9999 so just fill with first value for each muon_fromGenTrack_variable
+                muon_mask = (muon_hasMatchedGenTrack[i] == True)
+                if numpy.sum(muon_mask) == 0: muon_mask[0] = True
+                
+                # For events w/ multiple matched gen tracks, use track w/ least PtErr
+                muon_hasMatchedGenTrack_data.append(int(muon_hasMatchedGenTrack[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])]))
+                muon_fromGenTrack_Pt_data.append(muon_fromGenTrack_Pt[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                muon_fromGenTrack_PtErr_data.append(muon_fromGenTrack_PtErr[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                muon_fromGenTrack_Chi2_data.append(muon_fromGenTrack_Chi2[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                muon_fromGenTrack_Ndof_data.append(muon_fromGenTrack_Ndof[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                muon_fromGenTrack_NumValidHits_data.append(muon_fromGenTrack_NumValidHits[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                muon_fromGenTrack_ValidFraction_data.append(muon_fromGenTrack_ValidFraction[i][muon_mask][numpy.argmax(muon_fromGenTrack_Pt[i][muon_mask])])
+                n_data.append(len(muon_dtSeg_t0timing[i][cond]))
+                nTrack_data.append(len(track_pt[i]))
+                rnn_data.append(numpy.expand_dims(numpy.swapaxes(pad_sequences(numpy.array([numpy.take_along_axis(muon_dtSeg_t0timing[i][cond], ind, axis=-1), numpy.take_along_axis(muon_dtSeg_globX[i][cond], ind, axis=-1), numpy.take_along_axis(muon_dtSeg_globY[i][cond], ind, axis=-1), numpy.take_along_axis(muon_dtSeg_globZ[i][cond], ind, axis=-1)]), dtype='float64', maxlen=nMax, padding='post', value=-9999.),0,1), axis=0))
+                rnn_t0.append(numpy.expand_dims(numpy.swapaxes(pad_sequences(numpy.array([numpy.take_along_axis(sys_t0, ind_sys_t0, axis=-1), numpy.take_along_axis(muon_dtSeg_globX[i][cond], ind_sys_t0, axis=-1), numpy.take_along_axis(muon_dtSeg_globY[i][cond], ind_sys_t0, axis=-1), numpy.take_along_axis(muon_dtSeg_globZ[i][cond], ind_sys_t0, axis=-1)]), dtype='float64', maxlen=nMax, padding='post', value=-9999.),0,1), axis=0))
+                #gen_pt_data.append(numpy.max(gen_pt[i]))
+                if numpy.max(track_pt[i]) > 90000:
+                    '''To flag high-track_pt events'''
                     # print("ROOT File:", file)
                     # print("Run Number:", run[i])
                     # print("ls: ", ls[i])
                     # print("event: ", event[i])
-                    # print("pT:", numpy.max(pt[i]))
-                    # print("nSeg:", len(t0[i][cond]))
+                    # print("track_pt:", numpy.max(track_pt[i]))
+                    # print("nSeg:", len(muon_dtSeg_t0timing[i][cond]))
                     # print(f"COMMAND: file dataset={labels[n-1]} run={run[i]} lumi={ls[i]}")
 
             # As long as there are events in the file, classify them
@@ -317,23 +364,31 @@ for file in subdirs:
             # Append data from each event to 1 element arrays defined initially. Then fill branches and repeat.
             counter = 0
             for i in range(len(total_data)):
-                var_pt[0] = -999999
-                var_chi2[0] = -999999
-                var_ndof[0] = -999999
-                var_tevMuon_chi2[0] = -999999
-                var_tevMuon_ndof[0] = -999999
-                var_tevMuon_numberOfValidHits[0] = -999999
-                var_tevMuon_validFraction[0] = -999999
-                #var_gen_pt[0] = -999999
-                var_nHits[0] = -99
-                var_nTrack[0] = -99
-                var_rnn[0] = -99
-                var_rnn_t0[0] = -99
-                var_eta[0] = -99
-                var_energy[0] = -99
                 trigger_pass[0] = -1
                 presel_seg_pass[0] = -1
                 presel_pT_pass[0] = -1
+                var_track_pt[0] = -999999
+                var_track_eta[0] = -99
+                var_track_chi2[0] = -999999
+                var_track_ndof[0] = -999999
+                var_track_numberOfValidHits[0] = -999999
+                var_track_validFraction[0] = -999999
+                var_track_ptErr[0] = -999999
+                var_muon_chi2[0] = -999999
+                var_muon_comb_ndof[0] = -999999
+                var_muon_energy[0] = -99
+                muon_hasMatchedGenTrack[0] = -99
+                var_muon_fromGenTrack_Pt[0] = -999999
+                var_muon_fromGenTrack_PtErr[0] = -999999
+                var_muon_fromGenTrack_Chi2[0] = -999999
+                var_muon_fromGenTrack_Ndof[0] = -999999
+                var_muon_fromGenTrack_NumValidHits[0] = -999999
+                var_muon_fromGenTrack_ValidFraction[0] = -999999
+                var_nSeg[0] = -99
+                var_nTrack[0] = -99
+                var_rnn[0] = -99
+                var_rnn_t0[0] = -99
+                #var_gen_pt[0] = -999999
 
                 total[0] = total_data[i]
 
@@ -352,23 +407,30 @@ for file in subdirs:
                     continue
 
                 presel_pT_pass[0] = pT_cut_data[i]
-                var_pt[0] = pt_data[counter]
-                var_chi2[0] = chi2_data[counter]
-                var_ndof[0] = ndof_data[counter]
-                var_tevMuon_chi2[0] = tevMuon_chi2_data[counter]
-                var_tevMuon_ndof[0] = tevMuon_ndof_data[counter]
-                var_tevMuon_numberOfValidHits[0] = tevMuon_numberOfValidHits_data[counter]
-                var_tevMuon_validFraction[0] = tevMuon_validFraction_data[counter]
-                #var_gen_pt[0] = gen_pt_data[counter]
-                var_nHits[0] = n_data[counter]
+                var_track_pt[0] = track_pt_data[counter]
+                var_track_eta[0] = track_eta_data[counter]
+                var_track_chi2[0] = track_chi2_data[counter]
+                var_track_ndof[0] = track_ndof_data[counter]
+                var_track_numberOfValidHits[0] = track_numberOfValidHits_data[counter]
+                var_track_validFraction[0] = track_validFraction_data[counter]
+                var_track_ptErr[0] = track_ptErr_data[counter]
+                var_muon_energy[0] = muon_energy_data[counter]
+                var_muon_chi2[0] = muon_chi2_data[counter]
+                var_muon_comb_ndof[0] = muon_comb_ndof_data[counter]
+                var_muon_fromGenTrack_Pt[0] = muon_fromGenTrack_Pt_data[counter]
+                var_muon_fromGenTrack_PtErr[0] = muon_fromGenTrack_PtErr_data[counter]
+                var_muon_fromGenTrack_Chi2[0] = muon_fromGenTrack_Chi2_data[counter]
+                var_muon_fromGenTrack_Ndof[0] = muon_fromGenTrack_Ndof_data[counter]
+                var_muon_fromGenTrack_NumValidHits[0] = muon_fromGenTrack_NumValidHits_data[counter]
+                var_muon_fromGenTrack_ValidFraction[0] = muon_fromGenTrack_ValidFraction_data[counter]
+                var_nSeg[0] = n_data[counter]
                 var_nTrack[0] = nTrack_data[counter]
                 var_rnn[0] = rnn_scores[counter]
                 var_rnn_t0[0] = rnn_t0_scores[counter]
-                var_eta[0] = eta_data[counter]
-                var_energy[0] = energy_data[counter]
+                #var_gen_pt[0] = gen_pt_data[counter]
                 tree.Fill()
                 counter += 1
-        
+
         # Write filled up branches to root file and close file in anticipation for next subdir
         tree.Write()
         print(event_num, trigger_cut, seg_cut, pT_cut)
