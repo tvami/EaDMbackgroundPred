@@ -1,8 +1,8 @@
 /// Skim ntuples using RDataFrame, applying cuts sequentially and saving a cutflow histogram
 /// Usage:
-///       root -l -b -q 'skim_ntuples.C("track", "/path/to/files/")'
+///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
 
-void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/") {
+void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/") {
     
     // Enable multi-threading (use all available cores)
     ROOT::EnableImplicitMT();
@@ -13,7 +13,7 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     if (base_dir_copy.EndsWith("/")) base_dir_copy.Remove(base_dir_copy.Length()-1);
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
-    TString output_file = TString::Format("skimmed_%s_%s.root", object.Data(), dataset_name.Data());
+    TString output_file = TString::Format("skimmed_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
     
     // Set variable names based on object
     TString pt_var, eta_var, phi_var, n_var;
@@ -78,23 +78,38 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     // Create RDataFrame from TChain
     ROOT::RDataFrame df(chain);
     
-    // Define new columns for convenience
+    // Define new columns for max pT and corresponding eta/phi
     TString pt_max_expr = TString::Format("%s.size() > 0 ? *std::max_element(%s.begin(), %s.end()) : -999.0", 
                                           pt_var.Data(), pt_var.Data(), pt_var.Data());
     TString pt_argmax_expr = TString::Format("%s.size() > 0 ? std::distance(%s.begin(), std::max_element(%s.begin(), %s.end())) : -1",
                                              pt_var.Data(), pt_var.Data(), pt_var.Data(), pt_var.Data());
     TString eta_at_max_pt_expr = TString::Format("pt_argmax >= 0 ? %s[pt_argmax] : 999.0", eta_var.Data());
+    TString phi_at_max_pt_expr = TString::Format("pt_argmax >= 0 ? %s[pt_argmax] : 999.0", phi_var.Data());
     
     auto df2 = df
         .Define("pt_max", pt_max_expr.Data())
         .Define("pt_argmax", pt_argmax_expr.Data())
-        .Define("eta_at_max_pt", eta_at_max_pt_expr.Data());
+        .Define("eta_at_max_pt", eta_at_max_pt_expr.Data())
+        .Define("phi_at_max_pt", phi_at_max_pt_expr.Data());
     
     // Apply cuts sequentially for monitoring
     auto df_trigger = df2.Filter("HLT_L1SingleMuCosmics", "Trigger");
     auto df_track = df_trigger.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Has track/muon");
     auto df_eta = df_track.Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9");
-    auto df_pt = df_eta.Filter("pt_max > 200.0", "pT > 200 GeV");
+    
+    // Apply region-specific pT cut
+    TString pt_cut_expr, pt_cut_label;
+    if (region == "sr") {
+        pt_cut_expr = "pt_max > 200.0";
+        pt_cut_label = "pT > 200 GeV";
+    } else if (region == "vr") {
+        pt_cut_expr = "pt_max < 200.0";
+        pt_cut_label = "pT < 200 GeV";
+    } else {
+        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr' or 'vr'.\n";
+        return;
+    }
+    auto df_pt = df_eta.Filter(pt_cut_expr.Data(), pt_cut_label.Data());
     
     // Count valid segments directly in the filter
     auto count_valid_segs = [](ROOT::VecOps::RVec<float> times) {
@@ -177,9 +192,23 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     auto count_seg = df_seg.Count();
     
     // Define histograms at different stages
+    // 0. Before trigger
+    auto h_eta_pretrigger = df2.Histo1D({"h_eta_pretrigger", "Track #eta before trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
+    auto h_pt_pretrigger = df2.Histo1D({"h_pt_pretrigger", "Track p_{T} before trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_phi_pretrigger = df2.Histo1D({"h_phi_pretrigger", "Track #phi before trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
+    
+    // 2D histograms: variable vs trigger pass/fail
+    auto h_eta_vs_trigger = df2.Histo2D({"h_eta_vs_trigger", "Track #eta vs trigger;#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, 0, 2}, 
+                                        "eta_at_max_pt", "HLT_L1SingleMuCosmics");
+    auto h_pt_vs_trigger = df2.Histo2D({"h_pt_vs_trigger", "Track p_{T} vs trigger;p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, 0, 2}, 
+                                       "pt_max", "HLT_L1SingleMuCosmics");
+    auto h_phi_vs_trigger = df2.Histo2D({"h_phi_vs_trigger", "Track #phi vs trigger;#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, 0, 2},
+                                        "phi_at_max_pt", "HLT_L1SingleMuCosmics");
+    
     // 1. After trigger
     auto h_eta_trigger = df_trigger.Histo1D({"h_eta_trigger", "Track #eta after trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
-    auto h_pt_trigger = df_trigger.Histo1D({"h_pt_trigger", "Track p_{T} after trigger;p_{T} [GeV];Events", 50, 0, 500}, "pt_max");
+    auto h_pt_trigger = df_trigger.Histo1D({"h_pt_trigger", "Track p_{T} after trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_phi_trigger = df_trigger.Histo1D({"h_phi_trigger", "Track #phi after trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
     auto h_ntrack_trigger = df_trigger.Histo1D({"h_ntrack_trigger", "Number of tracks after trigger;N_{tracks};Events", 20, 0, 20}, n_var.Data());
     auto df_trigger_withcount = df_trigger.Define("muon_dtSeg_valid_n_trigger", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_trigger = df_trigger_withcount.Histo1D({"h_nseg_trigger", "DT segments after trigger;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_trigger");
@@ -201,7 +230,7 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     // N-1 for pT: apply trigger, track_n, eta, nSeg (skip pT)
     auto df_nminus1_pt_withcount = df_eta.Define("muon_dtSeg_valid_n_pt", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_pt_final = df_nminus1_pt_withcount.Filter("muon_dtSeg_valid_n_pt > 2", "nSeg > 2");
-    auto h_pt_nminus1 = df_nminus1_pt_final.Histo1D({"h_pt_nminus1", "Track p_{T} N-1 cut (no p_{T} cut);p_{T} [GeV];Events", 50, 0, 500}, "pt_max");
+    auto h_pt_nminus1 = df_nminus1_pt_final.Histo1D({"h_pt_nminus1", "Track p_{T} N-1 cut (no p_{T} cut);p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
     
     // N-1 for nSeg: apply trigger, track_n, eta, pT (skip nSeg)
     auto df_nminus1_nseg = df_pt.Define("muon_dtSeg_valid_n_nseg", count_valid_segs, {"muon_dtSeg_t0timing"});
@@ -209,7 +238,7 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     
     // 3. After all cuts
     auto h_eta_final = df_seg.Histo1D({"h_eta_final", "Track #eta after all cuts;#eta;Events",100, -3, 3}, "eta_at_max_pt");
-    auto h_pt_final = df_seg.Histo1D({"h_pt_final", "Track p_{T} after all cuts;p_{T} [GeV];Events", 50, 0, 500}, "pt_max");
+    auto h_pt_final = df_seg.Histo1D({"h_pt_final", "Track p_{T} after all cuts;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
     auto h_ntrack_final = df_seg.Histo1D({"h_ntrack_final", "Number of tracks after all cuts;N_{tracks};Events", 20, 0, 20}, n_var.Data());
     auto h_nseg_final = df_seg.Histo1D({"h_nseg_final", "DT segments after all cuts;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n");
     
@@ -226,7 +255,7 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     h_cutflow->GetXaxis()->SetBinLabel(2, "Trigger");
     h_cutflow->GetXaxis()->SetBinLabel(3, "Has track");
     h_cutflow->GetXaxis()->SetBinLabel(4, "|eta| < 0.9");
-    h_cutflow->GetXaxis()->SetBinLabel(5, "pT > 200 GeV");
+    h_cutflow->GetXaxis()->SetBinLabel(5, pt_cut_label.Data());
     h_cutflow->GetXaxis()->SetBinLabel(6, "nSeg > 2");
     
     // Calculate cumulative cutflow from pre-computed counts
@@ -242,9 +271,13 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     h_cutflow->SetMaximum(1.1*n_total);
     h_cutflow->Write();
     
-    // Write distribution histograms
+    // Write 1D distribution histograms
     std::vector<ROOT::RDF::RResultPtr<TH1D>> histograms = {
+        h_eta_pretrigger,
+        h_pt_pretrigger,
+        h_phi_pretrigger,
         h_eta_trigger,
+        h_phi_trigger,
         h_eta_nminus1,
         h_eta_final,
         h_pt_trigger,
@@ -259,6 +292,17 @@ void skim_ntuples(TString object = "track", TString base_dir = "/ceph/cms/store/
     };
     
     for (auto& h : histograms) {
+        h->Write();
+    }
+    
+    // Write 2D histograms for trigger efficiency
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> histograms2D = {
+        h_eta_vs_trigger,
+        h_pt_vs_trigger,
+        h_phi_vs_trigger
+    };
+    
+    for (auto& h : histograms2D) {
         h->Write();
     }
     
