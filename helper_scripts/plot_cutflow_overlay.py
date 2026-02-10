@@ -2,6 +2,7 @@
 import ROOT
 import os
 import glob
+import re
 
 # CMS Style settings
 def setCMSStyle():
@@ -70,13 +71,13 @@ def addCMSText(canvas, lumi_text="Cosmics", extra_text="Preliminary"):
     # CMS text
     latex.SetTextSize(0.05)
     latex.SetTextFont(61)
-    latex.DrawLatex(0.16, 0.93, "CMS")
+    latex.DrawLatex(0.15, 0.93, "CMS")
     
     # Extra text (e.g., Preliminary)
     if extra_text:
         latex.SetTextSize(0.04)
         latex.SetTextFont(52)
-        latex.DrawLatex(0.3, 0.93, extra_text)
+        latex.DrawLatex(0.25, 0.93, extra_text)
     
     # Luminosity/energy text
     if lumi_text:
@@ -86,14 +87,77 @@ def addCMSText(canvas, lumi_text="Cosmics", extra_text="Preliminary"):
     
     return latex
 
-def plot_cutflow_overlay(input_dir="skimmed_volt2", hist_name="h_cutflow", output_name="cutflow_overlay.png"):
+def extract_parameters(filename):
+    """Extract MinP, SurfaceDepth, and other parameters from filename"""
+    params = {}
+    
+    # Extract MinP
+    match = re.search(r'MinP-(\d+)', filename)
+    if match:
+        params['minp'] = int(match.group(1))
+    
+    # Extract SurfaceDepth - handle both plain numbers and scientific notation (e2, e3, etc.)
+    match = re.search(r'SurfaceDepth-e(\d+)', filename)
+    if match:
+        # Convert e2 -> 10^2 = 100, e3 -> 10^3 = 1000, etc.
+        exponent = int(match.group(1))
+        params['depth'] = 10 ** exponent
+    else:
+        # Try plain number format
+        match = re.search(r'SurfaceDepth-(\d+)', filename)
+        if match:
+            params['depth'] = int(match.group(1))
+        else:
+            params['depth'] = None
+    
+    # Extract MinTheta
+    match = re.search(r'MinTheta-(\d+)', filename)
+    if match:
+        params['min_theta'] = int(match.group(1))
+    else:
+        params['min_theta'] = None
+    
+    # Extract MaxTheta
+    match = re.search(r'MaxTheta-(\d+)', filename)
+    if match:
+        params['max_theta'] = int(match.group(1))
+    else:
+        params['max_theta'] = None
+    
+    return params
+
+def get_grouping_key(params):
     """
-    Overlay h_cutflow histograms from all ROOT files in the specified directory
+    Create a grouping key from parameters (excluding MinP which is the x-axis)
+    Returns a tuple of (depth, min_theta, max_theta)
+    """
+    return (params.get('depth'), params.get('min_theta'), params.get('max_theta'))
+
+def format_group_label(group_key):
+    """Create a readable label from the grouping key"""
+    depth, min_theta, max_theta = group_key
+    
+    parts = []
+    if depth is not None:
+        parts.append(f"D={depth} mm")
+    if min_theta is not None:
+        parts.append(f"#theta_{{min}}={min_theta}#circ")
+    if max_theta is not None:
+        parts.append(f"#theta_{{max}}={max_theta}#circ")
+    
+    if not parts:
+        return "Default parameters"
+    
+    return ", ".join(parts)
+
+def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", output_name="cutflow_overlay.png"):
+    """
+    Create all cutflow plots: 1D overlay, 2D heatmap, and efficiency vs MinP
     
     Args:
         input_dir: Directory containing ROOT files
         hist_name: Name of the histogram to overlay
-        output_name: Output filename for the plot
+        output_name: Base output filename for the plots
     """
     
     # Enable batch mode
@@ -112,7 +176,6 @@ def plot_cutflow_overlay(input_dir="skimmed_volt2", hist_name="h_cutflow", outpu
     # Sort files by MinP value
     def extract_minp(filename):
         """Extract MinP value from filename for sorting"""
-        import re
         match = re.search(r'MinP-(\d+)', filename)
         if match:
             return int(match.group(1))
@@ -259,7 +322,7 @@ def plot_cutflow_overlay(input_dir="skimmed_volt2", hist_name="h_cutflow", outpu
     
     # Set axis range on first histogram BEFORE drawing anything
     first_hist_norm = histograms_norm[0]
-    first_hist_norm.GetYaxis().SetTitle("Efficiency")
+    first_hist_norm.GetYaxis().SetTitle("Pre-selection efficiency")
     first_hist_norm.GetXaxis().SetTitle("")
     
     # Use fixed Y-axis range for normalized plot
@@ -331,7 +394,7 @@ def plot_cutflow_overlay(input_dir="skimmed_volt2", hist_name="h_cutflow", outpu
     # Set axis titles
     # h2d.GetXaxis().SetTitle("Cut Step")
     # h2d.GetYaxis().SetTitle("Sample")
-    h2d.GetZaxis().SetTitle("Efficiency")
+    h2d.GetZaxis().SetTitle("Pre-selection efficiency")
     
     # Set label size for readability
     h2d.GetYaxis().SetLabelSize(0.02)
@@ -361,6 +424,158 @@ def plot_cutflow_overlay(input_dir="skimmed_volt2", hist_name="h_cutflow", outpu
     
     canvas3.Update()
     
+    # ===== Create efficiency vs MinP plots =====
+    print("\nCreating efficiency vs MinP plots...")
+    
+    # Dictionary to organize data by parameter combinations
+    data_by_group = {}
+    
+    # Loop over files again and extract efficiency data
+    for root_file in root_files:
+        # Extract parameters from filename
+        filename = os.path.basename(root_file)
+        params = extract_parameters(filename)
+        
+        if 'minp' not in params:
+            continue
+        
+        minp = params['minp']
+        group_key = get_grouping_key(params)
+        
+        # Open ROOT file and get histogram
+        try:
+            tfile = ROOT.TFile.Open(root_file)
+        except (OSError, RuntimeError) as e:
+            continue
+        
+        if not tfile or tfile.IsZombie():
+            continue
+        
+        hist = tfile.Get(hist_name)
+        if not hist:
+            tfile.Close()
+            continue
+        
+        # Get efficiency from the last cut step
+        n_bins = hist.GetNbinsX()
+        first_bin = hist.GetBinContent(1)
+        last_bin = hist.GetBinContent(n_bins)
+        
+        if first_bin > 0:
+            efficiency = last_bin / first_bin
+        else:
+            efficiency = 0
+        
+        # Store data
+        if group_key not in data_by_group:
+            data_by_group[group_key] = []
+        
+        data_by_group[group_key].append((minp, efficiency))
+        
+        tfile.Close()
+    
+    if data_by_group:
+        # Print grouping information
+        # print(f"Found {len(data_by_group)} different parameter combinations:")
+        # for group_key in data_by_group:
+        #     label = format_group_label(group_key)
+        #     print(f"  - {label}: {len(data_by_group[group_key])} points")
+        
+        # Sort data for each group
+        for group_key in data_by_group:
+            data_by_group[group_key].sort(key=lambda x: x[0])
+        
+        # Create canvas for efficiency vs MinP
+        canvas_eff = ROOT.TCanvas("c_eff_vs_minp", "c_eff_vs_minp", 800, 800)
+        canvas_eff.cd()
+        canvas_eff.SetLeftMargin(0.12)
+        canvas_eff.SetRightMargin(0.11)
+        canvas_eff.SetBottomMargin(0.11)
+        
+        # Marker styles
+        markers = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
+        
+        # Create TGraphs for each parameter combination
+        graphs = []
+        legend_eff = ROOT.TLegend(0.3, 0.6, 0.88, 0.92)
+        legend_eff.SetHeader(f"Region: {region.upper()}, Object: {obj_type}")
+        legend_eff.SetTextSize(0.03)
+        legend_eff.SetFillStyle(0)
+        legend_eff.SetBorderSize(0)
+        
+        # Sort groups for consistent ordering
+        # Use a custom key to handle None values (put them first)
+        def sort_key(group_tuple):
+            depth, min_theta, max_theta = group_tuple
+            # Convert None to -1 for sorting purposes
+            return (depth if depth is not None else -1,
+                    min_theta if min_theta is not None else -1,
+                    max_theta if max_theta is not None else -1)
+        
+        sorted_groups = sorted(data_by_group.keys(), key=sort_key)
+        
+        for i, group_key in enumerate(sorted_groups):
+            data = data_by_group[group_key]
+            n_points = len(data)
+            
+            # Create arrays for TGraph
+            import array
+            x_array = array.array('d', [point[0] for point in data])
+            y_array = array.array('d', [point[1] for point in data])
+            
+            graph = ROOT.TGraph(n_points, x_array, y_array)
+            
+            # Set style
+            color = colors[i % len(colors)]
+            marker = markers[i % len(markers)]
+            
+            graph.SetLineColor(color)
+            graph.SetLineWidth(2)
+            graph.SetMarkerColor(color)
+            graph.SetMarkerStyle(marker)
+            graph.SetMarkerSize(1.2)
+            
+            # Create label
+            label = format_group_label(group_key)
+            
+            legend_eff.AddEntry(graph, label, "lp")
+            graphs.append(graph)
+        
+        if graphs:
+            # Draw graphs
+            first_graph = graphs[0]
+            first_graph.SetTitle("")
+            first_graph.GetXaxis().SetTitle("p [GeV]")
+            first_graph.GetYaxis().SetTitle("Pre-selection efficiency")
+            first_graph.GetYaxis().SetTitleOffset(1.05)
+            
+            # Set axis ranges
+            first_graph.GetYaxis().SetRangeUser(0, 0.6)
+            first_graph.GetXaxis().SetMaxDigits(3)  # Use scientific notation for large numbers
+            first_graph.GetXaxis().SetNdivisions(510) 
+
+            first_graph.Draw("ALP")
+            
+            for graph in graphs[1:]:
+                graph.Draw("LP SAME")
+            
+            # Draw legend
+            legend_eff.Draw()
+            
+            # Add CMS text
+            addCMSText(canvas_eff, lumi_text="Cosmics", extra_text="Work in Progress")
+            
+            # Save canvas
+            png_name_eff = base_name.replace("cutflow_overlay", "efficiency_vs_minp") + ".png"
+            pdf_name_eff = base_name.replace("cutflow_overlay", "efficiency_vs_minp") + ".pdf"
+            
+            canvas_eff.SaveAs(png_name_eff)
+            canvas_eff.SaveAs(pdf_name_eff)
+            
+            canvas_eff.Update()
+            
+            print(f"Saved efficiency vs MinP plot: {png_name_eff}")
+    
     # Cleanup
     for hist, tfile in histograms:
         tfile.Close()
@@ -387,11 +602,9 @@ if __name__ == "__main__":
             print(f"Processing: {region}/{obj_type}")
             print(f"{'='*100}\n")
             
-            # Run the plotting function
-            plot_cutflow_overlay(
+            # Run the plotting function (creates all three types of plots)
+            plot_all_cutflow_analysis(
                 input_dir=input_dir,
                 hist_name="h_cutflow",
                 output_name="cutflow_overlay.png"
             )
-            
-            print(f"\nFinished processing {region}/{obj_type}\n")
