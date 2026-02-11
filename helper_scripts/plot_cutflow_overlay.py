@@ -235,12 +235,14 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         
         # Clean up label: remove CosmicToMu and format parameters
         label = label.replace("CosmicToMu_Par-", "")
+        label = label.replace("CosmicTP-", "")  
+        label = label.replace("Ntuplizer", "")
         label = label.replace("_CosmicToMu_", "_")
         label = label.replace("matched_muon", "#mu-match")
         label = label.replace("MinP-", " p = ")
         label = label.replace("MinTheta-", " #theta = ")
         label = label.replace("MaxTheta-", "")        
-        label = label.replace("-SurfaceDepth-", " D=")
+        label = label.replace("-SurfaceDepth-", " D = ")
         label = label.replace("_cosmuogen", "")
         label = label.replace("cosmuogen", "")
         label = label.replace("_", " ")
@@ -287,6 +289,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     
     # Create new legend for normalized plot - spanning full width
     legend2 = ROOT.TLegend(0.17, 0.5, 0.9, 0.9)
+    legend2.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
+    legend2.SetTextSize(0.03)
+    legend2.SetFillStyle(0)
+    legend2.SetBorderSize(0)
     legend2.SetTextSize(0.015)
     legend2.SetNColumns(2)
     
@@ -322,7 +328,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     
     # Set axis range on first histogram BEFORE drawing anything
     first_hist_norm = histograms_norm[0]
-    first_hist_norm.GetYaxis().SetTitle("Pre-selection efficiency")
+    first_hist_norm.GetYaxis().SetTitle("Efficiency")
     first_hist_norm.GetXaxis().SetTitle("")
     
     # Use fixed Y-axis range for normalized plot
@@ -354,7 +360,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     pdf_name_norm = base_name + "_normalized.pdf"
     
     canvas2.SaveAs(png_name_norm)
-    # canvas2.SaveAs(pdf_name_norm)
+    canvas2.SaveAs(pdf_name_norm)
     
     canvas2.Update()
     
@@ -394,7 +400,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     # Set axis titles
     # h2d.GetXaxis().SetTitle("Cut Step")
     # h2d.GetYaxis().SetTitle("Sample")
-    h2d.GetZaxis().SetTitle("Pre-selection efficiency")
+    h2d.GetZaxis().SetTitle("Efficiency")
     
     # Set label size for readability
     h2d.GetYaxis().SetLabelSize(0.02)
@@ -486,22 +492,21 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             data_by_group[group_key].sort(key=lambda x: x[0])
         
         # Create canvas for efficiency vs MinP
-        canvas_eff = ROOT.TCanvas("c_eff_vs_minp", "c_eff_vs_minp", 800, 800)
+        canvas_eff = ROOT.TCanvas("c_eff_vs_minp"+canvas_suffix, "c_eff_vs_minp"+canvas_suffix, 800, 800)
         canvas_eff.cd()
-        canvas_eff.SetLeftMargin(0.12)
-        canvas_eff.SetRightMargin(0.11)
-        canvas_eff.SetBottomMargin(0.11)
+        canvas_eff.SetRightMargin(0.1)
         
         # Marker styles
         markers = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
         
         # Create TGraphs for each parameter combination
         graphs = []
-        legend_eff = ROOT.TLegend(0.3, 0.6, 0.88, 0.92)
-        legend_eff.SetHeader(f"Region: {region.upper()}, Object: {obj_type}")
+        legend_eff = ROOT.TLegend(0.32, 0.5, 0.83, 0.9)
+        legend_eff.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
         legend_eff.SetTextSize(0.03)
         legend_eff.SetFillStyle(0)
         legend_eff.SetBorderSize(0)
+        legend_eff.SetTextSize(0.03)
         
         # Sort groups for consistent ordering
         # Use a custom key to handle None values (put them first)
@@ -545,15 +550,15 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Draw graphs
             first_graph = graphs[0]
             first_graph.SetTitle("")
-            first_graph.GetXaxis().SetTitle("p [GeV]")
+            first_graph.GetXaxis().SetTitle("M_{\chi} / 2 [GeV]")
             first_graph.GetYaxis().SetTitle("Pre-selection efficiency")
             first_graph.GetYaxis().SetTitleOffset(1.05)
             
             # Set axis ranges
             first_graph.GetYaxis().SetRangeUser(0, 0.6)
             first_graph.GetXaxis().SetMaxDigits(3)  # Use scientific notation for large numbers
-            first_graph.GetXaxis().SetNdivisions(510) 
-
+            first_graph.GetXaxis().SetNdivisions(510) # More divisions for better tick marks
+            
             first_graph.Draw("ALP")
             
             for graph in graphs[1:]:
@@ -573,16 +578,400 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             canvas_eff.SaveAs(pdf_name_eff)
             
             canvas_eff.Update()
-            
-            print(f"Saved efficiency vs MinP plot: {png_name_eff}")
+
+    # ===== Create trigger efficiency vs MinP plots =====
+    print("\nCreating trigger efficiency vs MinP plots...")
+
+    # Dictionary to organize trigger efficiency data by parameter combinations
+    trigger_data_by_group = {}
+
+    # Loop over files again and extract trigger efficiency data
+    for root_file in root_files:
+        # Extract parameters from filename
+        filename = os.path.basename(root_file)
+        params = extract_parameters(filename)
+
+        if 'minp' not in params:
+            continue
+
+        minp = params['minp']
+        group_key = get_grouping_key(params)
+
+        # Open ROOT file and get histogram
+        try:
+            tfile = ROOT.TFile.Open(root_file)
+        except (OSError, RuntimeError) as e:
+            continue
+
+        if not tfile or tfile.IsZombie():
+            continue
+
+        hist = tfile.Get(hist_name)
+        if not hist:
+            tfile.Close()
+            continue
+
+        # Get trigger efficiency (2nd bin / 1st bin)
+        first_bin = hist.GetBinContent(1)  # All events
+        second_bin = hist.GetBinContent(2)  # After trigger
+
+        if first_bin > 0:
+            trigger_efficiency = second_bin / first_bin
+        else:
+            trigger_efficiency = 0
+
+        # Store data
+        if group_key not in trigger_data_by_group:
+            trigger_data_by_group[group_key] = []
+
+        trigger_data_by_group[group_key].append((minp, trigger_efficiency))
+
+        tfile.Close()
+
+    if trigger_data_by_group:
+        # Sort data for each group
+        for group_key in trigger_data_by_group:
+            trigger_data_by_group[group_key].sort(key=lambda x: x[0])
+
+        # Create canvas for trigger efficiency vs MinP
+        canvas_trig = ROOT.TCanvas("c_trig_eff_vs_minp"+canvas_suffix, "c_trig_eff_vs_minp"+canvas_suffix, 800, 800)
+        canvas_trig.cd()
+        canvas_trig.SetRightMargin(0.1)
+
+
+        # Marker styles
+        markers = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
+
+        # Create TGraphs for each parameter combination
+        trig_graphs = []
+        legend_trig = ROOT.TLegend(0.32, 0.5, 0.83, 0.9)
+        legend_trig.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
+        legend_trig.SetTextSize(0.03)
+        legend_trig.SetFillStyle(0)
+        legend_trig.SetBorderSize(0)
+        legend_trig.SetTextSize(0.03)
+
+        # Sort groups for consistent ordering
+        # Use a custom key to handle None values (put them first)
+        def sort_key_trig(group_tuple):
+            depth, min_theta, max_theta = group_tuple
+            # Convert None to -1 for sorting purposes
+            return (depth if depth is not None else -1,
+                    min_theta if min_theta is not None else -1,
+                    max_theta if max_theta is not None else -1)
+
+        sorted_groups_trig = sorted(trigger_data_by_group.keys(), key=sort_key_trig)
+
+        for i, group_key in enumerate(sorted_groups_trig):
+            data = trigger_data_by_group[group_key]
+            n_points = len(data)
+
+            # Create arrays for TGraph
+            import array
+            x_array = array.array('d', [point[0] for point in data])
+            y_array = array.array('d', [point[1] for point in data])
+
+            graph = ROOT.TGraph(n_points, x_array, y_array)
+
+            # Set style
+            color = colors[i % len(colors)]
+            marker = markers[i % len(markers)]
+
+            graph.SetLineColor(color)
+            graph.SetLineWidth(2)
+            graph.SetMarkerColor(color)
+            graph.SetMarkerStyle(marker)
+            graph.SetMarkerSize(1.2)
+
+            # Create label
+            label = format_group_label(group_key)
+
+            legend_trig.AddEntry(graph, label, "lp")
+            trig_graphs.append(graph)
+
+        if trig_graphs:
+            # Draw graphs
+            first_graph_trig = trig_graphs[0]
+            first_graph_trig.SetTitle("")
+            first_graph_trig.GetXaxis().SetTitle("M_{\chi} / 2 [GeV]")
+            first_graph_trig.GetYaxis().SetTitle("Trigger efficiency")
+            first_graph_trig.GetYaxis().SetTitleOffset(1.05)
+
+            # Set axis ranges
+            first_graph_trig.GetYaxis().SetRangeUser(0, 1.0)
+            first_graph_trig.GetXaxis().SetMaxDigits(3)  # Use scientific notation for large numbers
+            first_graph_trig.GetXaxis().SetNdivisions(510) # More divisions for better tick marks
+
+            first_graph_trig.Draw("ALP")
+
+            for graph in trig_graphs[1:]:
+                graph.Draw("LP SAME")
+
+            # Draw legend
+            legend_trig.Draw()
+
+            # Add CMS text
+            addCMSText(canvas_trig, lumi_text="Cosmics", extra_text="Work in Progress")
+
+            # Save canvas
+            png_name_trig = base_name.replace("cutflow_overlay", "trigger_efficiency_vs_minp") + ".png"
+            pdf_name_trig = base_name.replace("cutflow_overlay", "trigger_efficiency_vs_minp") + ".pdf"
+
+            canvas_trig.SaveAs(png_name_trig)
+            canvas_trig.SaveAs(pdf_name_trig)
+
+            canvas_trig.Update()
+
+    # ===== Create overlay plots for final kinematic distributions =====
+    print("\nCreating final kinematic distribution overlays...")
     
+    # Define histograms to overlay
+    kinematic_hists = {
+        'h_pt_final': {'title': 'p_{T} [GeV]', 'log_y': True},
+        'h_pt_trigger': {'title': 'p_{T} [GeV]', 'log_y': True},
+        'h_pt_pretrigger': {'title': 'p_{T} [GeV]', 'log_y': True},
+        'h_eta_final': {'title': '#eta', 'log_y': True},
+        'h_eta_trigger': {'title': '#eta', 'log_y': True},
+        'h_eta_pretrigger': {'title': '#eta', 'log_y': True},
+        'h_phi_final': {'title': '#phi', 'log_y': True},
+        'h_phi_trigger': {'title': '#phi', 'log_y': True},
+        'h_phi_pretrigger': {'title': '#phi', 'log_y': True},
+        'h_ntrack_final': {'title': 'N_{tracks}', 'log_y': True}
+    }
+    
+    for hist_name_kin, hist_config in kinematic_hists.items():
+        print(f"  Processing {hist_name_kin}...")
+        
+        # Collect histograms from all files
+        kin_histograms = []
+        kin_labels = []
+        
+        for i, root_file in enumerate(root_files):
+            try:
+                tfile = ROOT.TFile.Open(root_file)
+            except (OSError, RuntimeError) as e:
+                continue
+            
+            if not tfile or tfile.IsZombie():
+                continue
+            
+            hist_kin = tfile.Get(hist_name_kin)
+            if not hist_kin:
+                tfile.Close()
+                continue
+            
+            # Clone histogram
+            hist_kin_clone = hist_kin.Clone(f"{hist_name_kin}_{i}")
+            hist_kin_clone.SetDirectory(0)
+            
+            # Normalize to unit area if histogram is not empty
+            integral = hist_kin_clone.Integral()
+            if integral > 0:
+                hist_kin_clone.Scale(1.0 / integral)
+            
+            # Set style
+            color = colors[i % len(colors)]
+            hist_kin_clone.SetLineColor(color)
+            hist_kin_clone.SetLineWidth(2)
+            hist_kin_clone.SetMarkerColor(color)
+            hist_kin_clone.SetMarkerStyle(20)
+            hist_kin_clone.SetMarkerSize(0.8)
+            
+            # Use the same labels as before
+            kin_histograms.append((hist_kin_clone, tfile))
+            kin_labels.append(histogram_labels[i] if i < len(histogram_labels) else "")
+        
+        if not kin_histograms:
+            print(f"  Warning: No valid histograms found for {hist_name_kin}")
+            continue
+        
+        # Create canvas
+        canvas_kin = ROOT.TCanvas(f"c_{hist_name_kin}_{i}", f"c_{hist_name_kin}_{i}", 800, 800)
+        canvas_kin.cd()
+        
+        # Set log scale if requested
+        if hist_config['log_y']:
+            canvas_kin.SetLogy()
+        
+        # Create legend
+        legend_kin = ROOT.TLegend(0.17, 0.5, 0.9, 0.9)
+        legend_kin.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
+        legend_kin.SetTextSize(0.03)
+        legend_kin.SetFillStyle(0)
+        legend_kin.SetBorderSize(0)
+        legend_kin.SetTextSize(0.03)
+        legend_kin.SetTextSize(0.015)
+        legend_kin.SetNColumns(2)
+        
+        # Find maximum for y-axis range
+        max_val = 0
+        for hist_kin_clone, _ in kin_histograms:
+            hist_max = hist_kin_clone.GetMaximum()
+            if hist_max > max_val:
+                max_val = hist_max
+        
+        # Draw histograms
+        for i, (hist_kin_clone, tfile) in enumerate(kin_histograms):
+            # Set axis titles and range on first histogram
+            if i == 0:
+                hist_kin_clone.GetXaxis().SetTitle(hist_config['title'])
+                hist_kin_clone.GetYaxis().SetTitle("Normalized Events")
+                if hist_config['log_y']:
+                    hist_kin_clone.SetMaximum(max_val * 100000)
+                    hist_kin_clone.SetMinimum(max_val * 1e-4)
+                else:
+                    hist_kin_clone.SetMaximum(max_val * 1.2)
+                
+                draw_option = "HIST"
+            else:
+                draw_option = "HIST SAME"
+            
+            hist_kin_clone.Draw(draw_option)
+            legend_kin.AddEntry(hist_kin_clone, kin_labels[i], "l")
+        
+        # Draw legend
+        legend_kin.Draw()
+        
+        # Add CMS text
+        addCMSText(canvas_kin, lumi_text="Cosmics", extra_text="Work in Progress")
+        
+        # Save canvas
+        png_name_kin = base_name.replace("cutflow_overlay", hist_name_kin) + ".png"
+        pdf_name_kin = base_name.replace("cutflow_overlay", hist_name_kin) + ".pdf"
+        
+        canvas_kin.SaveAs(png_name_kin)
+        canvas_kin.SaveAs(pdf_name_kin)
+        canvas_kin.Update()
+        
+        # Cleanup
+        for hist_kin_clone, tfile in kin_histograms:
+            tfile.Close()
+    
+    # ===== Create ProfileX overlays for 2D trigger histograms =====
+    print("\nCreating ProfileX overlays for 2D trigger histograms...")
+
+    profile_hists = {
+        'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
+        'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
+        'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
+    }
+
+    for hist_name_2d, prof_config in profile_hists.items():
+        print(f"  Processing ProfileX of {hist_name_2d}...")
+
+        prof_histograms = []
+        prof_labels = []
+
+        for i, root_file in enumerate(root_files):
+            try:
+                tfile = ROOT.TFile.Open(root_file)
+            except (OSError, RuntimeError):
+                continue
+
+            if not tfile or tfile.IsZombie():
+                continue
+
+            h2 = tfile.Get(hist_name_2d)
+            if not h2:
+                tfile.Close()
+                continue
+
+            # Correct Y-axis: shift entries from [0,2] to [-0.5,1.5] binning
+            # Move bin contents from Y-bin 1 (center 0.5) to Y-bin that maps to 0,
+            # and Y-bin 2 (center 1.5) to Y-bin that maps to 1.
+            # Recreate with corrected Y-axis
+            nx = h2.GetNbinsX()
+            xmin = h2.GetXaxis().GetXmin()
+            xmax = h2.GetXaxis().GetXmax()
+            h2_corr = ROOT.TH2F(f"h2_corr_{hist_name_2d}_{i}", "",
+                                 nx, xmin, xmax, 2, -0.5, 1.5)
+            for bx in range(1, nx + 1):
+                for by in range(1, 3):
+                    h2_corr.SetBinContent(bx, by, h2.GetBinContent(bx, by))
+                    h2_corr.SetBinError(bx, by, h2.GetBinError(bx, by))
+
+            # Rebin X-axis before profiling
+            h2_corr.RebinX(20)
+            # Create ProfileX
+            prof = h2_corr.ProfileX(f"prof_{hist_name_2d}_{i}")
+            prof.SetDirectory(0)
+
+            # Set style
+            color = colors[i % len(colors)]
+            prof.SetLineColor(color)
+            prof.SetLineWidth(2)
+            prof.SetMarkerColor(color)
+            prof.SetMarkerStyle(20)
+            prof.SetMarkerSize(0.8)
+
+            prof_histograms.append(prof)
+            prof_labels.append(histogram_labels[i] if i < len(histogram_labels) else "")
+
+            tfile.Close()
+
+        if not prof_histograms:
+            print(f"  Warning: No valid 2D histograms found for {hist_name_2d}")
+            continue
+
+        # Create canvas
+        canvas_prof = ROOT.TCanvas(f"c_prof_{hist_name_2d}_{canvas_suffix}", f"c_prof_{hist_name_2d}_{canvas_suffix}", 800, 800)
+        canvas_prof.cd()
+
+        if prof_config['log_y']:
+            canvas_prof.SetLogy()
+
+        # Create legend
+        legend_prof = ROOT.TLegend(0.17, 0.5, 0.9, 0.9)
+        legend_prof.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
+        legend_prof.SetFillStyle(0)
+        legend_prof.SetBorderSize(0)
+        legend_prof.SetTextSize(0.015)
+        legend_prof.SetNColumns(2)
+
+        # Find y-axis range
+        max_val = 0
+        min_val = 1e99
+        for prof in prof_histograms:
+            for b in range(1, prof.GetNbinsX() + 1):
+                val = prof.GetBinContent(b)
+                if val > max_val:
+                    max_val = val
+                if val > 0 and val < min_val:
+                    min_val = val
+
+        # Draw profiles
+        for i, prof in enumerate(prof_histograms):
+            if i == 0:
+                prof.GetXaxis().SetTitle(prof_config['x_title'])
+                prof.GetYaxis().SetTitle(prof_config['y_title'])
+                prof.SetMaximum(3)
+                prof.SetMinimum(0)
+                draw_option = "E"
+            else:
+                draw_option = "E SAME"
+
+            prof.Draw(draw_option)
+            legend_prof.AddEntry(prof, prof_labels[i], "lp")
+
+        legend_prof.Draw()
+        addCMSText(canvas_prof, lumi_text="Cosmics", extra_text="Work in Progress")
+
+        # Save
+        png_name_prof = base_name.replace("cutflow_overlay", f"profileX_{hist_name_2d}") + ".png"
+        pdf_name_prof = base_name.replace("cutflow_overlay", f"profileX_{hist_name_2d}") + ".pdf"
+
+        canvas_prof.SaveAs(png_name_prof)
+        canvas_prof.SaveAs(pdf_name_prof)
+        canvas_prof.Update()
+
     # Cleanup
     for hist, tfile in histograms:
         tfile.Close()
 
 if __name__ == "__main__":
     # Base directory for all skimmed ntuples
-    base_dir = "/home/users/tvami/work/EarthAsDM/Skimmed_ntuples/Signal/"
+    base_dir = "/home/users/tvami/EarthAsDM/Data/"
+    # base_dir = "/home/users/tvami/EarthAsDM/Signal/"
     
     # Define regions and object types to loop over
     regions = ['sr', 'vr']
@@ -608,3 +997,4 @@ if __name__ == "__main__":
                 hist_name="h_cutflow",
                 output_name="cutflow_overlay.png"
             )
+            

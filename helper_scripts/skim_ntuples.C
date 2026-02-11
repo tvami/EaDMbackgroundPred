@@ -56,15 +56,32 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     
     char buffer[2048];
     int nfiles = 0;
+    int nzombie = 0;
     while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
         TString filename = buffer;
         filename.ReplaceAll("\n", "");
         if (filename.Length() > 0) {
-            chain.Add(filename.Data());
-            nfiles++;
+            // Check if file is valid and not a zombie
+            TFile* test_file = TFile::Open(filename.Data(), "READ");
+            if (test_file && !test_file->IsZombie() && test_file->GetNkeys() > 0) {
+                test_file->Close();
+                delete test_file;
+                chain.Add(filename.Data());
+                nfiles++;
+            } else {
+                std::cerr << "Warning: Skipping corrupted or zombie file: " << filename << std::endl;
+                nzombie++;
+                if (test_file) {
+                    delete test_file;
+                }
+            }
         }
     }
     pclose(pipe);
+
+    if (nzombie > 0) {
+        std::cout << "Skipped " << nzombie << " corrupted/zombie files\n";
+    }
     
     // Check if any files were found
     if (nfiles == 0) {
@@ -198,11 +215,11 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_phi_pretrigger = df2.Histo1D({"h_phi_pretrigger", "Track #phi before trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
     
     // 2D histograms: variable vs trigger pass/fail
-    auto h_eta_vs_trigger = df2.Histo2D({"h_eta_vs_trigger", "Track #eta vs trigger;#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, 0, 2}, 
+    auto h_eta_vs_trigger = df2.Histo2D({"h_eta_vs_trigger", "Track #eta vs trigger;#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, -0.5, 1.5}, 
                                         "eta_at_max_pt", "HLT_L1SingleMuCosmics");
-    auto h_pt_vs_trigger = df2.Histo2D({"h_pt_vs_trigger", "Track p_{T} vs trigger;p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, 0, 2}, 
+    auto h_pt_vs_trigger = df2.Histo2D({"h_pt_vs_trigger", "Track p_{T} vs trigger;p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, -0.5, 1.5}, 
                                        "pt_max", "HLT_L1SingleMuCosmics");
-    auto h_phi_vs_trigger = df2.Histo2D({"h_phi_vs_trigger", "Track #phi vs trigger;#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, 0, 2},
+    auto h_phi_vs_trigger = df2.Histo2D({"h_phi_vs_trigger", "Track #phi vs trigger;#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, -0.5, 1.5},
                                         "phi_at_max_pt", "HLT_L1SingleMuCosmics");
     
     // 1. After trigger
