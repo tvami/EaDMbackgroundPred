@@ -2,6 +2,7 @@
 /// Usage:
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
 
+// Version: v1.0.2
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/") {
     
     // Enable multi-threading (use all available cores)
@@ -32,7 +33,6 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         eta_var = "muon_tuneP_Eta";
         phi_var = "muon_tuneP_Phi";
         n_var = "muon_n";
-
     } else if (object == "matched_muon") {
         pt_var = "muon_fromGenTrack_Pt";
         eta_var = "muon_fromGenTrack_Eta";
@@ -151,11 +151,12 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         "muon_dtSeg_globY",
         "muon_dtSeg_globZ"
     };
-    
+
     if (object == "track") {
         branches_to_keep.insert(branches_to_keep.end(), {
             "track_n",
             "track_pt",
+            "track_ptErr",
             "track_eta",
             "track_phi",
             "track_chi2",
@@ -167,11 +168,23 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         branches_to_keep.insert(branches_to_keep.end(), {
             "muon_n",
             "muon_pt",
+            "muon_ptErr",
             "muon_eta",
             "muon_phi",
             "muon_energy",
             "muon_chi2",
             "muon_comb_ndof"
+            "muon_trkIso",
+            "muon_d0",
+            "muon_dZ",
+            "muon_validFractionTrackerHits",
+            "muon_isLoose",
+            "muon_isMedium",
+            "muon_isTight",
+            "muon_isTrackerHighPtMuon",
+            "muon_isHighPtMuon",
+            "muon_type",
+            "muon_quality",
         });
     } else if (object == "matched_muon") {
         branches_to_keep.insert(branches_to_keep.end(), {
@@ -210,23 +223,33 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     
     // Define histograms at different stages
     // 0. Before trigger
-    auto h_eta_pretrigger = df2.Histo1D({"h_eta_pretrigger", "Track #eta before trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
-    auto h_pt_pretrigger = df2.Histo1D({"h_pt_pretrigger", "Track p_{T} before trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
-    auto h_phi_pretrigger = df2.Histo1D({"h_phi_pretrigger", "Track #phi before trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
+    auto h_eta_pretrigger = df2.Histo1D({"h_eta_pretrigger", "Obj #eta before trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
+    auto h_pt_pretrigger = df2.Histo1D({"h_pt_pretrigger", "Obj p_{T} before trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_phi_pretrigger = df2.Histo1D({"h_phi_pretrigger", "Obj #phi before trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
     
     // 2D histograms: variable vs trigger pass/fail
-    auto h_eta_vs_trigger = df2.Histo2D({"h_eta_vs_trigger", "Track #eta vs trigger;#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, -0.5, 1.5}, 
+    auto h_eta_vs_trigger = df2.Histo2D({"h_eta_vs_trigger", "Obj #eta vs trigger;#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, -0.5, 1.5}, 
                                         "eta_at_max_pt", "HLT_L1SingleMuCosmics");
-    auto h_pt_vs_trigger = df2.Histo2D({"h_pt_vs_trigger", "Track p_{T} vs trigger;p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, -0.5, 1.5}, 
+    auto h_pt_vs_trigger = df2.Histo2D({"h_pt_vs_trigger", "Obj p_{T} vs trigger;p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, -0.5, 1.5}, 
                                        "pt_max", "HLT_L1SingleMuCosmics");
-    auto h_phi_vs_trigger = df2.Histo2D({"h_phi_vs_trigger", "Track #phi vs trigger;#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, -0.5, 1.5},
+    auto h_phi_vs_trigger = df2.Histo2D({"h_phi_vs_trigger", "Obj #phi vs trigger;#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, -0.5, 1.5},
                                         "phi_at_max_pt", "HLT_L1SingleMuCosmics");
-    
+
+    // 2D histograms: variable vs trigger pass/fail, requiring track found and |eta| < 0.9
+    auto df_track_eta_notrig = df2.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Has track/muon (no trig required)")
+                                  .Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9 (no trig required)");
+    auto h_eta_vs_trigger_obj_eta = df_track_eta_notrig.Histo2D({"h_eta_vs_trigger_obj_eta", "Obj #eta vs trigger (track found, |#eta|<0.9);#eta;HLT_L1SingleMuCosmics", 100, -3, 3, 2, -0.5, 1.5},
+                                        "eta_at_max_pt", "HLT_L1SingleMuCosmics");
+    auto h_pt_vs_trigger_obj_eta = df_track_eta_notrig.Histo2D({"h_pt_vs_trigger_obj_eta", "Obj p_{T} vs trigger (track found, |#eta|<0.9);p_{T} [GeV];HLT_L1SingleMuCosmics", 500, 0, 5000, 2, -0.5, 1.5},
+                                       "pt_max", "HLT_L1SingleMuCosmics");
+    auto h_phi_vs_trigger_obj_eta = df_track_eta_notrig.Histo2D({"h_phi_vs_trigger_obj_eta", "Obj #phi vs trigger (track found, |#eta|<0.9);#phi;HLT_L1SingleMuCosmics", 64, -3.2, 3.2, 2, -0.5, 1.5},
+                                        "phi_at_max_pt", "HLT_L1SingleMuCosmics");
+
     // 1. After trigger
-    auto h_eta_trigger = df_trigger.Histo1D({"h_eta_trigger", "Track #eta after trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
-    auto h_pt_trigger = df_trigger.Histo1D({"h_pt_trigger", "Track p_{T} after trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
-    auto h_phi_trigger = df_trigger.Histo1D({"h_phi_trigger", "Track #phi after trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
-    auto h_ntrack_trigger = df_trigger.Histo1D({"h_ntrack_trigger", "Number of tracks after trigger;N_{tracks};Events", 20, 0, 20}, n_var.Data());
+    auto h_eta_trigger = df_trigger.Histo1D({"h_eta_trigger", "Obj #eta after trigger;#eta;Events",100, -3, 3}, "eta_at_max_pt");
+    auto h_pt_trigger = df_trigger.Histo1D({"h_pt_trigger", "Obj p_{T} after trigger;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_phi_trigger = df_trigger.Histo1D({"h_phi_trigger", "Obj #phi after trigger;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
+    auto h_ntrack_trigger = df_trigger.Histo1D({"h_ntrack_trigger", "Number of objs after trigger;N_{objs};Events", 20, 0, 20}, n_var.Data());
     auto df_trigger_withcount = df_trigger.Define("muon_dtSeg_valid_n_trigger", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_trigger = df_trigger_withcount.Histo1D({"h_nseg_trigger", "DT segments after trigger;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_trigger");
     
@@ -242,21 +265,22 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto df_nminus1_eta = df_track.Filter("pt_max > 200.0", "pT > 200 GeV");
     auto df_nminus1_eta_withcount = df_nminus1_eta.Define("muon_dtSeg_valid_n", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_eta_final = df_nminus1_eta_withcount.Filter("muon_dtSeg_valid_n > 2", "nSeg > 2");
-    auto h_eta_nminus1 = df_nminus1_eta_final.Histo1D({"h_eta_nminus1", "Track #eta N-1 cut (no #eta cut);#eta;Events",100, -3, 3}, "eta_at_max_pt");
+    auto h_eta_nminus1 = df_nminus1_eta_final.Histo1D({"h_eta_nminus1", "Obj #eta N-1 cut (no #eta cut);#eta;Events",100, -3, 3}, "eta_at_max_pt");
     
     // N-1 for pT: apply trigger, track_n, eta, nSeg (skip pT)
     auto df_nminus1_pt_withcount = df_eta.Define("muon_dtSeg_valid_n_pt", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_pt_final = df_nminus1_pt_withcount.Filter("muon_dtSeg_valid_n_pt > 2", "nSeg > 2");
-    auto h_pt_nminus1 = df_nminus1_pt_final.Histo1D({"h_pt_nminus1", "Track p_{T} N-1 cut (no p_{T} cut);p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_pt_nminus1 = df_nminus1_pt_final.Histo1D({"h_pt_nminus1", "Obj p_{T} N-1 cut (no p_{T} cut);p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
     
     // N-1 for nSeg: apply trigger, track_n, eta, pT (skip nSeg)
     auto df_nminus1_nseg = df_pt.Define("muon_dtSeg_valid_n_nseg", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_nminus1 = df_nminus1_nseg.Histo1D({"h_nseg_nminus1", "DT segments N-1 cut (no nSeg cut);nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_nseg");
     
     // 3. After all cuts
-    auto h_eta_final = df_seg.Histo1D({"h_eta_final", "Track #eta after all cuts;#eta;Events",100, -3, 3}, "eta_at_max_pt");
-    auto h_pt_final = df_seg.Histo1D({"h_pt_final", "Track p_{T} after all cuts;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
-    auto h_ntrack_final = df_seg.Histo1D({"h_ntrack_final", "Number of tracks after all cuts;N_{tracks};Events", 20, 0, 20}, n_var.Data());
+    auto h_eta_final = df_seg.Histo1D({"h_eta_final", "Obj #eta after all cuts;#eta;Events",100, -3, 3}, "eta_at_max_pt");
+    auto h_phi_final = df_seg.Histo1D({"h_phi_final", "Obj #phi after all cuts;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
+    auto h_pt_final = df_seg.Histo1D({"h_pt_final", "Obj p_{T} after all cuts;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
+    auto h_ntrack_final = df_seg.Histo1D({"h_ntrack_final", "Number of objs after all cuts;N_{objs};Events", 20, 0, 20}, n_var.Data());
     auto h_nseg_final = df_seg.Histo1D({"h_nseg_final", "DT segments after all cuts;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n");
     
     // Write output (Snapshot triggers the event loop for all actions)
@@ -270,7 +294,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 6, 0, 6);
     h_cutflow->GetXaxis()->SetBinLabel(1, "All events");
     h_cutflow->GetXaxis()->SetBinLabel(2, "Trigger");
-    h_cutflow->GetXaxis()->SetBinLabel(3, "Has track");
+    h_cutflow->GetXaxis()->SetBinLabel(3, "Obj found");
     h_cutflow->GetXaxis()->SetBinLabel(4, "|eta| < 0.9");
     h_cutflow->GetXaxis()->SetBinLabel(5, pt_cut_label.Data());
     h_cutflow->GetXaxis()->SetBinLabel(6, "nSeg > 2");
@@ -297,6 +321,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         h_phi_trigger,
         h_eta_nminus1,
         h_eta_final,
+        h_phi_final,
         h_pt_trigger,
         h_pt_nminus1,
         h_pt_final,
@@ -316,7 +341,10 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     std::vector<ROOT::RDF::RResultPtr<TH2D>> histograms2D = {
         h_eta_vs_trigger,
         h_pt_vs_trigger,
-        h_phi_vs_trigger
+        h_phi_vs_trigger,
+        h_eta_vs_trigger_obj_eta,
+        h_pt_vs_trigger_obj_eta,
+        h_phi_vs_trigger_obj_eta
     };
     
     for (auto& h : histograms2D) {
