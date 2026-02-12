@@ -9,6 +9,7 @@ def setCMSStyle():
     """Set CMS style for plots"""
     ROOT.gStyle.SetOptStat(0)
     ROOT.gStyle.SetOptTitle(0)
+    ROOT.gErrorIgnoreLevel = ROOT.kWarning
     
     # Canvas settings
     ROOT.gStyle.SetCanvasBorderMode(0)
@@ -284,7 +285,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         base_name = f"{base_name}_{object_type}"
     
     # ===== Create normalized version (normalized to first bin) =====
-    canvas2 = ROOT.TCanvas(f"c2_{canvas_suffix}", f"c2_{canvas_suffix}", 800, 800)
+    canvas2 = ROOT.TCanvas(f"c2_{canvas_suffix}_{region}_{object_type}", f"c2_{canvas_suffix}_{region}_{object_type}", 800, 800)
     canvas2.cd()
     
     # Create new legend for normalized plot - spanning full width
@@ -365,7 +366,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     canvas2.Update()
     
     # ===== Create 2D histogram (cutflow vs samples) =====
-    canvas3 = ROOT.TCanvas(f"c3_{canvas_suffix}", f"c3_{canvas_suffix}", 1200, 800)
+    canvas3 = ROOT.TCanvas(f"c3_{canvas_suffix}_{region}_{object_type}", f"c3_{canvas_suffix}_{region}_{object_type}", 1200, 800)
     canvas3.cd()
     canvas3.SetRightMargin(0.15)
     canvas3.SetLeftMargin(0.2)
@@ -398,8 +399,6 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             h2d.SetBinContent(bin_x, i + 1, yield_value)
     
     # Set axis titles
-    # h2d.GetXaxis().SetTitle("Cut Step")
-    # h2d.GetYaxis().SetTitle("Sample")
     h2d.GetZaxis().SetTitle("Efficiency")
     
     # Set label size for readability
@@ -431,7 +430,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     canvas3.Update()
     
     # ===== Create efficiency vs MinP plots =====
-    print("\nCreating efficiency vs MinP plots...")
+    # print("\nCreating efficiency vs MinP plots...")
     
     # Dictionary to organize data by parameter combinations
     data_by_group = {}
@@ -471,6 +470,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             efficiency = last_bin / first_bin
         else:
             efficiency = 0
+
+        if (efficiency < 0.01 and region.upper() == "SR"):
+            print(f"Warning: Efficiency for {filename} is very low ({efficiency:.4f})")
         
         # Store data
         if group_key not in data_by_group:
@@ -580,7 +582,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             canvas_eff.Update()
 
     # ===== Create trigger efficiency vs MinP plots =====
-    print("\nCreating trigger efficiency vs MinP plots...")
+    # print("\nCreating trigger efficiency vs MinP plots...")
 
     # Dictionary to organize trigger efficiency data by parameter combinations
     trigger_data_by_group = {}
@@ -723,7 +725,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             canvas_trig.Update()
 
     # ===== Create overlay plots for final kinematic distributions =====
-    print("\nCreating final kinematic distribution overlays...")
+    # print("\nCreating final kinematic distribution overlays...")
     
     # Define histograms to overlay
     kinematic_hists = {
@@ -740,7 +742,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     }
     
     for hist_name_kin, hist_config in kinematic_hists.items():
-        print(f"  Processing {hist_name_kin}...")
+        # print(f"  Processing {hist_name_kin}...")
         
         # Collect histograms from all files
         kin_histograms = []
@@ -786,7 +788,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             continue
         
         # Create canvas
-        canvas_kin = ROOT.TCanvas(f"c_{hist_name_kin}_{i}", f"c_{hist_name_kin}_{i}", 800, 800)
+        canvas_kin = ROOT.TCanvas(f"c_{hist_name_kin}_{canvas_suffix}_{i}", f"c_{hist_name_kin}_{canvas_suffix}_{i}", 800, 800)
         canvas_kin.cd()
         
         # Set log scale if requested
@@ -848,16 +850,19 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             tfile.Close()
     
     # ===== Create ProfileX overlays for 2D trigger histograms =====
-    print("\nCreating ProfileX overlays for 2D trigger histograms...")
+    # print("\nCreating ProfileX overlays for 2D trigger histograms...")
 
     profile_hists = {
         'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
         'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
         'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
+        'h_eta_vs_trigger_obj_eta': {'x_title': '#eta', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
+        'h_pt_vs_trigger_obj_eta':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
+        'h_phi_vs_trigger_obj_eta': {'x_title': '#phi', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
     }
 
     for hist_name_2d, prof_config in profile_hists.items():
-        print(f"  Processing ProfileX of {hist_name_2d}...")
+        # print(f"  Processing ProfileX of {hist_name_2d}...")
 
         prof_histograms = []
         prof_labels = []
@@ -969,32 +974,38 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         tfile.Close()
 
 if __name__ == "__main__":
-    # Base directory for all skimmed ntuples
-    base_dir = "/home/users/tvami/EarthAsDM/Data/"
-    # base_dir = "/home/users/tvami/EarthAsDM/Signal/"
-    
+    # Base directories and their labels
+    base_dirs = {
+        "/home/users/tvami/EarthAsDM/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Signal/": "Signal",
+    }
+
     # Define regions and object types to loop over
     regions = ['sr', 'vr']
     object_types = ['matched_muon', 'muon', 'track', 'tuneP']
-    
+
     # Loop over all combinations
-    for region in regions:
-        for obj_type in object_types:
-            input_dir = os.path.join(base_dir, region, obj_type)
-            
-            # Check if directory exists
-            if not os.path.exists(input_dir):
-                print(f"Warning: Directory {input_dir} does not exist, skipping...")
-                continue
-            
-            print(f"\n{'='*100}")
-            print(f"Processing: {region}/{obj_type}")
-            print(f"{'='*100}\n")
-            
-            # Run the plotting function (creates all three types of plots)
-            plot_all_cutflow_analysis(
-                input_dir=input_dir,
-                hist_name="h_cutflow",
-                output_name="cutflow_overlay.png"
-            )
+    for base_dir, sample_label in base_dirs.items():
+        output_dir = f"{sample_label}_plots"
+        os.makedirs(output_dir, exist_ok=True)
+
+        for region in regions:
+            for obj_type in object_types:
+                input_dir = os.path.join(base_dir, region, obj_type)
+
+                # Check if directory exists
+                if not os.path.exists(input_dir):
+                    print(f"Warning: Directory {input_dir} does not exist, skipping...")
+                    continue
+
+                print(f"\n{'='*100}")
+                print(f"Processing: {sample_label}/{region}/{obj_type}")
+                print(f"{'='*100}\n")
+
+                # Run the plotting function (creates all three types of plots)
+                plot_all_cutflow_analysis(
+                    input_dir=input_dir,
+                    hist_name="h_cutflow",
+                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
+                )
             

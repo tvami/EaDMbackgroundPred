@@ -1,7 +1,8 @@
 #!/bin/bash
 echo "Run script starting"
 echo "Object type: $1"
-echo "Base directory: $2"
+echo "Region: $2"
+echo "Base directory: $3"
 
 arch=el9_amd64_gcc12
 rel=CMSSW_14_1_0_pre4
@@ -45,11 +46,12 @@ workDir=`/bin/pwd -P`
 printf "workDir ls -altr: " ; /bin/ls -altr
 
 object=$1
-base_dir=$2
+region=$2
+base_dir=$3
 
-# run skim_ntuples.C with object and base_dir parameters
-echo "\n[1] root -l -b -q 'skim_ntuples.C(\"$object\", \"$base_dir\")'"
-root -b -l -q "skim_ntuples.C(\"$object\", \"$base_dir\")"
+# run skim_ntuples.C with object, region, and base_dir parameters
+echo "\n[1] root -l -b -q 'skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")'"
+root -b -l -q "skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")"
 
 echo "base directory has:"
 /bin/ls -altr .
