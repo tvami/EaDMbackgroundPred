@@ -41,9 +41,9 @@ cd ../../
 
 echo -e "\n------------------ Skim Ntuples ------------------"
 
-echo -e "current working directory is `pwd`"
-workDir=`/bin/pwd -P`
-printf "workDir ls -altr: " ; /bin/ls -altr
+# echo -e "current working directory is `pwd`"
+# workDir=`/bin/pwd -P`
+# printf "workDir ls -altr: " ; /bin/ls -altr
 
 object=$1
 region=$2
@@ -53,9 +53,9 @@ base_dir=$3
 echo "\n[1] root -l -b -q 'skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")'"
 root -b -l -q "skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")"
 
-echo "base directory has:"
-/bin/ls -altr .
+# echo "base directory has:"
+# /bin/ls -altr .
+# echo -e "\n"
 
-echo -e "\n"
 echo -e "-------------------- END ---------------------\n"
 echo   "UnixTime-JobEnd: "$(date +%s)
