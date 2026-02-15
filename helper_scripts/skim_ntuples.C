@@ -3,8 +3,8 @@
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", true)'  // with file validation
 
-// Version: v3.0.3
-void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
+// Version: v4.0.0
+void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = true) {
     
     // Enable multi-threading (use all available cores)
     ROOT::EnableImplicitMT();
