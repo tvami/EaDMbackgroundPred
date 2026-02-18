@@ -163,6 +163,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     
     # Enable batch mode
     ROOT.gROOT.SetBatch(True)
+    skip_depth = True
     
     # Set CMS style
     setCMSStyle()
@@ -182,19 +183,28 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             return int(match.group(1))
         return 0  # Default value if MinP not found
     
+    def apply_minp_linestyle(obj, minp):
+        if minp is None:
+            return
+        obj.SetLineStyle(2 if minp > 9999 else 1)
+
+    
     root_files = sorted(root_files, key=extract_minp)
 
     print(f"Found {len(root_files)} ROOT files")
 
     # Color palette - expanded for 30+ curves
     colors = [
-        ROOT.kBlack, ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, ROOT.kMagenta,
+        ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, ROOT.kMagenta,
         ROOT.kCyan+1, ROOT.kOrange, ROOT.kViolet, ROOT.kTeal-1, ROOT.kPink+1,
         ROOT.kAzure+7, ROOT.kSpring-7, ROOT.kYellow+2, ROOT.kRed+2, ROOT.kBlue+2,
         ROOT.kGreen+3, ROOT.kMagenta+2, ROOT.kCyan+3, ROOT.kOrange+7, ROOT.kViolet+2,
         ROOT.kTeal+2, ROOT.kPink-2, ROOT.kAzure-3, ROOT.kSpring+3, ROOT.kYellow-2,
         ROOT.kRed-3, ROOT.kBlue-3, ROOT.kGreen-2, ROOT.kMagenta-3, ROOT.kOrange-3,
-        ROOT.kViolet-3, ROOT.kTeal-3, ROOT.kPink+3, ROOT.kAzure+2, ROOT.kSpring-2
+        ROOT.kViolet-3, ROOT.kTeal-3, ROOT.kPink+3, ROOT.kAzure+2, ROOT.kSpring-2,
+        ROOT.kYellow+3, ROOT.kRed+3, ROOT.kBlue+3, ROOT.kGreen-3, ROOT.kMagenta+3, ROOT.kCyan-7,
+        ROOT.kOrange+3, ROOT.kViolet+3, ROOT.kTeal+3, ROOT.kPink-3, ROOT.kAzure-2, ROOT.kSpring+2,
+        ROOT.kYellow-3, ROOT.kRed-2, ROOT.kBlue-2, ROOT.kGreen+1, ROOT.kMagenta-2, ROOT.kCyan+7, ROOT.kOrange-7
     ]
 
     # Build mappings: minP -> color, surfaceDepth -> (line style, marker)
@@ -209,14 +219,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         all_depth_values.add(params.get('depth'))
 
     sorted_minp = sorted(all_minp_values)
-    sorted_depths = sorted(all_depth_values, key=lambda x: x if x is not None else -1)
-
     minp_to_color = {minp: colors[j % len(colors)] for j, minp in enumerate(sorted_minp)}
-
-    line_styles = [1, 2, 7, 9, 10, 3, 4, 5, 6, 8]  # solid, dashed, long-dash, dash-dot-dot, etc.
-    marker_styles = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
-    depth_to_linestyle = {depth: line_styles[j % len(line_styles)] for j, depth in enumerate(sorted_depths)}
-    depth_to_marker = {depth: marker_styles[j % len(marker_styles)] for j, depth in enumerate(sorted_depths)}
     
     # Extract region, object type, and sample label for unique canvas names
     path_parts = input_dir.rstrip('/').split('/')
@@ -261,7 +264,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         label = label.replace("CosmicTP-", "")  
         label = label.replace("Ntuplizer", "")
         label = label.replace("_CosmicToMu_", "_")
-        label = label.replace("matched_muon", "#mu-match")
+        label = label.replace("matched_muon", "")
         label = label.replace("MinP-", " p = ")
         label = label.replace("MinTheta-", " #theta = ")
         label = label.replace("MaxTheta-", "")        
@@ -269,18 +272,21 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         label = label.replace("_cosmuogen", "")
         label = label.replace("cosmuogen", "")
         label = label.replace("_", " ")
+        label = label.replace("vr", "")
+        label = label.replace("sr", "")
+        label = label.replace("tuneP", "")
+        label = label.replace("track", "")
+        label = label.replace("muon", "")
+        label = label.replace("matched_", "")
+        label = label.replace("- ", ", ")
         
         # Set style: color by minP, line style & marker by surfaceDepth
         params = file_params[i]
         color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
-        depth = params.get('depth')
-        linestyle = depth_to_linestyle.get(depth, 1)
-        marker = depth_to_marker.get(depth, 20)
         hist_clone.SetLineColor(color)
         hist_clone.SetLineWidth(2)
-        hist_clone.SetLineStyle(linestyle)
         hist_clone.SetMarkerColor(color)
-        hist_clone.SetMarkerStyle(marker)
+        apply_minp_linestyle(hist_clone, params.get('minp'))
         hist_clone.SetMarkerSize(0.8)
 
         histograms.append((hist_clone, tfile))
@@ -322,7 +328,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     legend2.SetFillStyle(0)
     legend2.SetBorderSize(0)
     legend2.SetTextSize(0.015)
-    legend2.SetNColumns(2)
+    legend2.SetNColumns(3)
     
     histograms_norm = []
     max_y_norm = 0
@@ -572,7 +578,6 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Create label
             label = format_group_label(group_key)
             
-            legend_eff.AddEntry(graph, label, "lp")
             graphs.append(graph)
         
         if graphs:
@@ -809,14 +814,15 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Set style: color by minP, line style & marker by surfaceDepth
             params = file_params[i]
             color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
-            depth = params.get('depth')
-            linestyle = depth_to_linestyle.get(depth, 1)
-            marker = depth_to_marker.get(depth, 20)
+            # Dont append if skip_depth is True and depth is not None
+            if skip_depth and params.get('depth') is not None:
+                tfile.Close()
+                continue
+
             hist_kin_clone.SetLineColor(color)
             hist_kin_clone.SetLineWidth(2)
-            hist_kin_clone.SetLineStyle(linestyle)
             hist_kin_clone.SetMarkerColor(color)
-            hist_kin_clone.SetMarkerStyle(marker)
+            apply_minp_linestyle(hist_kin_clone, params.get('minp'))
             hist_kin_clone.SetMarkerSize(0.8)
             
             # Use the same labels as before
@@ -843,7 +849,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         legend_kin.SetBorderSize(0)
         legend_kin.SetTextSize(0.03)
         legend_kin.SetTextSize(0.015)
-        legend_kin.SetNColumns(2)
+        legend_kin.SetNColumns(3)
         
         # Find maximum for y-axis range
         max_val = 0
@@ -944,14 +950,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Set style: color by minP, line style & marker by surfaceDepth
             params = file_params[i]
             color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
-            depth_val = params.get('depth')
-            linestyle = depth_to_linestyle.get(depth_val, 1)
-            marker = depth_to_marker.get(depth_val, 20)
             prof.SetLineColor(color)
             prof.SetLineWidth(2)
-            prof.SetLineStyle(linestyle)
             prof.SetMarkerColor(color)
-            prof.SetMarkerStyle(marker)
+            apply_minp_linestyle(prof, params.get('minp'))
             prof.SetMarkerSize(0.8)
 
             prof_histograms.append(prof)
@@ -976,7 +978,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         legend_prof.SetFillStyle(0)
         legend_prof.SetBorderSize(0)
         legend_prof.SetTextSize(0.015)
-        legend_prof.SetNColumns(2)
+        legend_prof.SetNColumns(3)
 
         # Find y-axis range
         max_val = 0
@@ -1001,7 +1003,6 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
                 draw_option = "E SAME"
 
             prof.Draw(draw_option)
-            legend_prof.AddEntry(prof, prof_labels[i], "lp")
 
         legend_prof.Draw()
         addCMSText(canvas_prof, lumi_text="Cosmics", extra_text="Work in Progress")
@@ -1056,10 +1057,10 @@ if __name__ == "__main__":
                     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
                 )
 
-                # Alternative cutflow (obj+eta before trigger)
-                plot_all_cutflow_analysis(
-                    input_dir=input_dir,
-                    hist_name="h_cutflow_alt",
-                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
-                )
+                # # Alternative cutflow (obj+eta before trigger)
+                # plot_all_cutflow_analysis(
+                #     input_dir=input_dir,
+                #     hist_name="h_cutflow_alt",
+                #     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
+                # )
             
