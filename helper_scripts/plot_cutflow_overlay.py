@@ -976,8 +976,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.0/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.0/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.1/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.1/Signal/": "Signal",
     }
 
     # Define regions and object types to loop over

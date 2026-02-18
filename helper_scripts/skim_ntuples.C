@@ -3,10 +3,11 @@
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", true)'  // with file validation
 
-// Version: v4.0.2
+// Version: v4.0.3
 // Version history:
 // v4.0.0: Added alternative cutflow ordering (object+eta before trigger) for comparison
 // v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
+// v4.0.3: Snapshot now uses df_trigger for trigger studies and df_seg for regular skimming
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = true) {
     
     // Enable multi-threading (use all available cores)
@@ -201,7 +202,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
             "muon_d0",
             "muon_dZ",
             "muon_validFractionTrackerHits",
-            "muon_numberOfValidHits_",
+            "muon_numberOfValidHits",
             "muon_isLoose",
             "muon_isMedium",
             "muon_isTight",
@@ -313,9 +314,13 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_nseg_final = df_seg.Histo1D({"h_nseg_final", "DT segments after all cuts;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n");
     
     // Write output (Snapshot triggers the event loop for all actions)
-    df_seg.Snapshot("tree", output_file.Data(), branches_to_keep);
-    
-    auto report = df_seg.Report();
+    if (isTriggerStudy) {
+        df_trigger.Snapshot("tree", output_file.Data(), branches_to_keep);
+    } else {
+        df_seg.Snapshot("tree", output_file.Data(), branches_to_keep);
+    }
+
+    auto report = isTriggerStudy ? df_trigger.Report() : df_seg.Report();
     report->Print();
     
     // Create and save cutflow histogram using the already-computed counts
