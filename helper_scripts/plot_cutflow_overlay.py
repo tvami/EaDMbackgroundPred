@@ -186,13 +186,14 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     
     print(f"Found {len(root_files)} ROOT files")
     
-    # Extract region and object type for unique canvas names
+    # Extract region, object type, and sample label for unique canvas names
     path_parts = input_dir.rstrip('/').split('/')
     canvas_suffix = ""
     for part in reversed(path_parts):
-        if part in ['track', 'muon', 'matched_muon', 'tuneP', 'vr', 'sr']:
+        if part in ['track', 'muon', 'matched_muon', 'tuneP', 'vr', 'sr',
+                     'Signal', 'Data', 'BkgMC', 'ExpressData']:
             canvas_suffix = part + "_" + canvas_suffix
-    canvas_suffix = canvas_suffix.rstrip('_')
+    canvas_suffix = (canvas_suffix + hist_name).rstrip('_')
     
     # Color palette - expanded for 30+ curves
     colors = [
@@ -471,8 +472,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         else:
             efficiency = 0
 
-        if (efficiency < 0.01 and region.upper() == "SR"):
-            print(f"Warning: Efficiency for {filename} is very low ({efficiency:.4f})")
+        if (efficiency < 0.01 and region.upper() == "SR" and "BkgMC" not in input_dir):
+            print(f"Warning: Efficiency for {root_file} is very low ({efficiency:.4f})")
         
         # Store data
         if group_key not in data_by_group:
@@ -573,8 +574,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             addCMSText(canvas_eff, lumi_text="Cosmics", extra_text="Work in Progress")
             
             # Save canvas
-            png_name_eff = base_name.replace("cutflow_overlay", "efficiency_vs_minp") + ".png"
-            pdf_name_eff = base_name.replace("cutflow_overlay", "efficiency_vs_minp") + ".pdf"
+            png_name_eff = base_name.replace("_overlay", "_efficiency_vs_minp") + ".png"
+            pdf_name_eff = base_name.replace("_overlay", "_efficiency_vs_minp") + ".pdf"
             
             canvas_eff.SaveAs(png_name_eff)
             canvas_eff.SaveAs(pdf_name_eff)
@@ -716,8 +717,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             addCMSText(canvas_trig, lumi_text="Cosmics", extra_text="Work in Progress")
 
             # Save canvas
-            png_name_trig = base_name.replace("cutflow_overlay", "trigger_efficiency_vs_minp") + ".png"
-            pdf_name_trig = base_name.replace("cutflow_overlay", "trigger_efficiency_vs_minp") + ".pdf"
+            png_name_trig = base_name.replace("_overlay", "_trigger_efficiency_vs_minp") + ".png"
+            pdf_name_trig = base_name.replace("_overlay", "_trigger_efficiency_vs_minp") + ".pdf"
 
             canvas_trig.SaveAs(png_name_trig)
             canvas_trig.SaveAs(pdf_name_trig)
@@ -838,8 +839,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         addCMSText(canvas_kin, lumi_text="Cosmics", extra_text="Work in Progress")
         
         # Save canvas
-        png_name_kin = base_name.replace("cutflow_overlay", hist_name_kin) + ".png"
-        pdf_name_kin = base_name.replace("cutflow_overlay", hist_name_kin) + ".pdf"
+        png_name_kin = base_name.replace("_overlay", f"_{hist_name_kin}") + ".png"
+        pdf_name_kin = base_name.replace("_overlay", f"_{hist_name_kin}") + ".pdf"
         
         canvas_kin.SaveAs(png_name_kin)
         canvas_kin.SaveAs(pdf_name_kin)
@@ -962,8 +963,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         addCMSText(canvas_prof, lumi_text="Cosmics", extra_text="Work in Progress")
 
         # Save
-        png_name_prof = base_name.replace("cutflow_overlay", f"profileX_{hist_name_2d}") + ".png"
-        pdf_name_prof = base_name.replace("cutflow_overlay", f"profileX_{hist_name_2d}") + ".pdf"
+        png_name_prof = base_name.replace("_overlay", f"_profileX_{hist_name_2d}") + ".png"
+        pdf_name_prof = base_name.replace("_overlay", f"_profileX_{hist_name_2d}") + ".pdf"
 
         canvas_prof.SaveAs(png_name_prof)
         canvas_prof.SaveAs(pdf_name_prof)
@@ -976,8 +977,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.1/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.1/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/BkgMC/": "BkgMC",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/ExpressData/": "ExpressData",
     }
 
     # Define regions and object types to loop over
@@ -986,7 +989,7 @@ if __name__ == "__main__":
 
     # Loop over all combinations
     for base_dir, sample_label in base_dirs.items():
-        output_dir = f"{sample_label}_plots"
+        output_dir = f"figures/cutflow_plots"
         os.makedirs(output_dir, exist_ok=True)
 
         for region in regions:
@@ -1007,5 +1010,12 @@ if __name__ == "__main__":
                     input_dir=input_dir,
                     hist_name="h_cutflow",
                     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
+                )
+
+                # Alternative cutflow (obj+eta before trigger)
+                plot_all_cutflow_analysis(
+                    input_dir=input_dir,
+                    hist_name="h_cutflow_alt",
+                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
                 )
             

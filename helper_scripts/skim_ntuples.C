@@ -7,7 +7,8 @@
 // Version history:
 // v4.0.0: Added alternative cutflow ordering (object+eta before trigger) for comparison
 // v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
-// v4.0.3: Snapshot now uses df_trigger for trigger studies and df_seg for regular skimming
+// v4.0.2: Snapshot now uses df_trigger for trigger studies and df_seg for regular skimming
+// v4.0.3: Highest pT requires at least 8 hits
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = true) {
     
     // Enable multi-threading (use all available cores)
@@ -27,31 +28,35 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     std::cout << "Trigger study: " << (isTriggerStudy ? "yes" : "no") << ", using trigger: " << trigger_name << "\n";
 
     // Set variable names based on object
-    TString pt_var, eta_var, phi_var, n_var;
+    TString pt_var, eta_var, phi_var, n_var, nhits_var;
     if (object == "track") {
         pt_var = "track_pt";
         eta_var = "track_eta";
         phi_var = "track_phi";
         n_var = "track_n";
+        nhits_var = "track_numberOfValidHits";
     } else if (object == "muon") {
         pt_var = "muon_pt";
         eta_var = "muon_eta";
         phi_var = "muon_phi";
         n_var = "muon_n";
+        nhits_var = "muon_numberOfValidHits";
     } else if (object == "tuneP") {
         pt_var = "muon_tuneP_Pt";
         eta_var = "muon_tuneP_Eta";
         phi_var = "muon_tuneP_Phi";
         n_var = "muon_n";
+        nhits_var = "muon_numberOfValidHits";
     } else if (object == "matched_muon") {
         pt_var = "muon_fromGenTrack_Pt";
         eta_var = "muon_fromGenTrack_Eta";
         phi_var = "muon_fromGenTrack_Phi";
-        n_var = "muon_n"; 
+        n_var = "muon_n";
+        nhits_var = "muon_fromGenTrack_NumValidHits";
     }
     
     std::cout << "Running with object: " << object << "\n";
-    std::cout << "Using variables: " << pt_var << ", " << eta_var << ", " << phi_var << ", " << n_var << "\n";
+    std::cout << "Using variables: " << pt_var << ", " << eta_var << ", " << phi_var << ", " << n_var << ", " << nhits_var << "\n";
 
     // Create TChain to handle directory structure
     TChain chain("muonPhiAnalyzer/tree");
@@ -114,18 +119,46 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     ROOT::RDataFrame df(chain);
     
     // Define new columns for max pT and corresponding eta/phi
-    TString pt_max_expr = TString::Format("%s.size() > 0 ? *std::max_element(%s.begin(), %s.end()) : -999.0", 
-                                          pt_var.Data(), pt_var.Data(), pt_var.Data());
-    TString pt_argmax_expr = TString::Format("%s.size() > 0 ? std::distance(%s.begin(), std::max_element(%s.begin(), %s.end())) : -1",
-                                             pt_var.Data(), pt_var.Data(), pt_var.Data(), pt_var.Data());
+    // Require >= 8 valid hits when selecting the highest-pT object
+    auto find_best_idx = [](const ROOT::VecOps::RVec<float>& pt,
+                            const ROOT::VecOps::RVec<int>& nhits) -> long {
+        long best = -1;
+        float best_pt = -999.f;
+        for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
+            if (nhits[i] >= 8 && pt[i] > best_pt) {
+                best = (long)i;
+                best_pt = pt[i];
+            }
+        }
+        return best;
+    };
+
+    TString pt_max_expr = TString::Format("pt_argmax >= 0 ? %s[pt_argmax] : -999.0", pt_var.Data());
     TString eta_at_max_pt_expr = TString::Format("pt_argmax >= 0 ? %s[pt_argmax] : 999.0", eta_var.Data());
     TString phi_at_max_pt_expr = TString::Format("pt_argmax >= 0 ? %s[pt_argmax] : 999.0", phi_var.Data());
-    
+
+    TString nhits_at_max_pt_expr = TString::Format("pt_argmax >= 0 ? (int)%s[pt_argmax] : -1", nhits_var.Data());
+
     auto df2 = df
+        .Define("pt_argmax", find_best_idx, {pt_var.Data(), nhits_var.Data()})
         .Define("pt_max", pt_max_expr.Data())
-        .Define("pt_argmax", pt_argmax_expr.Data())
         .Define("eta_at_max_pt", eta_at_max_pt_expr.Data())
-        .Define("phi_at_max_pt", phi_at_max_pt_expr.Data());
+        .Define("phi_at_max_pt", phi_at_max_pt_expr.Data())
+        .Define("nhits_at_max_pt", nhits_at_max_pt_expr.Data());
+
+    // Parallel Define chain WITHOUT nhits cut (for N-1 monitoring of nhits)
+    TString pt_argmax_nocut_expr = TString::Format(
+        "%s.size() > 0 ? (long)std::distance(%s.begin(), std::max_element(%s.begin(), %s.end())) : -1",
+        pt_var.Data(), pt_var.Data(), pt_var.Data(), pt_var.Data());
+    TString nhits_nocut_expr = TString::Format("pt_argmax_nocut >= 0 ? (int)%s[pt_argmax_nocut] : -1", nhits_var.Data());
+    TString pt_max_nocut_expr = TString::Format("pt_argmax_nocut >= 0 ? %s[pt_argmax_nocut] : -999.0", pt_var.Data());
+    TString eta_nocut_expr = TString::Format("pt_argmax_nocut >= 0 ? %s[pt_argmax_nocut] : 999.0", eta_var.Data());
+
+    auto df2_nocut = df
+        .Define("pt_argmax_nocut", pt_argmax_nocut_expr.Data())
+        .Define("pt_max_nocut", pt_max_nocut_expr.Data())
+        .Define("eta_nocut", eta_nocut_expr.Data())
+        .Define("nhits_nocut", nhits_nocut_expr.Data());
     
     // Apply cuts sequentially for monitoring
     auto df_trigger = df2.Filter(trigger_name.Data(), "Trigger");
@@ -282,7 +315,8 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ntrack_trigger = df_trigger.Histo1D({"h_ntrack_trigger", "Number of objs after trigger;N_{objs};Events", 20, 0, 20}, n_var.Data());
     auto df_trigger_withcount = df_trigger.Define("muon_dtSeg_valid_n_trigger", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_trigger = df_trigger_withcount.Histo1D({"h_nseg_trigger", "DT segments after trigger;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_trigger");
-    
+    auto h_nhits_trigger = df_trigger.Histo1D({"h_nhits_trigger", "Valid hits after trigger;N_{valid hits};Events", 80, 0, 80}, "nhits_at_max_pt");
+
     // 2. N-1 cuts for each variable
     // N-1 for track_n: apply trigger, eta, pT, nSeg (skip track_n)
     auto df_nminus1_ntrack = df_trigger.Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9")
@@ -305,14 +339,25 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // N-1 for nSeg: apply trigger, track_n, eta, pT (skip nSeg)
     auto df_nminus1_nseg = df_pt.Define("muon_dtSeg_valid_n_nseg", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_nminus1 = df_nminus1_nseg.Histo1D({"h_nseg_nminus1", "DT segments N-1 cut (no nSeg cut);nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_nseg");
-    
+
+    // N-1 for nhits: apply trigger, track_n, eta, pT, nSeg using NO nhits cut argmax
+    auto df_nminus1_nhits = df2_nocut
+        .Filter(trigger_name.Data())
+        .Filter(TString::Format("%s > 0", n_var.Data()).Data())
+        .Filter("abs(eta_nocut) < 0.9")
+        .Filter("pt_max_nocut > 200.0");
+    auto df_nminus1_nhits_withcount = df_nminus1_nhits.Define("muon_dtSeg_valid_n_nhits", count_valid_segs, {"muon_dtSeg_t0timing"});
+    auto df_nminus1_nhits_final = df_nminus1_nhits_withcount.Filter("muon_dtSeg_valid_n_nhits > 2");
+    auto h_nhits_nminus1 = df_nminus1_nhits_final.Histo1D({"h_nhits_nminus1", "Valid hits N-1 (no nhits cut);N_{valid hits};Events", 80, 0, 80}, "nhits_nocut");
+
     // 3. After all cuts
     auto h_eta_final = df_seg.Histo1D({"h_eta_final", "Obj #eta after all cuts;#eta;Events",100, -3, 3}, "eta_at_max_pt");
     auto h_phi_final = df_seg.Histo1D({"h_phi_final", "Obj #phi after all cuts;#phi;Events", 64, -3.2, 3.2}, "phi_at_max_pt");
     auto h_pt_final = df_seg.Histo1D({"h_pt_final", "Obj p_{T} after all cuts;p_{T} [GeV];Events", 500, 0, 5000}, "pt_max");
     auto h_ntrack_final = df_seg.Histo1D({"h_ntrack_final", "Number of objs after all cuts;N_{objs};Events", 20, 0, 20}, n_var.Data());
     auto h_nseg_final = df_seg.Histo1D({"h_nseg_final", "DT segments after all cuts;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n");
-    
+    auto h_nhits_final = df_seg.Histo1D({"h_nhits_final", "Valid hits after all cuts;N_{valid hits};Events", 80, 0, 80}, "nhits_at_max_pt");
+
     // Write output (Snapshot triggers the event loop for all actions)
     if (isTriggerStudy) {
         df_trigger.Snapshot("tree", output_file.Data(), branches_to_keep);
@@ -382,7 +427,10 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         h_ntrack_final,
         h_nseg_trigger,
         h_nseg_nminus1,
-        h_nseg_final
+        h_nseg_final,
+        h_nhits_trigger,
+        h_nhits_nminus1,
+        h_nhits_final
     };
     
     for (auto& h : histograms) {

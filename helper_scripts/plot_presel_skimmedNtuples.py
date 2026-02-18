@@ -8,7 +8,7 @@ CMS.SetExtraText("Internal")
 #CMS.SetLumi(None)
 #CMS.SetEnergy(13.1, unit = '')
 
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v3.0.2'
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.2'
 collections = ['track', 'muon', 'matched_muon', 'tuneP']
 region = 'sr' # sr vr
 
@@ -17,7 +17,8 @@ samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinThet
                 "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
                 "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
                 "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v3.root"]
+                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
+                "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
                 }
 
 base_var_dict = {
@@ -42,7 +43,7 @@ muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_
                "muon_d0": [13, 200, -200, 200, 'muon_d0', 'muon_d0_nminus1', 'muon_d0_final', 'd_{0} [cm]'],
                "muon_dZ": [14, 200, -500, 500, 'muon_dZ', 'muon_dZ_nminus1', 'muon_dZ_final', 'd_{Z} [cm]'],
                "muon_validFractionTrackerHits": [15, 110, 0, 1.1, 'muon_validFractionTrackerHits', 'muon_validFractionTrackerHits_nminus1', 'muon_validFractionTrackerHits_final', 'Valid Fraction Tracker Hits'],
-            #    "muon_numberOfValidHits": [16, 80, 0, 80, 'muon_numberOfValidHits', 'muon_numberOfValidHits_nminus1', 'muon_numberOfValidHits_final', '# of Valid Hits'],
+               "muon_numberOfValidHits": [16, 80, 0, 80, 'muon_numberOfValidHits', 'muon_numberOfValidHits_nminus1', 'muon_numberOfValidHits_final', '# of Valid Hits'],
                "muon_isLoose": [17, 2, 0, 2, 'muon_isLoose', 'muon_isLoose_nminus1', 'muon_isLoose_final', 'isLoose'],
                "muon_isMedium": [18, 2, 0, 2, 'muon_isMedium', 'muon_isMedium_nminus1', 'muon_isMedium_final', 'isMedium'],
                "muon_isTight": [19, 2, 0, 2, 'muon_isTight', 'muon_isTight_nminus1', 'muon_isTight_final', 'isTight'],
@@ -138,6 +139,8 @@ for collection in collections:
                 for sample in list(samples_dict.keys()):
                     print(f"\tSample: {sample}")
                     color_numerator -= 1
+                    if color_numerator == 1:  # skip kBlack (reserved for data)
+                        color_numerator = 9
                     file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                     df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                     h = 0
@@ -351,6 +354,8 @@ for collection in collections:
                 for sample in list(samples_dict.keys()):
                     print(sample, f"h_{main_var}_{presel_steps_arr[num]}")
                     color_numerator -= 1
+                    if color_numerator == 1:  # skip kBlack (reserved for data)
+                        color_numerator = 9
                     file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                     f = ROOT.TFile(f"{file_path}_{samples_dict[sample][1]}")
                     h = f.Get(f"h_{main_var}_{presel_steps_arr[num]}")
@@ -441,6 +446,8 @@ for collection in collections:
         color_numerator = 7
         for sample in list(samples_dict.keys()):
             color_numerator -= 1
+            if color_numerator == 1:  # skip kBlack (reserved for data)
+                color_numerator = 9
             file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
             full_path = f"{file_path}_{samples_dict[sample][1]}"
             if not os.path.exists(full_path):
