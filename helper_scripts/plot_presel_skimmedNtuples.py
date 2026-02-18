@@ -9,7 +9,7 @@ CMS.SetExtraText("Internal")
 #CMS.SetEnergy(13.1, unit = '')
 
 base_path = '/home/users/tvami/EarthAsDM/Ntuples_v3.0.2'
-collection = 'muon' # matched_muon  muon  track  tuneP
+collection = 'track' # matched_muon  muon  track  tuneP
 region = 'sr' # sr vr
 
 samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"], 
@@ -25,16 +25,11 @@ var_dict = {
             "pt": [1, 25, 0, 5000, 'pt_trigger', 'pt_nminus1', 'pT_final', 'p_{T} [GeV]'], 
             "ntrack": [2, 20, 0, 20, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'], 
             "nseg": [3, 20, 0, 20, 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
-            # This should be renamed to ptErrOPt2
-            "ptErr": [4, 100, 0, 0.01, 'ptErr', 'ptErr_nminus1', 'ptErr_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # ptErrOPt2_zoom
-            "ptErr_zoom": [5, 100, 0, 0.0005, 'ptErr_zoom', 'ptErr_nminus1_zoom', 'ptErr_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # pTErrOPtVsPt
-            "ptErr_2D": [6, 50, 0, 10, 'ptErr_2D', 'ptErr_2D_nminus1', 'ptErr_2D_final', '#sigma_{p_{T}} / p_{T}'],
-            # pTErrOPtVsPt_zoom
-            "ptErr_2D_zoom": [7, 20, 0, 4.0, 'ptErr_2D_zoom', 'ptErr_2D_nminus1_zoom', 'ptErr_2D_final', '#sigma_{p_{T}} / p_{T}'],
-            # pTErrOPt2VsPt
-            "ptErrOPt2VsPt": [8, 50, 0, 1, 'ptErrOPt2VsPt', 'ptErrOPt2VsPt_nminus1', 'ptErrOPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2": [4, 100, 0, 0.01, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2_zoom": [5, 100, 0, 0.0005, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "pTErrPerPtVsPt": [6, 50, 0, 10, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            "pTErrPerPtVsPt_zoom": [7, 20, 0, 0.01, 'pTErrPerPtVsPt_zoom', 'pTErrPerPtVsPt_nminus1_zoom', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            "ptErrPerPt2VsPt": [8, 50, 0, 10, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
             }
 
 track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
@@ -48,17 +43,29 @@ muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_
                "muon_dZ": [14, 200, -500, 500, 'muon_dZ', 'muon_dZ_nminus1', 'muon_dZ_final', 'd_{Z} [cm]'],
                "muon_validFractionTrackerHits": [15, 110, 0, 1.1, 'muon_validFractionTrackerHits', 'muon_validFractionTrackerHits_nminus1', 'muon_validFractionTrackerHits_final', 'Valid Fraction Tracker Hits'],
             #    "muon_numberOfValidHits": [16, 80, 0, 80, 'muon_numberOfValidHits', 'muon_numberOfValidHits_nminus1', 'muon_numberOfValidHits_final', '# of Valid Hits'],
-            #    "muon_isLoose": [17, 2, 0, 2, 'muon_isLoose', 'muon_isLoose_nminus1', 'muon_isLoose_final', 'isLoose'],
-            #    "muon_isMedium": [18, 2, 0, 2, 'muon_isMedium', 'muon_isMedium_nminus1', 'muon_isMedium_final', 'isMedium'],
-            #    "muon_isTight": [19, 2, 0, 2, 'muon_isTight', 'muon_isTight_nminus1', 'muon_isTight_final', 'isTight'],
-            #    "muon_isTrackerHighPtMuon": [20, 2, 0, 2, 'muon_isTrackerHighPtMuon', 'muon_isTrackerHighPtMuon_nminus1', 'muon_isTrackerHighPtMuon_final', 'isTrackerHighPt'],
-            #    "muon_isHighPtMuon": [21, 2, 0, 2, 'muon_isHighPtMuon', 'muon_isHighPtMuon_nminus1', 'muon_isHighPtMuon_final', 'isHighPt'],
-            #    "muon_type": [22, 32, 0, 32, 'muon_type', 'muon_type_nminus1', 'muon_type_final', 'Muon Type'],
-            #    "muon_quality": [23, 16, 0, 16, 'muon_quality', 'muon_quality_nminus1', 'muon_quality_final', 'Muon Quality'],
+               "muon_isLoose": [17, 2, 0, 2, 'muon_isLoose', 'muon_isLoose_nminus1', 'muon_isLoose_final', 'isLoose'],
+               "muon_isMedium": [18, 2, 0, 2, 'muon_isMedium', 'muon_isMedium_nminus1', 'muon_isMedium_final', 'isMedium'],
+               "muon_isTight": [19, 2, 0, 2, 'muon_isTight', 'muon_isTight_nminus1', 'muon_isTight_final', 'isTight'],
+               "muon_isTrackerHighPtMuon": [20, 2, 0, 2, 'muon_isTrackerHighPtMuon', 'muon_isTrackerHighPtMuon_nminus1', 'muon_isTrackerHighPtMuon_final', 'isTrackerHighPt'],
+               "muon_isHighPtMuon": [21, 2, 0, 2, 'muon_isHighPtMuon', 'muon_isHighPtMuon_nminus1', 'muon_isHighPtMuon_final', 'isHighPt'],
+               "muon_type": [22, 32, 0, 32, 'muon_type', 'muon_type_nminus1', 'muon_type_final', 'Muon Type'],
+               "muon_quality": [23, 16, 0, 16, 'muon_quality', 'muon_quality_nminus1', 'muon_quality_final', 'Muon Quality'],
+               }
+
+matched_muon_var_dict={
+               "muon_fromGenTrack_NumValidHits": [11, 77, 0, 77, 'muon_fromGenTrack_NumValidHits', 'muon_fromGenTrack_NumValidHits_nminus1', 'muon_fromGenTrack_NumValidHits_final', '# of Valid Hits'],
+               "muon_fromGenTrack_ValidFraction": [12, 110, 0, 1.1, 'muon_fromGenTrack_ValidFraction', 'muon_fromGenTrack_ValidFraction_nminus1', 'muon_fromGenTrack_ValidFraction_final', 'Valid Fraction'],
+               "muon_fromGenTrack_Chi2": [13, 99, 1, 100, 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Chi2_nminus1', 'muon_fromGenTrack_Chi2_final', '#chi^{2}/n_{DoF}'],
+               }
+
+tuneP_var_dict={
+               "muon_tuneP_MuonBestTrackType": [11, 10, 0, 10, 'muon_tuneP_MuonBestTrackType', 'muon_tuneP_MuonBestTrackType_nminus1', 'muon_tuneP_MuonBestTrackType_final', 'Best Track Type'],
                }
 
 if collection == 'track': var_dict.update(track_var_dict)
 if collection == 'muon': var_dict.update(muon_var_dict)
+if collection == 'matched_muon': var_dict.update(matched_muon_var_dict)
+if collection == 'tuneP': var_dict.update(tuneP_var_dict)
 
 presel_steps_arr = ["trigger", "nminus1", "final"]
 
@@ -66,11 +73,32 @@ garbage_protect_list = []
 
 os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
 
+def fold_overflow(h):
+    """Fold underflow/overflow into first/last visible bins."""
+    if h.InheritsFrom("TH2"):
+        nx, ny = h.GetNbinsX(), h.GetNbinsY()
+        for iy in range(0, ny + 2):
+            h.SetBinContent(1, iy, h.GetBinContent(0, iy) + h.GetBinContent(1, iy))
+            h.SetBinContent(nx, iy, h.GetBinContent(nx+1, iy) + h.GetBinContent(nx, iy))
+            h.SetBinContent(0, iy, 0)
+            h.SetBinContent(nx+1, iy, 0)
+        for ix in range(0, nx + 2):
+            h.SetBinContent(ix, 1, h.GetBinContent(ix, 0) + h.GetBinContent(ix, 1))
+            h.SetBinContent(ix, ny, h.GetBinContent(ix, ny+1) + h.GetBinContent(ix, ny))
+            h.SetBinContent(ix, 0, 0)
+            h.SetBinContent(ix, ny+1, 0)
+    else:
+        nb = h.GetNbinsX()
+        h.SetBinContent(1, h.GetBinContent(0) + h.GetBinContent(1))
+        h.SetBinContent(nb, h.GetBinContent(nb) + h.GetBinContent(nb+1))
+        h.SetBinContent(0, 0)
+        h.SetBinContent(nb+1, 0)
+
 print("Starting!")
 for main_var in list(var_dict.keys()):
     print(f"Making {main_var} plots")
     # For variables that aren't current preselection variables, only run nmin1 step
-    if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErr', 'ptErr_zoom'): 
+    if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom'): 
         for num in range(1, 2):
             print(f"Making {var_dict[main_var][4+num]} plot")
             nbins = var_dict[main_var][1]
@@ -114,7 +142,13 @@ for main_var in list(var_dict.keys()):
                         (f"h_ratio_{sample}", "", nbins, min, max),
                         "ratio"
                     )
-                elif main_var in ('ptErr', 'ptErr_zoom'):
+                elif main_var == 'muon_fromGenTrack_Chi2':
+                    df2 = df.Define( "ratio", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, -1.)" )
+                    h = df2.Histo1D(
+                        (f"h_ratio_{sample}", "", nbins, min, max),
+                        "ratio"
+                    )
+                elif main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom'):
                     if collection == 'matched_muon':
                         coll_tmp = 'muon_fromGenTrack'
                         main_var_tmp = 'PtErr'
@@ -122,6 +156,9 @@ for main_var in list(var_dict.keys()):
                         coll_tmp = 'muon_tuneP'
                         main_var_tmp = 'PtErr'
                     elif collection == 'muon':
+                        coll_tmp = collection
+                        main_var_tmp = 'ptErr'
+                    elif collection == 'track':
                         coll_tmp = collection
                         main_var_tmp = 'ptErr'
                     else:
@@ -140,6 +177,7 @@ for main_var in list(var_dict.keys()):
                 garbage_protect_list.append(h)
                 histo = h.GetValue()
                 histo.SetDirectory(0)
+                fold_overflow(histo)
                 if histo.Integral() > 0:
                     histo.Scale(1/histo.Integral())
                 is_data = samples_dict[sample][0] == "Data"
@@ -174,14 +212,14 @@ for main_var in list(var_dict.keys()):
             leg.Draw()
             
             CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.pdf")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.pdf")
 
             del c
             del hframe
             del h
             del histo
-    elif main_var == 'ptErr_2D' or main_var == 'ptErr_2D_zoom' or main_var == 'ptErrOPt2VsPt':
+    elif main_var == 'pTErrPerPtVsPt' or main_var == 'pTErrPerPtVsPt_zoom' or main_var == 'ptErrPerPt2VsPt':
         nbins = var_dict[main_var][1]
         min = var_dict[main_var][2]
         max = var_dict[main_var][3]
@@ -207,8 +245,8 @@ for main_var in list(var_dict.keys()):
         leg.SetTextFont(42)
         
         color_numerator = 1
-        for sample in ["2023D Cosmics"]:
-            print(f"Sample = {sample}")
+        for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+            print(f"\tSample = {sample}")
             file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
             df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
             h = 0
@@ -226,10 +264,12 @@ for main_var in list(var_dict.keys()):
                 main_var_tmp = 'ptErr'
                 pT_tmp = 'pt'
             
+            pt_branch = f"{coll_tmp}_{pT_tmp}"
+            ptErr_branch = f"{coll_tmp}_{main_var_tmp}"
             df2 = (df
-            .Define("imax", "muon_pt.size()>0 ? int(std::distance(muon_pt.begin(), std::max_element(muon_pt.begin(), muon_pt.end()))) : -1")
-            .Define("pt_max", "imax>=0 ? muon_pt[imax] : -999.")
-            .Define("ratio",  "imax>=0 && muon_pt[imax]>0 ? muon_ptErr[imax]/muon_pt[imax] : -999.")
+            .Define("imax", f"{pt_branch}.size()>0 ? int(std::distance({pt_branch}.begin(), std::max_element({pt_branch}.begin(), {pt_branch}.end()))) : -1")
+            .Define("pt_max", f"imax>=0 ? {pt_branch}[imax] : -999.")
+            .Define("ratio",  f"imax>=0 && {pt_branch}[imax]>0 ? {ptErr_branch}[imax]/{pt_branch}[imax] : -999.")
             )
 
             df2 = df2.Filter("imax>=0 && pt_max>0 && ratio>0 && ratio<9000 && std::isfinite(ratio)")
@@ -239,6 +279,7 @@ for main_var in list(var_dict.keys()):
             garbage_protect_list.append(h)
             histo = h.GetValue()
             histo.SetDirectory(0)
+            fold_overflow(histo)
             #histo.Scale(1/histo.Integral())
             #histo.SetLineColor(color_numerator)
             #histo.SetMarkerColor(color_numerator)
@@ -248,21 +289,22 @@ for main_var in list(var_dict.keys()):
             #h.Draw("P SAME")
             #leg.AddEntry(histo, sample, "l")
         
-        pave = ROOT.TPaveText(0.25, 0.80, 0.46, 0.90, "NDC")
-        pave.SetFillColor(0)
-        pave.SetBorderSize(0)
-        pave.SetTextAlign(12)  # left aligned
-        pave.SetTextSize(0.025)
-        pave.AddText(f"collection = {collection}")
-        pave.AddText("Depth: 0 mm")
-        pave.AddText(presel_steps_arr[num])
-        pave.AddText("2023D Cosmics")
-        pave.Draw()
-        #leg.Draw()
+            pave = ROOT.TPaveText(0.25, 0.80, 0.46, 0.90, "NDC")
+            pave.SetFillColor(0)
+            pave.SetBorderSize(0)
+            pave.SetTextAlign(12)  # left aligned
+            pave.SetTextSize(0.025)
+            pave.AddText(f"collection = {collection}")
+            pave.AddText("Depth: 0 mm")
+            pave.AddText(presel_steps_arr[num])
+            pave.AddText(sample)
+            pave.Draw()
+            #leg.Draw()
         
-        CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.pdf")
+            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+            sample_tag = sample.replace("{", "").replace("}", "").replace(" = ", "_").replace(" ", "_").replace("_TeV", "TeV")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
 
         del c
         del hframe
@@ -308,6 +350,7 @@ for main_var in list(var_dict.keys()):
                 h = f.Get(f"h_{main_var}_{presel_steps_arr[num]}")
                 h.SetDirectory(0)
                 f.Close()
+                fold_overflow(h)
                 if h.Integral() > 0:
                     h.Scale(1/h.Integral())
                 is_data = samples_dict[sample][0] == "Data"
@@ -342,8 +385,8 @@ for main_var in list(var_dict.keys()):
             leg.Draw()
 
             CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{var_dict[main_var][4+num]}.pdf")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.pdf")
 
             del c
             del hframe
@@ -376,6 +419,19 @@ for main_var in list(var_dict.keys()):
     leg_prof.SetFillStyle(0)
     leg_prof.SetTextFont(42)
 
+    if collection == 'matched_muon':
+        prof_pt_branch = 'muon_fromGenTrack_Pt'
+        prof_ptErr_branch = 'muon_fromGenTrack_PtErr'
+    elif collection == 'tuneP':
+        prof_pt_branch = 'muon_tuneP_Pt'
+        prof_ptErr_branch = 'muon_tuneP_PtErr'
+    elif collection == 'track':
+        prof_pt_branch = 'track_pt'
+        prof_ptErr_branch = 'track_ptErr'
+    else:
+        prof_pt_branch = 'muon_pt'
+        prof_ptErr_branch = 'muon_ptErr'
+
     color_numerator = 7
     for sample in list(samples_dict.keys()):
         color_numerator -= 1
@@ -386,9 +442,9 @@ for main_var in list(var_dict.keys()):
         df = ROOT.RDataFrame("tree", full_path)
 
         df2 = (df
-        .Define("pt_argmax", "muon_pt.size()>0 ? int(std::distance(muon_pt.begin(), std::max_element(muon_pt.begin(), muon_pt.end()))) : -1")
-        .Define("pt_max",    "pt_argmax>=0 ? muon_pt[pt_argmax] : -999.")
-        .Define("ptErr_abs", "pt_argmax>=0 ? muon_ptErr[pt_argmax] : -999.")
+        .Define("pt_argmax", f"{prof_pt_branch}.size()>0 ? int(std::distance({prof_pt_branch}.begin(), std::max_element({prof_pt_branch}.begin(), {prof_pt_branch}.end()))) : -1")
+        .Define("pt_max",    f"pt_argmax>=0 ? {prof_pt_branch}[pt_argmax] : -999.")
+        .Define("ptErr_abs", f"pt_argmax>=0 ? {prof_ptErr_branch}[pt_argmax] : -999.")
         .Define("ptErr_ratio",
                 "pt_argmax>=0 && pt_max>0 ? ptErr_abs/pt_max : -999.")
         )
@@ -432,8 +488,8 @@ for main_var in list(var_dict.keys()):
     leg_prof.Draw()
 
     CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/profile_ptErrRatio_vs_pT.png")
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/profile_ptErrRatio_vs_pT.pdf")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT.png")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT.pdf")
     del c
     del hframe_prof
 
