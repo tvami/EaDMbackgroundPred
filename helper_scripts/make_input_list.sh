@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-BASE="/ceph/cms/store/user/tvami/EarthAsDM"
+BASES=(
+    "/ceph/cms/store/user/tvami/EarthAsDM"
+    "/ceph/cms/store/user/tvami/EarthAsDM/ExpressCosmics"
+    "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics"
+)
 
 # require argument
 if [[ -z "$1" ]]; then
@@ -16,12 +20,21 @@ OUTFILE="input_cosmics_datasets_${OBJ}.txt"
 : > "$OUTFILE"
 
 # first-level directories only
-for dir in "$BASE"/*/; do
-    [[ -d "$dir" ]] || continue
-    dir="${dir%/}"
+for BASE in "${BASES[@]}"; do
+    for dir in "$BASE"/*/; do
+        [[ -d "$dir" ]] || continue
+        dir="${dir%/}"
 
-    echo "$OBJ sr $dir" >> "$OUTFILE"
-    echo "$OBJ vr $dir" >> "$OUTFILE"
+        # skip subdirectories that are themselves in BASES
+        skip=false
+        for b in "${BASES[@]}"; do
+            [[ "$dir" == "$b" ]] && { skip=true; break; }
+        done
+        $skip && continue
+
+        echo "$OBJ sr $dir" >> "$OUTFILE"
+        echo "$OBJ vr $dir" >> "$OUTFILE"
+    done
 done
 
 echo "Wrote output to $OUTFILE"

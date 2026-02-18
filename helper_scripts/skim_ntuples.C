@@ -3,7 +3,10 @@
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", true)'  // with file validation
 
-// Version: v4.0.0
+// Version: v4.0.2
+// Version history:
+// v4.0.0: Added alternative cutflow ordering (object+eta before trigger) for comparison
+// v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = true) {
     
     // Enable multi-threading (use all available cores)
@@ -16,7 +19,12 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
     TString output_file = TString::Format("skimmed_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
-    
+
+    // Determine if this is a trigger study (Express datasets)
+    bool isTriggerStudy = base_dir.Contains("Express");
+    TString trigger_name = isTriggerStudy ? "HLT_Random" : "HLT_L1SingleMuCosmics";
+    std::cout << "Trigger study: " << (isTriggerStudy ? "yes" : "no") << ", using trigger: " << trigger_name << "\n";
+
     // Set variable names based on object
     TString pt_var, eta_var, phi_var, n_var;
     if (object == "track") {
@@ -119,14 +127,14 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         .Define("phi_at_max_pt", phi_at_max_pt_expr.Data());
     
     // Apply cuts sequentially for monitoring
-    auto df_trigger = df2.Filter("HLT_L1SingleMuCosmics", "Trigger");
+    auto df_trigger = df2.Filter(trigger_name.Data(), "Trigger");
     auto df_track = df_trigger.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Has track/muon");
     auto df_eta = df_track.Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9");
 
     // Alternative cutflow: eta and has-object before trigger
     auto df_alt_track = df2.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Alt: Has track/muon");
     auto df_alt_eta = df_alt_track.Filter("abs(eta_at_max_pt) < 0.9", "Alt: |eta| < 0.9");
-    auto df_alt_trigger = df_alt_eta.Filter("HLT_L1SingleMuCosmics", "Alt: Trigger");
+    auto df_alt_trigger = df_alt_eta.Filter(trigger_name.Data(), "Alt: Trigger");
     
     // Apply region-specific pT cut
     TString pt_cut_expr, pt_cut_label;
@@ -159,6 +167,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         "ls",
         "event",
         "HLT_L1SingleMuCosmics",
+        "HLT_Random",
         "muon_dtSeg_n",
         "muon_dtSeg_t0timing",
         "muon_dtSeg_globX",
@@ -192,6 +201,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
             "muon_d0",
             "muon_dZ",
             "muon_validFractionTrackerHits",
+            "muon_numberOfValidHits_",
             "muon_isLoose",
             "muon_isMedium",
             "muon_isTight",

@@ -2,12 +2,12 @@
 set -euo pipefail
 
 # Destination base directory
-BASE=/home/users/tvami/EarthAsDM/Ntuples_v3.0.2/
+BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/
 
 # ------------------------------------------------------------------
 # 1) Create full directory tree
 # ------------------------------------------------------------------
-for sample in Data Signal BkgMC; do
+for sample in Data Signal BkgMC ExpressData; do
   for region in sr vr; do
     for object in matched_muon muon track tuneP; do
       mkdir -p "$BASE/$sample/$region/$object"
@@ -47,6 +47,8 @@ for f in ./skimmed_*.root; do
   # Determine sample type (priority order)
   if [[ "$fname" == *MaxP* ]]; then
     sample=BkgMC
+  elif [[ "$fname" == *ExpressCosmics* ]]; then
+    sample=ExpressData
   elif [[ "$fname" == *Ntuplizer-Cosmics* ]]; then
     sample=Data
   else
