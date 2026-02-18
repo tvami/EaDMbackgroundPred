@@ -183,8 +183,40 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         return 0  # Default value if MinP not found
     
     root_files = sorted(root_files, key=extract_minp)
-    
+
     print(f"Found {len(root_files)} ROOT files")
+
+    # Color palette - expanded for 30+ curves
+    colors = [
+        ROOT.kBlack, ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, ROOT.kMagenta,
+        ROOT.kCyan+1, ROOT.kOrange, ROOT.kViolet, ROOT.kTeal-1, ROOT.kPink+1,
+        ROOT.kAzure+7, ROOT.kSpring-7, ROOT.kYellow+2, ROOT.kRed+2, ROOT.kBlue+2,
+        ROOT.kGreen+3, ROOT.kMagenta+2, ROOT.kCyan+3, ROOT.kOrange+7, ROOT.kViolet+2,
+        ROOT.kTeal+2, ROOT.kPink-2, ROOT.kAzure-3, ROOT.kSpring+3, ROOT.kYellow-2,
+        ROOT.kRed-3, ROOT.kBlue-3, ROOT.kGreen-2, ROOT.kMagenta-3, ROOT.kOrange-3,
+        ROOT.kViolet-3, ROOT.kTeal-3, ROOT.kPink+3, ROOT.kAzure+2, ROOT.kSpring-2
+    ]
+
+    # Build mappings: minP -> color, surfaceDepth -> (line style, marker)
+    all_minp_values = set()
+    all_depth_values = set()
+    file_params = []  # Store params for each file in order
+    for root_file in root_files:
+        params = extract_parameters(os.path.basename(root_file))
+        file_params.append(params)
+        if 'minp' in params:
+            all_minp_values.add(params['minp'])
+        all_depth_values.add(params.get('depth'))
+
+    sorted_minp = sorted(all_minp_values)
+    sorted_depths = sorted(all_depth_values, key=lambda x: x if x is not None else -1)
+
+    minp_to_color = {minp: colors[j % len(colors)] for j, minp in enumerate(sorted_minp)}
+
+    line_styles = [1, 2, 7, 9, 10, 3, 4, 5, 6, 8]  # solid, dashed, long-dash, dash-dot-dot, etc.
+    marker_styles = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
+    depth_to_linestyle = {depth: line_styles[j % len(line_styles)] for j, depth in enumerate(sorted_depths)}
+    depth_to_marker = {depth: marker_styles[j % len(marker_styles)] for j, depth in enumerate(sorted_depths)}
     
     # Extract region, object type, and sample label for unique canvas names
     path_parts = input_dir.rstrip('/').split('/')
@@ -194,17 +226,6 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
                      'Signal', 'Data', 'BkgMC', 'ExpressData']:
             canvas_suffix = part + "_" + canvas_suffix
     canvas_suffix = (canvas_suffix + hist_name).rstrip('_')
-    
-    # Color palette - expanded for 30+ curves
-    colors = [
-        ROOT.kBlack, ROOT.kRed, ROOT.kBlue, ROOT.kGreen+2, ROOT.kMagenta, 
-        ROOT.kCyan+1, ROOT.kOrange, ROOT.kViolet, ROOT.kTeal-1, ROOT.kPink+1,
-        ROOT.kAzure+7, ROOT.kSpring-7, ROOT.kYellow+2, ROOT.kRed+2, ROOT.kBlue+2,
-        ROOT.kGreen+3, ROOT.kMagenta+2, ROOT.kCyan+3, ROOT.kOrange+7, ROOT.kViolet+2,
-        ROOT.kTeal+2, ROOT.kPink-2, ROOT.kAzure-3, ROOT.kSpring+3, ROOT.kYellow-2,
-        ROOT.kRed-3, ROOT.kBlue-3, ROOT.kGreen-2, ROOT.kMagenta-3, ROOT.kOrange-3,
-        ROOT.kViolet-3, ROOT.kTeal-3, ROOT.kPink+3, ROOT.kAzure+2, ROOT.kSpring-2
-    ]
     
     histograms = []
     histogram_labels = []  # Store labels for reuse
@@ -249,14 +270,19 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         label = label.replace("cosmuogen", "")
         label = label.replace("_", " ")
         
-        # Set style
-        color = colors[i % len(colors)]
+        # Set style: color by minP, line style & marker by surfaceDepth
+        params = file_params[i]
+        color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
+        depth = params.get('depth')
+        linestyle = depth_to_linestyle.get(depth, 1)
+        marker = depth_to_marker.get(depth, 20)
         hist_clone.SetLineColor(color)
         hist_clone.SetLineWidth(2)
+        hist_clone.SetLineStyle(linestyle)
         hist_clone.SetMarkerColor(color)
-        hist_clone.SetMarkerStyle(20)
+        hist_clone.SetMarkerStyle(marker)
         hist_clone.SetMarkerSize(0.8)
-        
+
         histograms.append((hist_clone, tfile))
         histogram_labels.append(label)
     
@@ -431,11 +457,11 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     canvas3.Update()
     
     # ===== Create efficiency vs MinP plots =====
-    # print("\nCreating efficiency vs MinP plots...")
-    
+    # Skip for BkgMC (MinP is not meaningful for background)
+
     # Dictionary to organize data by parameter combinations
     data_by_group = {}
-    
+
     # Loop over files again and extract efficiency data
     for root_file in root_files:
         # Extract parameters from filename
@@ -483,7 +509,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         
         tfile.Close()
     
-    if data_by_group:
+    if data_by_group and "BkgMC" not in input_dir:
         # Print grouping information
         # print(f"Found {len(data_by_group)} different parameter combinations:")
         # for group_key in data_by_group:
@@ -631,7 +657,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 
         tfile.Close()
 
-    if trigger_data_by_group:
+    if trigger_data_by_group and "BkgMC" not in input_dir:
         # Sort data for each group
         for group_key in trigger_data_by_group:
             trigger_data_by_group[group_key].sort(key=lambda x: x[0])
@@ -739,7 +765,15 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         'h_phi_final': {'title': '#phi', 'log_y': True},
         'h_phi_trigger': {'title': '#phi', 'log_y': True},
         'h_phi_pretrigger': {'title': '#phi', 'log_y': True},
-        'h_ntrack_final': {'title': 'N_{tracks}', 'log_y': True}
+        'h_ntrack_final': {'title': 'N_{tracks}', 'log_y': True},
+        'h_ntrack_trigger': {'title': 'N_{tracks}', 'log_y': True},
+        'h_ntrack_nminus1': {'title': 'N_{tracks}', 'log_y': True},
+        'h_nhits_final': {'title': 'N_{valid hits}', 'log_y': True},
+        'h_nhits_trigger': {'title': 'N_{valid hits}', 'log_y': True},
+        'h_nhits_nminus1': {'title': 'N_{valid hits}', 'log_y': True},
+        'h_chi2ndof_final': {'title': '#chi^{2}/ndof', 'log_y': True},
+        'h_chi2ndof_trigger': {'title': '#chi^{2}/ndof', 'log_y': True},
+        'h_chi2ndof_nminus1': {'title': '#chi^{2}/ndof', 'log_y': True}
     }
     
     for hist_name_kin, hist_config in kinematic_hists.items():
@@ -771,13 +805,18 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             integral = hist_kin_clone.Integral()
             if integral > 0:
                 hist_kin_clone.Scale(1.0 / integral)
-            
-            # Set style
-            color = colors[i % len(colors)]
+
+            # Set style: color by minP, line style & marker by surfaceDepth
+            params = file_params[i]
+            color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
+            depth = params.get('depth')
+            linestyle = depth_to_linestyle.get(depth, 1)
+            marker = depth_to_marker.get(depth, 20)
             hist_kin_clone.SetLineColor(color)
             hist_kin_clone.SetLineWidth(2)
+            hist_kin_clone.SetLineStyle(linestyle)
             hist_kin_clone.SetMarkerColor(color)
-            hist_kin_clone.SetMarkerStyle(20)
+            hist_kin_clone.SetMarkerStyle(marker)
             hist_kin_clone.SetMarkerSize(0.8)
             
             # Use the same labels as before
@@ -902,12 +941,17 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             prof = h2_corr.ProfileX(f"prof_{hist_name_2d}_{i}")
             prof.SetDirectory(0)
 
-            # Set style
-            color = colors[i % len(colors)]
+            # Set style: color by minP, line style & marker by surfaceDepth
+            params = file_params[i]
+            color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
+            depth_val = params.get('depth')
+            linestyle = depth_to_linestyle.get(depth_val, 1)
+            marker = depth_to_marker.get(depth_val, 20)
             prof.SetLineColor(color)
             prof.SetLineWidth(2)
+            prof.SetLineStyle(linestyle)
             prof.SetMarkerColor(color)
-            prof.SetMarkerStyle(20)
+            prof.SetMarkerStyle(marker)
             prof.SetMarkerSize(0.8)
 
             prof_histograms.append(prof)
