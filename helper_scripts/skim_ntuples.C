@@ -9,7 +9,7 @@
 // v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
 // v4.0.2: Snapshot now uses df_trigger for trigger studies and df_seg for regular skimming
 // v4.0.4: Highest pT requires at least 8 hits, require chi2/ndof < 35, added N-1 plots for both of these, drop unused branches
-void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = true) {
+void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
     
     // Enable multi-threading (use all available cores)
     ROOT::EnableImplicitMT();
