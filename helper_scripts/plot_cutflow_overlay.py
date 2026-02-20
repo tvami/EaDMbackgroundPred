@@ -1022,10 +1022,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/Signal/": "Signal",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/BkgMC/": "BkgMC",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.2/ExpressData/": "ExpressData",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/BkgMC/": "BkgMC",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/ExpressData/": "ExpressData",
     }
 
     # Define regions and object types to loop over
@@ -1057,10 +1057,10 @@ if __name__ == "__main__":
                     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
                 )
 
-                # # Alternative cutflow (obj+eta before trigger)
-                # plot_all_cutflow_analysis(
-                #     input_dir=input_dir,
-                #     hist_name="h_cutflow_alt",
-                #     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
-                # )
+                # Alternative cutflow (obj+eta before trigger)
+                plot_all_cutflow_analysis(
+                    input_dir=input_dir,
+                    hist_name="h_cutflow_alt",
+                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
+                )
             
