@@ -9,6 +9,7 @@
 // v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
 // v4.0.2: Snapshot now uses df_trigger for trigger studies and df_seg for regular skimming
 // v4.0.4: Highest pT requires at least 8 hits, require chi2/ndof < 35, added N-1 plots for both of these, drop unused branches
+// v4.0.5: Add cut on pT error (ptErr/pt^2 < 1e-3) for highest-pT object, add corresponding N-1 plot, add histograms of ptErr/pt^2 at trigger level (with no quality cuts) for monitoring
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
     
     // Enable multi-threading (use all available cores)
@@ -28,7 +29,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     std::cout << "Trigger study: " << (isTriggerStudy ? "yes" : "no") << ", using trigger: " << trigger_name << "\n";
 
     // Set variable names based on object
-    TString pt_var, eta_var, phi_var, n_var, nhits_var, chi2_var, ndof_var;
+    TString pt_var, eta_var, phi_var, n_var, nhits_var, chi2_var, ndof_var, ptErr_var;
     if (object == "track") {
         pt_var = "track_pt";
         eta_var = "track_eta";
@@ -37,6 +38,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         nhits_var = "track_numberOfValidHits";
         chi2_var = "track_chi2";
         ndof_var = "track_ndof";
+        ptErr_var = "track_ptErr";
     } else if (object == "muon") {
         pt_var = "muon_pt";
         eta_var = "muon_eta";
@@ -45,6 +47,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         nhits_var = "muon_numberOfValidHits";
         chi2_var = "muon_chi2";
         ndof_var = "muon_comb_ndof";
+        ptErr_var = "muon_ptErr";
     } else if (object == "tuneP") {
         pt_var = "muon_tuneP_Pt";
         eta_var = "muon_tuneP_Eta";
@@ -53,6 +56,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         nhits_var = "muon_numberOfValidHits";
         chi2_var = "muon_chi2";
         ndof_var = "muon_comb_ndof";
+        ptErr_var = "muon_tuneP_PtErr";
     } else if (object == "matched_muon") {
         pt_var = "muon_fromGenTrack_Pt";
         eta_var = "muon_fromGenTrack_Eta";
@@ -61,6 +65,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         nhits_var = "muon_fromGenTrack_NumValidHits";
         chi2_var = "muon_fromGenTrack_Chi2";
         ndof_var = "muon_fromGenTrack_Ndof";
+        ptErr_var = "muon_fromGenTrack_PtErr";
     }
     
     std::cout << "Running with object: " << object << "\n";
@@ -127,11 +132,86 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     ROOT::RDataFrame df(chain);
     
     // Define new columns for max pT and corresponding eta/phi
-    // Require > 7 valid hits and chi2/ndof < 35 when selecting the highest-pT object
+    // Require > 7 valid hits, chi2/ndof < 35, and ptErr/pT^2 < 1e-3 when selecting the highest-pT object
     auto find_best_idx = [](const ROOT::VecOps::RVec<float>& pt,
                             const ROOT::VecOps::RVec<int>& nhits,
                             const ROOT::VecOps::RVec<float>& chi2,
-                            const ROOT::VecOps::RVec<float>& ndof) -> long {
+                            const ROOT::VecOps::RVec<float>& ndof,
+                            const ROOT::VecOps::RVec<float>& ptErr) -> long {
+        long best = -1;
+        float best_pt = -999.f;
+        for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
+            if (nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35
+                && pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3
+                && pt[i] > best_pt) {
+                best = (long)i;
+                best_pt = pt[i];
+            }
+        }
+        return best;
+    };
+
+    // Argmax requiring nhits > 7 and ptErr/pT^2 < 1e-3 (no chi2 cut) — for N-1 chi2 monitoring
+    auto find_best_idx_nhits_only = [](const ROOT::VecOps::RVec<float>& pt,
+                            const ROOT::VecOps::RVec<int>& nhits,
+                            const ROOT::VecOps::RVec<float>& chi2,
+                            const ROOT::VecOps::RVec<float>& ndof,
+                            const ROOT::VecOps::RVec<float>& ptErr) -> long {
+        long best = -1;
+        float best_pt = -999.f;
+        for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
+            if (nhits[i] > 7
+                && pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3
+                && pt[i] > best_pt) {
+                best = (long)i;
+                best_pt = pt[i];
+            }
+        }
+        return best;
+    };
+
+    // Argmax requiring chi2/ndof < 35 and ptErr/pT^2 < 1e-3 (no nhits cut) — for N-1 nhits monitoring
+    auto find_best_idx_chi2_only = [](const ROOT::VecOps::RVec<float>& pt,
+                            const ROOT::VecOps::RVec<int>& nhits,
+                            const ROOT::VecOps::RVec<float>& chi2,
+                            const ROOT::VecOps::RVec<float>& ndof,
+                            const ROOT::VecOps::RVec<float>& ptErr) -> long {
+        long best = -1;
+        float best_pt = -999.f;
+        for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
+            if (ndof[i] > 0 && chi2[i]/ndof[i] < 35
+                && pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3
+                && pt[i] > best_pt) {
+                best = (long)i;
+                best_pt = pt[i];
+            }
+        }
+        return best;
+    };
+
+    // Argmax requiring ONLY nhits > 7 (no chi2, no ptErr) — for progressive cutflow counting
+    auto find_best_idx_nhits_pure = [](const ROOT::VecOps::RVec<float>& pt,
+                            const ROOT::VecOps::RVec<int>& nhits,
+                            const ROOT::VecOps::RVec<float>& chi2,
+                            const ROOT::VecOps::RVec<float>& ndof,
+                            const ROOT::VecOps::RVec<float>& ptErr) -> long {
+        long best = -1;
+        float best_pt = -999.f;
+        for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
+            if (nhits[i] > 7 && pt[i] > best_pt) {
+                best = (long)i;
+                best_pt = pt[i];
+            }
+        }
+        return best;
+    };
+
+    // Argmax requiring nhits > 7 and chi2/ndof < 35 (no ptErr/pT^2 cut) — for N-1 ptErrPerPt2 monitoring and progressive cutflow counting
+    auto find_best_idx_no_ptErrPerPt2 = [](const ROOT::VecOps::RVec<float>& pt,
+                            const ROOT::VecOps::RVec<int>& nhits,
+                            const ROOT::VecOps::RVec<float>& chi2,
+                            const ROOT::VecOps::RVec<float>& ndof,
+                            const ROOT::VecOps::RVec<float>& ptErr) -> long {
         long best = -1;
         float best_pt = -999.f;
         for (size_t i = 0; i < pt.size() && i < nhits.size(); i++) {
@@ -151,16 +231,22 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TString chi2ndof_at_max_pt_expr = TString::Format(
         "pt_argmax >= 0 && (float)%s[pt_argmax] > 0 ? (float)%s[pt_argmax] / (float)%s[pt_argmax] : 999.0",
         ndof_var.Data(), chi2_var.Data(), ndof_var.Data());
+    TString ptErrPerPt2_at_max_pt_expr = TString::Format(
+        "pt_argmax >= 0 && (float)%s[pt_argmax] > 0 ? (float)%s[pt_argmax] / ((float)%s[pt_argmax] * (float)%s[pt_argmax]) : 999.0",
+        pt_var.Data(), ptErr_var.Data(), pt_var.Data(), pt_var.Data());
 
     auto df2 = df
-        .Define("pt_argmax", find_best_idx, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data()})
+        .Define("pt_argmax", find_best_idx, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("pt_argmax_cf_nhits", find_best_idx_nhits_pure, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("pt_argmax_cf_nhits_chi2", find_best_idx_no_ptErrPerPt2, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
         .Define("pt_max", pt_max_expr.Data())
         .Define("eta_at_max_pt", eta_at_max_pt_expr.Data())
         .Define("phi_at_max_pt", phi_at_max_pt_expr.Data())
         .Define("nhits_at_max_pt", nhits_at_max_pt_expr.Data())
-        .Define("chi2ndof_at_max_pt", chi2ndof_at_max_pt_expr.Data());
+        .Define("chi2ndof_at_max_pt", chi2ndof_at_max_pt_expr.Data())
+        .Define("ptErrPerPt2_at_max_pt", ptErrPerPt2_at_max_pt_expr.Data());
 
-    // Parallel Define chain WITHOUT nhits cut (for N-1 monitoring of nhits)
+    // Parallel Define chain with NO quality cuts at all (for trigger-level monitoring)
     TString pt_argmax_nocut_expr = TString::Format(
         "%s.size() > 0 ? (long)std::distance(%s.begin(), std::max_element(%s.begin(), %s.end())) : -1",
         pt_var.Data(), pt_var.Data(), pt_var.Data(), pt_var.Data());
@@ -170,26 +256,86 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TString chi2ndof_nocut_expr = TString::Format(
         "pt_argmax_nocut >= 0 && (float)%s[pt_argmax_nocut] > 0 ? (float)%s[pt_argmax_nocut] / (float)%s[pt_argmax_nocut] : 999.0",
         ndof_var.Data(), chi2_var.Data(), ndof_var.Data());
+    TString ptErrPerPt2_nocut_expr = TString::Format(
+        "pt_argmax_nocut >= 0 && (float)%s[pt_argmax_nocut] > 0 ? (float)%s[pt_argmax_nocut] / ((float)%s[pt_argmax_nocut] * (float)%s[pt_argmax_nocut]) : 999.0",
+        pt_var.Data(), ptErr_var.Data(), pt_var.Data(), pt_var.Data());
 
     auto df2_nocut = df
         .Define("pt_argmax_nocut", pt_argmax_nocut_expr.Data())
         .Define("pt_max_nocut", pt_max_nocut_expr.Data())
         .Define("eta_nocut", eta_nocut_expr.Data())
         .Define("nhits_nocut", nhits_nocut_expr.Data())
-        .Define("chi2ndof_nocut", chi2ndof_nocut_expr.Data());
-    
+        .Define("chi2ndof_nocut", chi2ndof_nocut_expr.Data())
+        .Define("ptErrPerPt2_nocut", ptErrPerPt2_nocut_expr.Data());
+
+    // Parallel Define chain WITHOUT nhits cut (for N-1 monitoring of nhits)
+    // Argmax requires chi2/ndof < 35 but NOT nhits > 7
+    TString pt_max_nonhits_expr = TString::Format("pt_argmax_nonhits >= 0 ? %s[pt_argmax_nonhits] : -999.0", pt_var.Data());
+    TString eta_nonhits_expr = TString::Format("pt_argmax_nonhits >= 0 ? %s[pt_argmax_nonhits] : 999.0", eta_var.Data());
+    TString nhits_nonhits_expr = TString::Format("pt_argmax_nonhits >= 0 ? (int)%s[pt_argmax_nonhits] : -1", nhits_var.Data());
+    TString chi2ndof_nonhits_expr = TString::Format(
+        "pt_argmax_nonhits >= 0 && (float)%s[pt_argmax_nonhits] > 0 ? (float)%s[pt_argmax_nonhits] / (float)%s[pt_argmax_nonhits] : 999.0",
+        ndof_var.Data(), chi2_var.Data(), ndof_var.Data());
+    TString ptErrPerPt2_nonhits_expr = TString::Format(
+        "pt_argmax_nonhits >= 0 && (float)%s[pt_argmax_nonhits] > 0 ? (float)%s[pt_argmax_nonhits] / ((float)%s[pt_argmax_nonhits] * (float)%s[pt_argmax_nonhits]) : 999.0",
+        pt_var.Data(), ptErr_var.Data(), pt_var.Data(), pt_var.Data());
+
+    auto df2_nonhits = df
+        .Define("pt_argmax_nonhits", find_best_idx_chi2_only, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("pt_max_nonhits", pt_max_nonhits_expr.Data())
+        .Define("eta_nonhits", eta_nonhits_expr.Data())
+        .Define("nhits_nonhits", nhits_nonhits_expr.Data())
+        .Define("chi2ndof_nonhits", chi2ndof_nonhits_expr.Data())
+        .Define("ptErrPerPt2_nonhits", ptErrPerPt2_nonhits_expr.Data());
+
+    // Parallel Define chain WITHOUT chi2 cut (for N-1 monitoring of chi2)
+    TString pt_max_nochi2_expr = TString::Format("pt_argmax_nochi2 >= 0 ? %s[pt_argmax_nochi2] : -999.0", pt_var.Data());
+    TString eta_nochi2_expr = TString::Format("pt_argmax_nochi2 >= 0 ? %s[pt_argmax_nochi2] : 999.0", eta_var.Data());
+    TString nhits_nochi2_expr = TString::Format("pt_argmax_nochi2 >= 0 ? (int)%s[pt_argmax_nochi2] : -1", nhits_var.Data());
+    TString chi2ndof_nochi2_expr = TString::Format(
+        "pt_argmax_nochi2 >= 0 && (float)%s[pt_argmax_nochi2] > 0 ? (float)%s[pt_argmax_nochi2] / (float)%s[pt_argmax_nochi2] : 999.0",
+        ndof_var.Data(), chi2_var.Data(), ndof_var.Data());
+    TString ptErrPerPt2_nochi2_expr = TString::Format(
+        "pt_argmax_nochi2 >= 0 && (float)%s[pt_argmax_nochi2] > 0 ? (float)%s[pt_argmax_nochi2] / ((float)%s[pt_argmax_nochi2] * (float)%s[pt_argmax_nochi2]) : 999.0",
+        pt_var.Data(), ptErr_var.Data(), pt_var.Data(), pt_var.Data());
+
+    auto df2_nochi2 = df
+        .Define("pt_argmax_nochi2", find_best_idx_nhits_only, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("pt_max_nochi2", pt_max_nochi2_expr.Data())
+        .Define("eta_nochi2", eta_nochi2_expr.Data())
+        .Define("nhits_nochi2", nhits_nochi2_expr.Data())
+        .Define("chi2ndof_nochi2", chi2ndof_nochi2_expr.Data())
+        .Define("ptErrPerPt2_nochi2", ptErrPerPt2_nochi2_expr.Data());
+
+    // Parallel Define chain WITHOUT ptErr/pT^2 cut (for N-1 monitoring of ptErrPerPt2)
+    TString pt_max_nopterr_expr = TString::Format("pt_argmax_nopterr >= 0 ? %s[pt_argmax_nopterr] : -999.0", pt_var.Data());
+    TString eta_nopterr_expr = TString::Format("pt_argmax_nopterr >= 0 ? %s[pt_argmax_nopterr] : 999.0", eta_var.Data());
+    TString nhits_nopterr_expr = TString::Format("pt_argmax_nopterr >= 0 ? (int)%s[pt_argmax_nopterr] : -1", nhits_var.Data());
+    TString chi2ndof_nopterr_expr = TString::Format(
+        "pt_argmax_nopterr >= 0 && (float)%s[pt_argmax_nopterr] > 0 ? (float)%s[pt_argmax_nopterr] / (float)%s[pt_argmax_nopterr] : 999.0",
+        ndof_var.Data(), chi2_var.Data(), ndof_var.Data());
+    TString ptErrPerPt2_nopterr_expr = TString::Format(
+        "pt_argmax_nopterr >= 0 && (float)%s[pt_argmax_nopterr] > 0 ? (float)%s[pt_argmax_nopterr] / ((float)%s[pt_argmax_nopterr] * (float)%s[pt_argmax_nopterr]) : 999.0",
+        pt_var.Data(), ptErr_var.Data(), pt_var.Data(), pt_var.Data());
+
+    auto df2_nopterr = df
+        .Define("pt_argmax_nopterr", find_best_idx_no_ptErrPerPt2, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("pt_max_nopterr", pt_max_nopterr_expr.Data())
+        .Define("eta_nopterr", eta_nopterr_expr.Data())
+        .Define("nhits_nopterr", nhits_nopterr_expr.Data())
+        .Define("chi2ndof_nopterr", chi2ndof_nopterr_expr.Data())
+        .Define("ptErrPerPt2_nopterr", ptErrPerPt2_nopterr_expr.Data());
+
     // Apply cuts sequentially for monitoring
     auto df_trigger = df2.Filter(trigger_name.Data(), "Trigger");
     auto df_track = df_trigger.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Has track/muon");
-    auto df_nhits = df_track.Filter("nhits_at_max_pt > 7", "nHits > 7");
-    auto df_chi2 = df_nhits.Filter("chi2ndof_at_max_pt < 35", "chi2/ndof < 35");
-    auto df_eta = df_chi2.Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9");
+    auto df_quality = df_track.Filter("pt_argmax >= 0", "Quality cuts (nHits>7, #chi^{2}/ndof<35, #sigma(p_{T})/p_{T}^{2}<10^{-3})");
+    auto df_eta = df_quality.Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9");
 
     // Alternative cutflow: eta and has-object before trigger
     auto df_alt_track = df2.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "Alt: Has track/muon");
-    auto df_alt_nhits = df_alt_track.Filter("nhits_at_max_pt > 7", "Alt: nHits > 7");
-    auto df_alt_chi2 = df_alt_nhits.Filter("chi2ndof_at_max_pt < 35", "Alt: chi2/ndof < 35");
-    auto df_alt_eta = df_alt_chi2.Filter("abs(eta_at_max_pt) < 0.9", "Alt: |eta| < 0.9");
+    auto df_alt_quality = df_alt_track.Filter("pt_argmax >= 0", "Alt: Quality cuts");
+    auto df_alt_eta = df_alt_quality.Filter("abs(eta_at_max_pt) < 0.9", "Alt: |eta| < 0.9");
     auto df_alt_trigger = df_alt_eta.Filter(trigger_name.Data(), "Alt: Trigger");
     
     // Apply region-specific pT cut
@@ -297,16 +443,19 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto count_all = df.Count();
     auto count_trigger = df_trigger.Count();
     auto count_track = df_track.Count();
-    auto count_nhits = df_nhits.Count();
-    auto count_chi2 = df_chi2.Count();
+    // Progressive cutflow counts using relaxed lambdas (each adds one more quality requirement)
+    auto count_cf_nhits = df_track.Filter("pt_argmax_cf_nhits >= 0").Count();           // nhits > 7 only
+    auto count_cf_nhits_chi2 = df_track.Filter("pt_argmax_cf_nhits_chi2 >= 0").Count(); // nhits + chi2
+    auto count_quality = df_quality.Count();                                             // nhits + chi2 + ptErr
     auto count_eta = df_eta.Count();
     auto count_pt = df_pt.Count();
     auto count_seg = df_seg.Count();
 
     // Alternative cutflow counts
     auto count_alt_track = df_alt_track.Count();
-    auto count_alt_nhits = df_alt_nhits.Count();
-    auto count_alt_chi2 = df_alt_chi2.Count();
+    auto count_alt_cf_nhits = df_alt_track.Filter("pt_argmax_cf_nhits >= 0").Count();
+    auto count_alt_cf_nhits_chi2 = df_alt_track.Filter("pt_argmax_cf_nhits_chi2 >= 0").Count();
+    auto count_alt_quality = df_alt_quality.Count();
     auto count_alt_eta = df_alt_eta.Count();
     auto count_alt_trigger = df_alt_trigger.Count();
     
@@ -341,21 +490,23 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ntrack_trigger = df_trigger.Histo1D({"h_ntrack_trigger", "Number of objs after trigger;N_{objs};Events", 20, 0, 20}, n_var.Data());
     auto df_trigger_withcount = df_trigger.Define("muon_dtSeg_valid_n_trigger", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_trigger = df_trigger_withcount.Histo1D({"h_nseg_trigger", "DT segments after trigger;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_trigger");
-    auto h_nhits_trigger = df_trigger.Histo1D({"h_nhits_trigger", "Valid hits after trigger;N_{valid hits};Events", 80, 0, 80}, "nhits_at_max_pt");
-    auto h_chi2ndof_trigger = df_trigger.Histo1D({"h_chi2ndof_trigger", "#chi^{2}/ndof after trigger;#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_at_max_pt");
+    // Use nocut argmax for nhits/chi2ndof trigger histograms (no quality cuts in object selection)
+    auto df_trigger_nocut = df2_nocut.Filter(trigger_name.Data(), "Trigger (nocut)");
+    auto h_nhits_trigger = df_trigger_nocut.Histo1D({"h_nhits_trigger", "Valid hits after trigger;N_{valid hits};Events", 80, 0, 80}, "nhits_nocut");
+    auto h_chi2ndof_trigger = df_trigger_nocut.Histo1D({"h_chi2ndof_trigger", "#chi^{2}/ndof after trigger;#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_nocut");
+    auto h_ptErrPerPt2_trigger = df_trigger_nocut.Histo1D({"h_ptErrPerPt2_trigger", "#sigma(p_{T})/p_{T}^{2} after trigger;#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.01}, "ptErrPerPt2_nocut");
 
     // 2. N-1 cuts for each variable
-    // N-1 for track_n: apply trigger, nhits, chi2, eta, pT, nSeg (skip track_n)
-    auto df_nminus1_ntrack = df_trigger.Filter("nhits_at_max_pt > 7", "nHits > 7")
-                                        .Filter("chi2ndof_at_max_pt < 35", "chi2/ndof < 35")
+    // N-1 for track_n: apply trigger, quality cuts, eta, pT, nSeg (skip track_n)
+    auto df_nminus1_ntrack = df_trigger.Filter("pt_argmax >= 0", "Quality cuts")
                                         .Filter("abs(eta_at_max_pt) < 0.9", "|eta| < 0.9")
                                         .Filter("pt_max > 200.0", "pT > 200 GeV");
     auto df_nminus1_ntrack_withcount = df_nminus1_ntrack.Define("muon_dtSeg_valid_n_ntrack", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_ntrack_final = df_nminus1_ntrack_withcount.Filter("muon_dtSeg_valid_n_ntrack > 2", "nSeg > 2");
     auto h_ntrack_nminus1 = df_nminus1_ntrack_final.Histo1D({"h_ntrack_nminus1", "Number of tracks N-1 cut (no track_n cut);N_{tracks};Events", 20, 0, 20}, n_var.Data());
     
-    // N-1 for eta: apply trigger, track_n, nhits, chi2, pT, nSeg (skip eta)
-    auto df_nminus1_eta = df_chi2.Filter("pt_max > 200.0", "pT > 200 GeV");
+    // N-1 for eta: apply trigger, track_n, nhits, chi2, ptErrPerPt2, pT, nSeg (skip eta)
+    auto df_nminus1_eta = df_quality.Filter("pt_max > 200.0", "pT > 200 GeV");
     auto df_nminus1_eta_withcount = df_nminus1_eta.Define("muon_dtSeg_valid_n", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_eta_final = df_nminus1_eta_withcount.Filter("muon_dtSeg_valid_n > 2", "nSeg > 2");
     auto h_eta_nminus1 = df_nminus1_eta_final.Histo1D({"h_eta_nminus1", "Obj #eta N-1 cut (no #eta cut);#eta;Events",100, -3, 3}, "eta_at_max_pt");
@@ -369,23 +520,44 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto df_nminus1_nseg = df_pt.Define("muon_dtSeg_valid_n_nseg", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto h_nseg_nminus1 = df_nminus1_nseg.Histo1D({"h_nseg_nminus1", "DT segments N-1 cut (no nSeg cut);nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n_nseg");
 
-    // N-1 for nhits: apply trigger, track_n, chi2, eta, pT, nSeg using NO nhits cut argmax
-    auto df_nminus1_nhits = df2_nocut
+    // N-1 for nhits: apply trigger, track_n, chi2, eta, pT, nSeg (skip nhits)
+    // Uses df2_nonhits chain (argmax requires chi2/ndof < 35 but NOT nhits > 7)
+    auto df_nminus1_nhits = df2_nonhits
         .Filter(trigger_name.Data())
         .Filter(TString::Format("%s > 0", n_var.Data()).Data())
-        .Filter("chi2ndof_nocut < 35")
-        .Filter("abs(eta_nocut) < 0.9")
-        .Filter("pt_max_nocut > 200.0");
+        .Filter("chi2ndof_nonhits < 35")
+        .Filter("ptErrPerPt2_nonhits < 1e-3")
+        .Filter("abs(eta_nonhits) < 0.9")
+        .Filter("pt_max_nonhits > 200.0");
     auto df_nminus1_nhits_withcount = df_nminus1_nhits.Define("muon_dtSeg_valid_n_nhits", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_nhits_final = df_nminus1_nhits_withcount.Filter("muon_dtSeg_valid_n_nhits > 2");
-    auto h_nhits_nminus1 = df_nminus1_nhits_final.Histo1D({"h_nhits_nminus1", "Valid hits N-1 (no nhits cut);N_{valid hits};Events", 80, 0, 80}, "nhits_nocut");
+    auto h_nhits_nminus1 = df_nminus1_nhits_final.Histo1D({"h_nhits_nminus1", "Valid hits N-1 (no nhits cut);N_{valid hits};Events", 80, 0, 80}, "nhits_nonhits");
 
     // N-1 for chi2ndof: apply trigger, track_n, nhits, eta, pT, nSeg (skip chi2)
-    auto df_nminus1_chi2 = df_nhits.Filter("abs(eta_at_max_pt) < 0.9")
-                                    .Filter("pt_max > 200.0");
+    // Uses df2_nochi2 chain (argmax requires nhits > 7 but NOT chi2 < 35)
+    auto df_nminus1_chi2 = df2_nochi2
+        .Filter(trigger_name.Data())
+        .Filter(TString::Format("%s > 0", n_var.Data()).Data())
+        .Filter("nhits_nochi2 > 7")
+        .Filter("ptErrPerPt2_nochi2 < 1e-3")
+        .Filter("abs(eta_nochi2) < 0.9")
+        .Filter("pt_max_nochi2 > 200.0");
     auto df_nminus1_chi2_withcount = df_nminus1_chi2.Define("muon_dtSeg_valid_n_chi2", count_valid_segs, {"muon_dtSeg_t0timing"});
     auto df_nminus1_chi2_final = df_nminus1_chi2_withcount.Filter("muon_dtSeg_valid_n_chi2 > 2");
-    auto h_chi2ndof_nminus1 = df_nminus1_chi2_final.Histo1D({"h_chi2ndof_nminus1", "#chi^{2}/ndof N-1 (no chi2 cut);#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_at_max_pt");
+    auto h_chi2ndof_nminus1 = df_nminus1_chi2_final.Histo1D({"h_chi2ndof_nminus1", "#chi^{2}/ndof N-1 (no chi2 cut);#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_nochi2");
+
+    // N-1 for ptErrPerPt2: apply trigger, track_n, nhits, chi2, eta, pT, nSeg (skip ptErrPerPt2)
+    // Uses df2_nopterr chain (argmax requires nhits > 7 and chi2/ndof < 35 but NOT ptErr/pT^2 < 1e-3)
+    auto df_nminus1_ptErrPerPt2 = df2_nopterr
+        .Filter(trigger_name.Data())
+        .Filter(TString::Format("%s > 0", n_var.Data()).Data())
+        .Filter("nhits_nopterr > 7")
+        .Filter("chi2ndof_nopterr < 35")
+        .Filter("abs(eta_nopterr) < 0.9")
+        .Filter("pt_max_nopterr > 200.0");
+    auto df_nminus1_ptErrPerPt2_withcount = df_nminus1_ptErrPerPt2.Define("muon_dtSeg_valid_n_pterrperpt2", count_valid_segs, {"muon_dtSeg_t0timing"});
+    auto df_nminus1_ptErrPerPt2_final = df_nminus1_ptErrPerPt2_withcount.Filter("muon_dtSeg_valid_n_pterrperpt2 > 2");
+    auto h_ptErrPerPt2_nminus1 = df_nminus1_ptErrPerPt2_final.Histo1D({"h_ptErrPerPt2_nminus1", "#sigma(p_{T})/p_{T}^{2} N-1 (no ptErrPerPt2 cut);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.01}, "ptErrPerPt2_nopterr");
 
     // 3. After all cuts
     auto h_eta_final = df_seg.Histo1D({"h_eta_final", "Obj #eta after all cuts;#eta;Events",100, -3, 3}, "eta_at_max_pt");
@@ -395,6 +567,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_nseg_final = df_seg.Histo1D({"h_nseg_final", "DT segments after all cuts;nSeg;Events", 20, 0, 20}, "muon_dtSeg_valid_n");
     auto h_nhits_final = df_seg.Histo1D({"h_nhits_final", "Valid hits after all cuts;N_{valid hits};Events", 80, 0, 80}, "nhits_at_max_pt");
     auto h_chi2ndof_final = df_seg.Histo1D({"h_chi2ndof_final", "#chi^{2}/ndof after all cuts;#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_at_max_pt");
+    auto h_ptErrPerPt2_final = df_seg.Histo1D({"h_ptErrPerPt2_final", "#sigma(p_{T})/p_{T}^{2} after all cuts;#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.01}, "ptErrPerPt2_at_max_pt");
 
     // Write output (Snapshot triggers the event loop for all actions)
     if (isTriggerStudy) {
@@ -408,49 +581,53 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     
     // Create and save cutflow histogram using the already-computed counts
     TFile* f = TFile::Open(output_file.Data(), "UPDATE");
-    TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 8, 0, 8);
+    TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 9, 0, 9);
     h_cutflow->GetXaxis()->SetBinLabel(1, "All events");
     h_cutflow->GetXaxis()->SetBinLabel(2, "Trigger");
     h_cutflow->GetXaxis()->SetBinLabel(3, "N_{obj} > 0");
     h_cutflow->GetXaxis()->SetBinLabel(4, "nHits > 7");
     h_cutflow->GetXaxis()->SetBinLabel(5, "#chi^{2}/ndof < 35");
-    h_cutflow->GetXaxis()->SetBinLabel(6, "|eta| < 0.9");
-    h_cutflow->GetXaxis()->SetBinLabel(7, pt_cut_label.Data());
-    h_cutflow->GetXaxis()->SetBinLabel(8, "nSeg > 2");
+    h_cutflow->GetXaxis()->SetBinLabel(6, "#sigma(p_{T})/p_{T}^{2} < 10^{-3}");
+    h_cutflow->GetXaxis()->SetBinLabel(7, "|eta| < 0.9");
+    h_cutflow->GetXaxis()->SetBinLabel(8, pt_cut_label.Data());
+    h_cutflow->GetXaxis()->SetBinLabel(9, "nSeg > 2");
 
     // Calculate cumulative cutflow from pre-computed counts
     double n_total = *count_all;
     h_cutflow->SetBinContent(1, n_total);
     h_cutflow->SetBinContent(2, *count_trigger);
     h_cutflow->SetBinContent(3, *count_track);
-    h_cutflow->SetBinContent(4, *count_nhits);
-    h_cutflow->SetBinContent(5, *count_chi2);
-    h_cutflow->SetBinContent(6, *count_eta);
-    h_cutflow->SetBinContent(7, *count_pt);
-    h_cutflow->SetBinContent(8, *count_seg);
+    h_cutflow->SetBinContent(4, *count_cf_nhits);
+    h_cutflow->SetBinContent(5, *count_cf_nhits_chi2);
+    h_cutflow->SetBinContent(6, *count_quality);
+    h_cutflow->SetBinContent(7, *count_eta);
+    h_cutflow->SetBinContent(8, *count_pt);
+    h_cutflow->SetBinContent(9, *count_seg);
     
     h_cutflow->SetMinimum(0);
     h_cutflow->SetMaximum(1.1*n_total);
     h_cutflow->Write();
 
     // Alternative cutflow: has-object and eta before trigger
-    TH1F* h_cutflow_alt = new TH1F("h_cutflow_alt", "Cutflow (obj+eta before trigger);Cut;Cumulative Yields", 8, 0, 8);
+    TH1F* h_cutflow_alt = new TH1F("h_cutflow_alt", "Cutflow (obj+eta before trigger);Cut;Cumulative Yields", 9, 0, 9);
     h_cutflow_alt->GetXaxis()->SetBinLabel(1, "All events");
     h_cutflow_alt->GetXaxis()->SetBinLabel(2, "N_{obj} > 0");
     h_cutflow_alt->GetXaxis()->SetBinLabel(3, "nHits > 7");
     h_cutflow_alt->GetXaxis()->SetBinLabel(4, "#chi^{2}/ndof < 35");
-    h_cutflow_alt->GetXaxis()->SetBinLabel(5, "|eta| < 0.9");
-    h_cutflow_alt->GetXaxis()->SetBinLabel(6, "Trigger");
-    h_cutflow_alt->GetXaxis()->SetBinLabel(7, pt_cut_label.Data());
-    h_cutflow_alt->GetXaxis()->SetBinLabel(8, "nSeg > 2");
+    h_cutflow_alt->GetXaxis()->SetBinLabel(5, "#sigma(p_{T})/p_{T}^{2} < 10^{-3}");
+    h_cutflow_alt->GetXaxis()->SetBinLabel(6, "|eta| < 0.9");
+    h_cutflow_alt->GetXaxis()->SetBinLabel(7, "Trigger");
+    h_cutflow_alt->GetXaxis()->SetBinLabel(8, pt_cut_label.Data());
+    h_cutflow_alt->GetXaxis()->SetBinLabel(9, "nSeg > 2");
     h_cutflow_alt->SetBinContent(1, n_total);
     h_cutflow_alt->SetBinContent(2, *count_alt_track);
-    h_cutflow_alt->SetBinContent(3, *count_alt_nhits);
-    h_cutflow_alt->SetBinContent(4, *count_alt_chi2);
-    h_cutflow_alt->SetBinContent(5, *count_alt_eta);
-    h_cutflow_alt->SetBinContent(6, *count_alt_trigger);
-    h_cutflow_alt->SetBinContent(7, *count_pt);
-    h_cutflow_alt->SetBinContent(8, *count_seg);
+    h_cutflow_alt->SetBinContent(3, *count_alt_cf_nhits);
+    h_cutflow_alt->SetBinContent(4, *count_alt_cf_nhits_chi2);
+    h_cutflow_alt->SetBinContent(5, *count_alt_quality);
+    h_cutflow_alt->SetBinContent(6, *count_alt_eta);
+    h_cutflow_alt->SetBinContent(7, *count_alt_trigger);
+    h_cutflow_alt->SetBinContent(8, *count_pt);
+    h_cutflow_alt->SetBinContent(9, *count_seg);
     h_cutflow_alt->SetMinimum(0);
     h_cutflow_alt->SetMaximum(1.1*n_total);
     h_cutflow_alt->Write();
@@ -479,7 +656,10 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         h_nhits_final,
         h_chi2ndof_trigger,
         h_chi2ndof_nminus1,
-        h_chi2ndof_final
+        h_chi2ndof_final,
+        h_ptErrPerPt2_trigger,
+        h_ptErrPerPt2_nminus1,
+        h_ptErrPerPt2_final
     };
     
     for (auto& h : histograms) {
