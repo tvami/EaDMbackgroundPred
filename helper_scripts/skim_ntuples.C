@@ -11,6 +11,7 @@
 // v4.0.4: Highest pT requires at least 8 hits, require chi2/ndof < 35, added N-1 plots for both of these, drop unused branches
 // v4.0.5: Add cut on pT error (ptErr/pt^2 < 1e-3) for highest-pT object, add corresponding N-1 plot, add histograms of ptErr/pt^2 at trigger level (with no quality cuts) for monitoring
 // v4.0.6: Move cutflow to be object level, so that it's more inclusive. Removed alternative cutflow and trigger studies. Add N-1 plot with object level
+// v4.0.7: Move pt boundary to 10000 GeV
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
 
     // Enable multi-threading (use all available cores)
@@ -172,7 +173,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ptErrPerPt2_pretrigger = df_pretrig_histos.Histo1D({"h_ptErrPerPt2_pretrigger", "#sigma(p_{T})/p_{T}^{2} (pretrigger);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "obj_ptErrPerPt2_pretrig");
     auto h_eta_pretrigger = df_pretrig_histos.Histo1D({"h_eta_pretrigger", "#eta (pretrigger);#eta;Objects", 100, -3, 3}, eta_var.Data());
     auto h_phi_pretrigger = df_pretrig_histos.Histo1D({"h_phi_pretrigger", "#phi (pretrigger);#phi;Objects", 100, -3.15, 3.15}, phi_var.Data());
-    auto h_pt_pretrigger = df_pretrig_histos.Histo1D({"h_pt_pretrigger", "p_{T} (pretrigger);p_{T} [GeV];Objects", 500, 0, 5000}, pt_var.Data());
+    auto h_pt_pretrigger = df_pretrig_histos.Histo1D({"h_pt_pretrigger", "p_{T} (pretrigger);p_{T} [GeV];Objects", 500, 0, 10000}, pt_var.Data());
     auto h_nseg_pretrigger = df_with_count.Histo1D({"h_nseg_pretrigger", "DT segments (pretrigger);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
 
     // --- Object-level cutflow ---
@@ -280,12 +281,14 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     // 2D histogram: object multiplicity at each cutflow step (for events passing all cuts)
     auto h2_cutflow_nobj = df_cf_seg
-    .Define("cf_step", [](unsigned int n, int nhits, int chi2ndof, int quality, int eta, int pt) {
+    .Define("nobj_exists", 
+        "static_cast<int>(" + std::string(n_var.Data()) + ")")
+    .Define("cf_step", [](int n, int nhits, int chi2ndof, int quality, int eta, int pt) {
         return ROOT::VecOps::RVec<double>{0., 1., 2., 3., 4., 5.};
-    }, {n_var.Data(), "nobj_nhits", "nobj_chi2ndof", "nobj_quality", "nobj_eta", "nobj_pt"})
-    .Define("cf_nobj", [](unsigned int n, int nhits, int chi2ndof, int quality, int eta, int pt) {
+    }, {"nobj_exists", "nobj_nhits", "nobj_chi2ndof", "nobj_quality", "nobj_eta", "nobj_pt"})
+    .Define("cf_nobj", [](int n, int nhits, int chi2ndof, int quality, int eta, int pt) {
         return ROOT::VecOps::RVec<double>{(double)n, (double)nhits, (double)chi2ndof, (double)quality, (double)eta, (double)pt};
-    }, {n_var.Data(), "nobj_nhits", "nobj_chi2ndof", "nobj_quality", "nobj_eta", "nobj_pt"})
+    }, {"nobj_exists", "nobj_nhits", "nobj_chi2ndof", "nobj_quality", "nobj_eta", "nobj_pt"})
     .Histo2D({"h2_cutflow_nobj", "Object multiplicity at each cutflow step;Cutflow step;N_{obj}",
               6, -0.5, 5.5, 20, 0.5, 20.5}, "cf_step", "cf_nobj");
 
@@ -311,7 +314,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ptErrPerPt2_trigger = df_trig_histos.Histo1D({"h_ptErrPerPt2_trigger", "#sigma(p_{T})/p_{T}^{2} (trigger);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "obj_ptErrPerPt2_trig");
     auto h_eta_trigger = df_trig_histos.Histo1D({"h_eta_trigger", "#eta (trigger);#eta;Objects", 100, -3, 3}, eta_var.Data());
     auto h_phi_trigger = df_trig_histos.Histo1D({"h_phi_trigger", "#phi (trigger);#phi;Objects", 100, -3.15, 3.15}, phi_var.Data());
-    auto h_pt_trigger = df_trig_histos.Histo1D({"h_pt_trigger", "p_{T} (trigger);p_{T} [GeV];Objects", 500, 0, 5000}, pt_var.Data());
+    auto h_pt_trigger = df_trig_histos.Histo1D({"h_pt_trigger", "p_{T} (trigger);p_{T} [GeV];Objects", 500, 0, 10000}, pt_var.Data());
     auto h_nseg_trigger = df_trigger.Histo1D({"h_nseg_trigger", "DT segments (trigger);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
 
     // 2-3. Final and N-1 histograms using per-object bitmask on df_cf_seg
@@ -401,7 +404,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ptErrPerPt2_final = df_seg_histos.Histo1D({"h_ptErrPerPt2_final", "#sigma(p_{T})/p_{T}^{2} (final);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_final");
     auto h_eta_final = df_seg_histos.Histo1D({"h_eta_final", "#eta (final);#eta;Objects", 100, -3, 3}, "eta_final");
     auto h_phi_final = df_seg_histos.Histo1D({"h_phi_final", "#phi (final);#phi;Objects", 100, -3.15, 3.15}, "phi_final");
-    auto h_pt_final = df_seg_histos.Histo1D({"h_pt_final", "p_{T} (final);p_{T} [GeV];Objects", 500, 0, 5000}, "pt_final");
+    auto h_pt_final = df_seg_histos.Histo1D({"h_pt_final", "p_{T} (final);p_{T} [GeV];Objects", 500, 0, 10000}, "pt_final");
     auto h_nseg_final = df_cf_seg.Histo1D({"h_nseg_final", "DT segments (final);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
 
     // Book highest-pT histograms
@@ -410,7 +413,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ptErrPerPt2_highpt = df_seg_histos.Histo1D({"h_ptErrPerPt2_highpt", "#sigma(p_{T})/p_{T}^{2} (highest p_{T});#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.01}, "ptErrPerPt2_highpt");
     auto h_eta_highpt = df_seg_histos.Histo1D({"h_eta_highpt", "#eta (highest p_{T});#eta;Events", 100, -3, 3}, "eta_highpt");
     auto h_phi_highpt = df_seg_histos.Histo1D({"h_phi_highpt", "#phi (highest p_{T});#phi;Events", 100, -3.15, 3.15}, "phi_highpt");
-    auto h_pt_highpt = df_seg_histos.Histo1D({"h_pt_highpt", "p_{T} (highest p_{T});p_{T} [GeV];Events", 500, 0, 5000}, "pt_highpt");
+    auto h_pt_highpt = df_seg_histos.Histo1D({"h_pt_highpt", "p_{T} (highest p_{T});p_{T} [GeV];Events", 500, 0, 10000}, "pt_highpt");
 
     // Book N-1 histograms
     auto h_nhits_nminus1 = df_seg_histos.Histo1D({"h_nhits_nminus1", "Valid hits (N-1);N_{valid hits};Objects", 80, 0, 80}, "nhits_nminus1");
@@ -418,7 +421,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_ptErrPerPt2_nminus1 = df_seg_histos.Histo1D({"h_ptErrPerPt2_nminus1", "#sigma(p_{T})/p_{T}^{2} (N-1);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_nminus1");
     auto h_eta_nminus1 = df_seg_histos.Histo1D({"h_eta_nminus1", "#eta (N-1);#eta;Objects", 100, -3, 3}, "eta_nminus1");
     auto h_phi_nminus1 = df_seg_histos.Histo1D({"h_phi_nminus1", "#phi (N-1);#phi;Objects", 100, -3.15, 3.15}, "phi_nminus1");
-    auto h_pt_nminus1 = df_seg_histos.Histo1D({"h_pt_nminus1", "p_{T} (N-1);p_{T} [GeV];Objects", 500, 0, 5000}, "pt_nminus1");
+    auto h_pt_nminus1 = df_seg_histos.Histo1D({"h_pt_nminus1", "p_{T} (N-1);p_{T} [GeV];Objects", 500, 0, 10000}, "pt_nminus1");
     // N-1 for nseg: events passing all object cuts, no nseg requirement (= df_cf_pt)
     auto h_nseg_nminus1 = df_cf_pt.Histo1D({"h_nseg_nminus1", "DT segments (N-1);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
 

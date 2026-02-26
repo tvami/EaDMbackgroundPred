@@ -756,6 +756,123 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 
             canvas_trig.Update()
 
+    # ===== Create mean object count at last cutflow bin vs MinP plots =====
+    objcount_data_by_group = {}
+
+    for root_file in root_files:
+        filename = os.path.basename(root_file)
+        params = extract_parameters(filename)
+
+        if 'minp' not in params:
+            continue
+
+        minp = params['minp']
+        group_key = get_grouping_key(params)
+
+        try:
+            tfile = ROOT.TFile.Open(root_file)
+        except (OSError, RuntimeError) as e:
+            continue
+
+        if not tfile or tfile.IsZombie():
+            continue
+
+        h2 = tfile.Get("h2_cutflow_nobj")
+        if not h2:
+            tfile.Close()
+            continue
+
+        # ProfileX gives mean N_obj at each cutflow step
+        prof = h2.ProfileX(f"prof_objcount_{minp}")
+
+        # Get mean N_obj at last bin
+        last_bin = prof.GetNbinsX()
+        mean_nobj = prof.GetBinContent(last_bin)
+
+        if group_key not in objcount_data_by_group:
+            objcount_data_by_group[group_key] = []
+
+        objcount_data_by_group[group_key].append((minp, mean_nobj))
+
+        tfile.Close()
+
+    if objcount_data_by_group and "BkgMC" not in input_dir:
+        for group_key in objcount_data_by_group:
+            objcount_data_by_group[group_key].sort(key=lambda x: x[0])
+
+        canvas_objcount = ROOT.TCanvas("c_objcount_vs_minp"+canvas_suffix, "c_objcount_vs_minp"+canvas_suffix, 800, 800)
+        canvas_objcount.cd()
+        canvas_objcount.SetRightMargin(0.1)
+
+        markers = [20, 21, 22, 23, 29, 33, 34, 47, 43, 45]
+
+        objcount_graphs = []
+        legend_objcount = ROOT.TLegend(0.32, 0.5, 0.83, 0.9)
+        legend_objcount.SetHeader(f"Region: {'pre-SR' if region.upper() == 'SR' else region.upper()}, Object: {obj_type}")
+        legend_objcount.SetTextSize(0.03)
+        legend_objcount.SetFillStyle(0)
+        legend_objcount.SetBorderSize(0)
+        legend_objcount.SetTextSize(0.03)
+
+        def sort_key_obj(group_tuple):
+            depth, min_theta, max_theta = group_tuple
+            return (depth if depth is not None else -1,
+                    min_theta if min_theta is not None else -1,
+                    max_theta if max_theta is not None else -1)
+
+        sorted_groups_obj = sorted(objcount_data_by_group.keys(), key=sort_key_obj)
+
+        for i, group_key in enumerate(sorted_groups_obj):
+            data = objcount_data_by_group[group_key]
+            n_points = len(data)
+
+            import array
+            x_array = array.array('d', [point[0] for point in data])
+            y_array = array.array('d', [point[1] for point in data])
+
+            graph = ROOT.TGraph(n_points, x_array, y_array)
+
+            color = colors[i % len(colors)]
+            marker = markers[i % len(markers)]
+
+            graph.SetLineColor(color)
+            graph.SetLineWidth(2)
+            graph.SetMarkerColor(color)
+            graph.SetMarkerStyle(marker)
+            graph.SetMarkerSize(1.2)
+
+            label = format_group_label(group_key)
+            legend_objcount.AddEntry(graph, label, "lp")
+            objcount_graphs.append(graph)
+
+        if objcount_graphs:
+            first_graph_obj = objcount_graphs[0]
+            first_graph_obj.SetTitle("")
+            first_graph_obj.GetXaxis().SetTitle("M_{\\chi} / 2 [GeV]")
+            first_graph_obj.GetYaxis().SetTitle("<N_{obj}> at last cutflow step")
+            first_graph_obj.GetYaxis().SetTitleOffset(1.05)
+
+            all_y = [pt[1] for data in objcount_data_by_group.values() for pt in data]
+            max_y = max(all_y) if all_y else 5
+            first_graph_obj.GetYaxis().SetRangeUser(0, max_y * 3.0)
+            first_graph_obj.GetXaxis().SetMaxDigits(3)
+            first_graph_obj.GetXaxis().SetNdivisions(510)
+
+            first_graph_obj.Draw("ALP")
+
+            for graph in objcount_graphs[1:]:
+                graph.Draw("LP SAME")
+
+            legend_objcount.Draw()
+            addCMSText(canvas_objcount, lumi_text="Cosmics", extra_text="Work in Progress")
+
+            png_name_objcount = base_name.replace("_overlay", "_objcount_vs_minp") + ".png"
+            pdf_name_objcount = base_name.replace("_overlay", "_objcount_vs_minp") + ".pdf"
+
+            canvas_objcount.SaveAs(png_name_objcount)
+            canvas_objcount.SaveAs(pdf_name_objcount)
+            canvas_objcount.Update()
+
     # ===== Create overlay plots for final kinematic distributions =====
     # print("\nCreating final kinematic distribution overlays...")
     
@@ -770,9 +887,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         'h_phi_final': {'title': '#phi', 'log_y': True},
         'h_phi_trigger': {'title': '#phi', 'log_y': True},
         'h_phi_pretrigger': {'title': '#phi', 'log_y': True},
-        'h_ntrack_final': {'title': 'N_{tracks}', 'log_y': True},
-        'h_ntrack_trigger': {'title': 'N_{tracks}', 'log_y': True},
-        'h_ntrack_nminus1': {'title': 'N_{tracks}', 'log_y': True},
+        # 'h_ntrack_final': {'title': 'N_{tracks}', 'log_y': True},
+        # 'h_ntrack_trigger': {'title': 'N_{tracks}', 'log_y': True},
+        # 'h_ntrack_nminus1': {'title': 'N_{tracks}', 'log_y': True},
         'h_nhits_final': {'title': 'N_{valid hits}', 'log_y': True},
         'h_nhits_trigger': {'title': 'N_{valid hits}', 'log_y': True},
         'h_nhits_nminus1': {'title': 'N_{valid hits}', 'log_y': True},
@@ -899,12 +1016,12 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     # print("\nCreating ProfileX overlays for 2D trigger histograms...")
 
     profile_hists = {
-        'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
-        'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
-        'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
-        'h_eta_vs_trigger_obj_eta': {'x_title': '#eta', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
-        'h_pt_vs_trigger_obj_eta':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
-        'h_phi_vs_trigger_obj_eta': {'x_title': '#phi', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
+        # 'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
+        # 'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
+        # 'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
+        # 'h_eta_vs_trigger_obj_eta': {'x_title': '#eta', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
+        # 'h_pt_vs_trigger_obj_eta':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
+        # 'h_phi_vs_trigger_obj_eta': {'x_title': '#phi', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
     }
 
     for hist_name_2d, prof_config in profile_hists.items():
@@ -1022,10 +1139,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/Signal/": "Signal",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/BkgMC/": "BkgMC",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.4/ExpressData/": "ExpressData",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/BkgMC/": "BkgMC",
+        #"/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/ExpressData/": "ExpressData",
     }
 
     # Define regions and object types to loop over
@@ -1056,11 +1173,3 @@ if __name__ == "__main__":
                     hist_name="h_cutflow",
                     output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
                 )
-
-                # Alternative cutflow (obj+eta before trigger)
-                plot_all_cutflow_analysis(
-                    input_dir=input_dir,
-                    hist_name="h_cutflow_alt",
-                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_alt_overlay.png")
-                )
-            
