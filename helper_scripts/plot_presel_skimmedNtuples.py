@@ -8,7 +8,9 @@ CMS.SetExtraText("Internal")
 #CMS.SetLumi(None)
 #CMS.SetEnergy(13.1, unit = '')
 
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.4'
+os.makedirs("figures/presel_ch_skimmedNtuples", exist_ok=True)
+
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.6'
 collections = ['track', 'muon', 'matched_muon', 'tuneP']
 region = 'sr' # sr vr
 
@@ -24,25 +26,31 @@ samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinThet
 base_var_dict = {
             "eta": [0, 25, -2.5, 2.5, 'eta_pretrigger', 'eta_trigger', 'eta_nminus1', 'eta_final', '#eta'],
             "pt": [1, 500, 0, 5000, 'pt_pretrigger', 'pt_trigger', 'pt_nminus1', 'pt_final', 'p_{T} [GeV]'],
-            "phi": [2, 25, -3.15, 3.15, 'phi_pretrigger', 'phi_trigger', None, 'phi_final', '#phi'],
-            "ntrack": [3, 20, 0, 20, None, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
-            "nseg": [4, 20, 0, 20, None, 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
-            "nhits": [5, 80, 0, 80, None, 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
-            "chi2ndof": [6, 100, 0, 100, None, 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
+            "phi": [2, 25, -3.15, 3.15, 'phi_pretrigger', 'phi_trigger', 'phi_nminus1', 'phi_final', '#phi'],
+            # "ntrack": [3, 20, 0, 20, None, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
+            "nseg": [4, 20, 0, 20, 'nseg_pretrigger', 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
+            "nhits": [5, 80, 0, 80, 'nhits_pretrigger', 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
+            "chi2ndof": [6, 100, 0, 100, 'chi2ndof_pretrigger', 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
             "ptErrPerPt2": [7, 100, 0, 0.01, None, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
-            "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
-            "nobj_quality": [12, 20, 0, 20, None, None, 'nobj_quality_nminus1', None, 'n (#chi^{2}/n_{DoF} < 35, n_{Hits} > 7)'],
+            # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
             "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
             "ptErrPerPt2_quality_zoom": [14, 100, 0, 0.002, None, None, 'ptErrPerPt2_quality_nminus1_zoom', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
             "ptErrPerPt_quality": [15, 50, 0, 10, None, None, 'ptErrPerPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
             "pt_quality": [16, 500, 0, 5000, None, None, 'pt_quality_nminus1', None, 'p_{T} [GeV] (quality cuts)'],
-            "ptErrPerPtVsPt_quality": [17, 50, 0, 10, None, None, 'ptErrPerPtVsPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
+            # "ptErrPerPtVsPt_quality": [17, 50, 0, 10, None, None, 'ptErrPerPtVsPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
             "ptErrPerPt_lowPt": [18, 50, 0, 10, None, 'ptErrPerPt_lowPt', 'ptErrPerPt_lowPt_nminus1', 'ptErrPerPt_lowPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} < 5 TeV)'],
             "ptErrPerPt_highPt": [19, 50, 0, 10, None, 'ptErrPerPt_highPt', 'ptErrPerPt_highPt_nminus1', 'ptErrPerPt_highPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} > 5 TeV)'],
             "ptErrPerPt2_lowPt": [20, 100, 0, 0.01, None, 'ptErrPerPt2_lowPt', 'ptErrPerPt2_lowPt_nminus1', 'ptErrPerPt2_lowPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} < 5 TeV)'],
             "ptErrPerPt2_highPt": [21, 100, 0, 0.01, None, 'ptErrPerPt2_highPt', 'ptErrPerPt2_highPt_nminus1', 'ptErrPerPt2_highPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} > 5 TeV)'],
+            "ptErrPerPt2_pretrig": [22, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', None, None, None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "nhits_highpt": [23, 80, 0, 80, None, None, None, 'nhits_highpt', 'N_{valid hits} (highest p_{T})'],
+            "chi2ndof_highpt": [24, 100, 0, 100, None, None, None, 'chi2ndof_highpt', '#chi^{2}/n_{DoF} (highest p_{T})'],
+            "ptErrPerPt2_highpt": [25, 100, 0, 0.01, None, None, None, 'ptErrPerPt2_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T})'],
+            "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
+            "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
+            "pt_highpt": [28, 500, 0, 5000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
             }
 
 track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, None, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
@@ -99,6 +107,43 @@ def fold_overflow(h):
         h.SetBinContent(0, 0)
         h.SetBinContent(nb+1, 0)
 
+def get_cutflow_df(df, collection, region='sr'):
+    """Apply full cutflow per-object selection (matching skim_ntuples.C) and define highest-pT object properties."""
+    if collection == 'matched_muon':
+        pt_br, ptErr_br, eta_br = 'muon_fromGenTrack_Pt', 'muon_fromGenTrack_PtErr', 'muon_fromGenTrack_Eta'
+        chi2_br, ndof_br, nhits_br = 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Ndof', 'muon_fromGenTrack_NumValidHits'
+    elif collection == 'tuneP':
+        pt_br, ptErr_br, eta_br = 'muon_tuneP_Pt', 'muon_tuneP_PtErr', 'muon_tuneP_Eta'
+        chi2_br, ndof_br, nhits_br = 'muon_chi2', 'muon_comb_ndof', 'muon_numberOfValidHits'
+    elif collection == 'track':
+        pt_br, ptErr_br, eta_br = 'track_pt', 'track_ptErr', 'track_eta'
+        chi2_br, ndof_br, nhits_br = 'track_chi2', 'track_ndof', 'track_numberOfValidHits'
+    else:  # muon
+        pt_br, ptErr_br, eta_br = 'muon_pt', 'muon_ptErr', 'muon_eta'
+        chi2_br, ndof_br, nhits_br = 'muon_chi2', 'muon_comb_ndof', 'muon_numberOfValidHits'
+
+    pt_cond = f"{pt_br} > 200" if region == 'sr' else f"{pt_br} < 200"
+
+    return (df
+        .Define("_cf_chi2ndof", f"ROOT::VecOps::Where({ndof_br} != 0, {chi2_br}/{ndof_br}, 999.)")
+        .Define("_cf_pass",
+                f"{nhits_br} > 7 && _cf_chi2ndof < 35. "
+                f"&& {pt_br} > 0 && {ptErr_br}/({pt_br}*{pt_br}) < 1e-3 "
+                f"&& abs({eta_br}) < 0.9 && {pt_cond}")
+        .Define("_cf_pt_masked",
+                f"ROOT::VecOps::Where(_cf_pass, {pt_br}, "
+                f"ROOT::VecOps::RVec<float>({pt_br}.size(), -1.f))")
+        .Define("_cf_best",
+                "_cf_pt_masked.size()>0 ? (int)std::distance("
+                "_cf_pt_masked.begin(), std::max_element("
+                "_cf_pt_masked.begin(), _cf_pt_masked.end())) : -1")
+        .Filter("_cf_best >= 0 && _cf_pt_masked[_cf_best] > 0")
+        .Define("highpt_pt", f"(double){pt_br}[_cf_best]")
+        .Define("highpt_ptErr", f"(double){ptErr_br}[_cf_best]")
+        .Define("highpt_ptErrPerPt", "highpt_ptErr / highpt_pt")
+        .Define("highpt_ptErrPerPt2", "highpt_ptErr / (highpt_pt * highpt_pt)")
+    )
+
 print("Starting!")
 for collection in collections:
     print(f"\n{'='*60}")
@@ -111,12 +156,13 @@ for collection in collections:
     if collection == 'matched_muon': var_dict.update(matched_muon_var_dict)
     if collection == 'tuneP': var_dict.update(tuneP_var_dict)
 
+    _profiles_done = False
     for main_var in list(var_dict.keys()):
         print(f"Making {main_var} plots")
         # For variables that aren't current preselection variables, only run nmin1 step
-        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom', 'nobj_quality', 'ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality', 'ptErrPerPt_lowPt', 'ptErrPerPt_highPt', 'ptErrPerPt2_lowPt', 'ptErrPerPt2_highPt'):
+        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom', 'ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality', 'ptErrPerPt_lowPt', 'ptErrPerPt_highPt', 'ptErrPerPt2_lowPt', 'ptErrPerPt2_highPt'):
             for num in range(2, 3):
-                if main_var in ('nobj_quality', 'ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality') and collection == 'tuneP':
+                if main_var in ('ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality') and collection == 'tuneP':
                     continue  # tuneP has no chi2/ndof/nhits branches
                 print(f"Making {var_dict[main_var][4+num]} plot")
                 nbins = var_dict[main_var][1]
@@ -201,19 +247,6 @@ for collection in collections:
                             (f"h_{main_var}_{sample}", "", nbins, min, max),
                             "ratio_ptcut"
                         )
-                    elif main_var == 'nobj_quality':
-                        if collection == 'track':
-                            chi2_var, ndof_var, nhits_var = 'track_chi2', 'track_ndof', 'track_numberOfValidHits'
-                        elif collection == 'matched_muon':
-                            chi2_var, ndof_var, nhits_var = 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Ndof', 'muon_fromGenTrack_NumValidHits'
-                        else:  # muon
-                            chi2_var, ndof_var, nhits_var = 'muon_chi2', 'muon_comb_ndof', 'muon_numberOfValidHits'
-                        df2 = df.Define("chi2ndof_vec", f"ROOT::VecOps::Where({ndof_var} != 0, {chi2_var}/{ndof_var}, 999.)")
-                        df2 = df2.Define("n_quality", f"(int)Sum(chi2ndof_vec < 35. && {nhits_var} > 7)")
-                        h = df2.Histo1D(
-                            (f"h_nobj_quality_{sample}", "", nbins, min, max),
-                            "n_quality"
-                        )
                     elif main_var in ('ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom'):
                         if collection == 'track':
                             chi2_var, ndof_var, nhits_var = 'track_chi2', 'track_ndof', 'track_numberOfValidHits'
@@ -260,10 +293,10 @@ for collection in collections:
                             pt_var = 'muon_pt'
                         df2 = df.Define("chi2ndof_vec_ptq", f"ROOT::VecOps::Where({ndof_var} != 0, {chi2_var}/{ndof_var}, 999.)")
                         df2 = df2.Define("quality_mask_ptq", f"chi2ndof_vec_ptq < 35. && {nhits_var} > 7")
-                        df2 = df2.Define("pt_qual", f"{pt_var}[quality_mask_ptq]")
+                        df2 = df2.Define("pt_quality_val", f"{pt_var}[quality_mask_ptq]")
                         h = df2.Histo1D(
                             (f"h_pt_quality_{sample}", "", nbins, min, max),
-                            "pt_qual"
+                            "pt_quality_val"
                         )
                     else:
                         h = df.Histo1D(
@@ -313,8 +346,8 @@ for collection in collections:
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
@@ -425,8 +458,8 @@ for collection in collections:
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
                 sample_tag = sample.replace("{", "").replace("}", "").replace(" = ", "_").replace(" ", "_").replace("_TeV", "TeV")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
 
             del c
             del hframe
@@ -446,7 +479,7 @@ for collection in collections:
                 c.SetLeftMargin(0.153)
                 c.SetRightMargin(0.08)
 
-                print(nbins, "bins")
+                print(f"\t{nbins} bins")
                 # define axis ranges (one extra bin so the overflow line at x=max is visible)
                 bin_width = (max - min) / nbins
                 hframe = ROOT.TH1F("hframe", "", nbins + 1, min, max + bin_width)
@@ -468,13 +501,17 @@ for collection in collections:
 
                 color_numerator = 7
                 for sample in list(samples_dict.keys()):
-                    print(sample, f"h_{main_var}_{presel_steps_arr[num]}")
+                    hist_name = f"h_{var_dict[main_var][4+num]}"
+                    print(f"\t{sample} {hist_name}")
                     color_numerator -= 1
                     if color_numerator == 1:  # skip kBlack (reserved for data)
                         color_numerator = 9
                     file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                     f = ROOT.TFile(f"{file_path}_{samples_dict[sample][1]}")
-                    h = f.Get(f"h_{main_var}_{presel_steps_arr[num]}")
+                    h = f.Get(hist_name)
+                    if h is None:
+                        print(f"\t\tWARNING: histogram {hist_name} not found in {file_path}_{samples_dict[sample][1]}")
+                        continue
                     h.SetDirectory(0)
                     f.Close()
                     fold_overflow(h)
@@ -505,7 +542,7 @@ for collection in collections:
                 pave.SetBorderSize(0)
                 pave.SetTextAlign(12)
                 pave.SetTextSize(0.025)
-                pave.AddText(f"collection = {collection}")
+                pave.AddText(f"Collection = {collection}")
                 pave.AddText("Depth: 0 mm")
                 pave.AddText(presel_steps_arr[num])
                 pave.Draw()
@@ -517,14 +554,20 @@ for collection in collections:
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
 
+        # Skip profile sections if already done for this collection
+        if _profiles_done:
+            garbage_protect_list.clear()
+            continue
+        _profiles_done = True
+
         # -----------------------------------------------------------------
-        # Profile plot: mean sigma(pT)/pT  vs  pT  for each sample
+        # Profile plot: mean sigma(pT)/pT  vs  pT  (full cutflow)
         # -----------------------------------------------------------------
         print("  Profile: mean sigma(pT)/pT vs pT")
         pt_lo, pt_hi, pt_nbins = 200, 12500, 123
@@ -551,19 +594,6 @@ for collection in collections:
         leg_prof.SetFillStyle(0)
         leg_prof.SetTextFont(42)
 
-        if collection == 'matched_muon':
-            prof_pt_branch = 'muon_fromGenTrack_Pt'
-            prof_ptErr_branch = 'muon_fromGenTrack_PtErr'
-        elif collection == 'tuneP':
-            prof_pt_branch = 'muon_tuneP_Pt'
-            prof_ptErr_branch = 'muon_tuneP_PtErr'
-        elif collection == 'track':
-            prof_pt_branch = 'track_pt'
-            prof_ptErr_branch = 'track_ptErr'
-        else:
-            prof_pt_branch = 'muon_pt'
-            prof_ptErr_branch = 'muon_ptErr'
-
         color_numerator = 7
         for sample in list(samples_dict.keys()):
             color_numerator -= 1
@@ -575,23 +605,9 @@ for collection in collections:
                 continue
             df = ROOT.RDataFrame("tree", full_path)
 
-            df2 = (df
-            .Define("pt_argmax", f"{prof_pt_branch}.size()>0 ? int(std::distance({prof_pt_branch}.begin(), std::max_element({prof_pt_branch}.begin(), {prof_pt_branch}.end()))) : -1")
-            .Define("pt_max",    f"pt_argmax>=0 ? {prof_pt_branch}[pt_argmax] : -999.")
-            .Define("ptErr_abs", f"pt_argmax>=0 ? {prof_ptErr_branch}[pt_argmax] : -999.")
-            .Define("ptErr_ratio",
-                    "pt_argmax>=0 && pt_max>0 ? ptErr_abs/pt_max : -999.")
-            )
+            df_cut = get_cutflow_df(df, collection, region)
 
-            df_valid = df2.Filter(
-            "pt_argmax>=0 && pt_max>0"
-            " && ptErr_abs>0 && ptErr_abs<9000"
-            " && ptErr_ratio>0 && ptErr_ratio<9000"
-            " && std::isfinite(ptErr_ratio)"
-            )
-
-
-            prof = df_valid.Profile1D((f"prof_ptErr_{sample}", "", pt_nbins, pt_lo, pt_hi), "pt_max", "ptErr_ratio")
+            prof = df_cut.Profile1D((f"prof_ptErr_{sample}", "", pt_nbins, pt_lo, pt_hi), "highpt_pt", "highpt_ptErrPerPt")
             garbage_protect_list.append(prof)
 
             is_data = samples_dict[sample][0] == 'Data'
@@ -631,137 +647,13 @@ for collection in collections:
         leg_prof.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrRatio_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrRatio_vs_pT.pdf")
         del c
         del hframe_prof
 
         # -----------------------------------------------------------------
-        # Quality profile: mean sigma(pT)/pT vs pT for quality objects
-        # (chi2/ndof < 35 && nhits > 7)
-        # -----------------------------------------------------------------
-        if collection != 'tuneP':  # tuneP has no chi2/ndof/nhits branches
-            print("  Quality profile: mean sigma(pT)/pT vs pT (quality cuts)")
-            pt_lo_q, pt_hi_q, pt_nbins_q = 200, 12500, 123
-
-            c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-            c.SetLeftMargin(0.153)
-            c.SetRightMargin(0.1)
-            c.SetLogy(True)
-
-            hframe_prof_q = ROOT.TH1F("hframe_prof_q", "", pt_nbins_q, pt_lo_q, pt_hi_q)
-            hframe_prof_q.SetStats(False)
-            hframe_prof_q.GetXaxis().SetTitle("Leading muon p_{T} [GeV] (quality cuts)")
-            hframe_prof_q.GetYaxis().SetTitle("Mean #sigma(p_{T}) / p_{T}")
-            hframe_prof_q.GetXaxis().SetLabelSize(0.04)
-            hframe_prof_q.GetYaxis().SetLabelSize(0.04)
-            hframe_prof_q.GetXaxis().SetMaxDigits(3)
-            hframe_prof_q.GetXaxis().SetNdivisions(510)
-            hframe_prof_q.SetMinimum(1e-2)
-            hframe_prof_q.SetMaximum(1e1)
-            hframe_prof_q.Draw()
-
-            leg_prof_q = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
-            leg_prof_q.SetBorderSize(0)
-            leg_prof_q.SetFillStyle(0)
-            leg_prof_q.SetTextFont(42)
-
-            if collection == 'matched_muon':
-                prof_pt_br = 'muon_fromGenTrack_Pt'
-                prof_ptErr_br = 'muon_fromGenTrack_PtErr'
-                prof_chi2_br = 'muon_fromGenTrack_Chi2'
-                prof_ndof_br = 'muon_fromGenTrack_Ndof'
-                prof_nhits_br = 'muon_fromGenTrack_NumValidHits'
-            elif collection == 'track':
-                prof_pt_br = 'track_pt'
-                prof_ptErr_br = 'track_ptErr'
-                prof_chi2_br = 'track_chi2'
-                prof_ndof_br = 'track_ndof'
-                prof_nhits_br = 'track_numberOfValidHits'
-            else:  # muon
-                prof_pt_br = 'muon_pt'
-                prof_ptErr_br = 'muon_ptErr'
-                prof_chi2_br = 'muon_chi2'
-                prof_ndof_br = 'muon_comb_ndof'
-                prof_nhits_br = 'muon_numberOfValidHits'
-
-            color_numerator = 7
-            for sample in list(samples_dict.keys()):
-                color_numerator -= 1
-                if color_numerator == 1:
-                    color_numerator = 9
-                file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-                full_path = f"{file_path}_{samples_dict[sample][1]}"
-                if not os.path.exists(full_path):
-                    continue
-                df = ROOT.RDataFrame("tree", full_path)
-
-                df2 = (df
-                .Define("chi2ndof_prof", f"ROOT::VecOps::Where({prof_ndof_br} != 0, {prof_chi2_br}/{prof_ndof_br}, 999.)")
-                .Define("qmask_prof", f"chi2ndof_prof < 35. && {prof_nhits_br} > 7")
-                .Define("pt_q", f"{prof_pt_br}[qmask_prof]")
-                .Define("ptErr_q", f"{prof_ptErr_br}[qmask_prof]")
-                .Define("pt_argmax_q", "pt_q.size()>0 ? int(std::distance(pt_q.begin(), std::max_element(pt_q.begin(), pt_q.end()))) : -1")
-                .Define("pt_max_q", "pt_argmax_q>=0 ? pt_q[pt_argmax_q] : -999.")
-                .Define("ptErr_abs_q", "pt_argmax_q>=0 ? ptErr_q[pt_argmax_q] : -999.")
-                .Define("ptErr_ratio_q", "pt_argmax_q>=0 && pt_max_q>0 ? ptErr_abs_q/pt_max_q : -999.")
-                )
-
-                df_valid = df2.Filter(
-                "pt_argmax_q>=0 && pt_max_q>0"
-                " && ptErr_abs_q>0 && ptErr_abs_q<9000"
-                " && ptErr_ratio_q>0 && ptErr_ratio_q<9000"
-                " && std::isfinite(ptErr_ratio_q)"
-                )
-
-                prof = df_valid.Profile1D((f"prof_ptErr_quality_{sample}", "", pt_nbins_q, pt_lo_q, pt_hi_q), "pt_max_q", "ptErr_ratio_q")
-                garbage_protect_list.append(prof)
-
-                is_data = samples_dict[sample][0] == 'Data'
-                is_cosmic_bkg = sample == "Cosmic Bkg"
-                col = ROOT.kBlack if is_data else color_numerator
-
-                p = prof.GetValue()
-                p.SetDirectory(0)
-                fold_overflow(p)
-                p.SetLineColor(col)
-                p.SetLineWidth(2)
-                p.SetMarkerColor(col)
-                if is_cosmic_bkg:
-                    p.SetFillColor(color_numerator)
-                    p.SetFillStyle(3004)
-                if is_data:
-                    p.SetMarkerStyle(20)
-                    p.SetMarkerSize(0.6)
-                    p.Draw("P SAME")
-                    leg_prof_q.AddEntry(p, sample, "p")
-                elif is_cosmic_bkg:
-                    p.SetMarkerStyle(0)
-                    p.Draw("HIST SAME")
-                    leg_prof_q.AddEntry(p, sample, "f")
-                else:
-                    p.SetMarkerStyle(0)
-                    p.Draw("HIST SAME")
-                    leg_prof_q.AddEntry(p, sample, "l")
-
-            pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
-            pave.SetFillColor(0)
-            pave.SetBorderSize(0)
-            pave.SetTextAlign(12)
-            pave.SetTextSize(0.025)
-            pave.AddText(f"collection = {collection}")
-            pave.AddText("quality cuts")
-            pave.Draw()
-            leg_prof_q.Draw()
-
-            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT_quality.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrRatio_vs_pT_quality.pdf")
-            del c
-            del hframe_prof_q
-
-        # -----------------------------------------------------------------
-        # Profile plot: mean sigma(pT)/pT^2  vs  pT  for each sample
+        # Profile plot: mean sigma(pT)/pT^2  vs  pT  (full cutflow)
         # -----------------------------------------------------------------
         print("  Profile: mean sigma(pT)/pT^2 vs pT")
         pt_lo2, pt_hi2, pt_nbins2 = 200, 12500, 123
@@ -788,19 +680,6 @@ for collection in collections:
         leg_prof2.SetFillStyle(0)
         leg_prof2.SetTextFont(42)
 
-        if collection == 'matched_muon':
-            prof_pt_branch2 = 'muon_fromGenTrack_Pt'
-            prof_ptErr_branch2 = 'muon_fromGenTrack_PtErr'
-        elif collection == 'tuneP':
-            prof_pt_branch2 = 'muon_tuneP_Pt'
-            prof_ptErr_branch2 = 'muon_tuneP_PtErr'
-        elif collection == 'track':
-            prof_pt_branch2 = 'track_pt'
-            prof_ptErr_branch2 = 'track_ptErr'
-        else:
-            prof_pt_branch2 = 'muon_pt'
-            prof_ptErr_branch2 = 'muon_ptErr'
-
         color_numerator = 7
         for sample in list(samples_dict.keys()):
             color_numerator -= 1
@@ -812,22 +691,9 @@ for collection in collections:
                 continue
             df = ROOT.RDataFrame("tree", full_path)
 
-            df2 = (df
-            .Define("pt_argmax2", f"{prof_pt_branch2}.size()>0 ? int(std::distance({prof_pt_branch2}.begin(), std::max_element({prof_pt_branch2}.begin(), {prof_pt_branch2}.end()))) : -1")
-            .Define("pt_max2",    f"pt_argmax2>=0 ? {prof_pt_branch2}[pt_argmax2] : -999.")
-            .Define("ptErr_abs2", f"pt_argmax2>=0 ? {prof_ptErr_branch2}[pt_argmax2] : -999.")
-            .Define("ptErr_ratio2",
-                    "pt_argmax2>=0 && pt_max2>0 ? ptErr_abs2/(pt_max2*pt_max2) : -999.")
-            )
+            df_cut = get_cutflow_df(df, collection, region)
 
-            df_valid = df2.Filter(
-            "pt_argmax2>=0 && pt_max2>0"
-            " && ptErr_abs2>0 && ptErr_abs2<9000"
-            " && ptErr_ratio2>0 && ptErr_ratio2<9000"
-            " && std::isfinite(ptErr_ratio2)"
-            )
-
-            prof = df_valid.Profile1D((f"prof_ptErrPerPt2_{sample}", "", pt_nbins2, pt_lo2, pt_hi2), "pt_max2", "ptErr_ratio2")
+            prof = df_cut.Profile1D((f"prof_ptErrPerPt2_{sample}", "", pt_nbins2, pt_lo2, pt_hi2), "highpt_pt", "highpt_ptErrPerPt2")
             garbage_protect_list.append(prof)
 
             is_data = samples_dict[sample][0] == 'Data'
@@ -867,135 +733,335 @@ for collection in collections:
         leg_prof2.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrPerPt2_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrPerPt2_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrPerPt2_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrPerPt2_vs_pT.pdf")
         del c
         del hframe_prof2
 
-        # -----------------------------------------------------------------
-        # Quality profile: mean sigma(pT)/pT^2 vs pT for quality objects
-        # (chi2/ndof < 35 && nhits > 7)
-        # -----------------------------------------------------------------
-        if collection != 'tuneP':
-            print("  Quality profile: mean sigma(pT)/pT^2 vs pT (quality cuts)")
-            pt_lo2q, pt_hi2q, pt_nbins2q = 200, 12500, 123
+        garbage_protect_list.clear()
 
-            c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-            c.SetLeftMargin(0.153)
-            c.SetRightMargin(0.1)
-            c.SetLogy(True)
+    # -----------------------------------------------------------------
+    # Object count profile: <N_obj> at each cutflow step from h2_cutflow_nobj
+    # -----------------------------------------------------------------
+    print("  Object count profile: <N_obj> at each cutflow step")
 
-            hframe_prof2q = ROOT.TH1F("hframe_prof2q", "", pt_nbins2q, pt_lo2q, pt_hi2q)
-            hframe_prof2q.SetStats(False)
-            hframe_prof2q.GetXaxis().SetTitle("Leading muon p_{T} [GeV] (quality cuts)")
-            hframe_prof2q.GetYaxis().SetTitle("Mean #sigma(p_{T}) / p_{T}^{2} [GeV^{-1}]")
-            hframe_prof2q.GetXaxis().SetLabelSize(0.04)
-            hframe_prof2q.GetYaxis().SetLabelSize(0.04)
-            hframe_prof2q.GetXaxis().SetMaxDigits(3)
-            hframe_prof2q.GetXaxis().SetNdivisions(510)
-            hframe_prof2q.SetMinimum(1e-6)
-            hframe_prof2q.SetMaximum(1e-1)
-            hframe_prof2q.Draw()
+    c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+    c.SetLeftMargin(0.153)
+    c.SetRightMargin(0.1)
 
-            leg_prof2q = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
-            leg_prof2q.SetBorderSize(0)
-            leg_prof2q.SetFillStyle(0)
-            leg_prof2q.SetTextFont(42)
+    hframe_nobj = ROOT.TH1F("hframe_nobj", "", 6, -0.5, 5.5)
+    hframe_nobj.SetStats(False)
+    hframe_nobj.GetXaxis().SetTitle("Cutflow step")
+    hframe_nobj.GetYaxis().SetTitle("<N_{obj}>")
+    hframe_nobj.GetXaxis().SetLabelSize(0.03)
+    hframe_nobj.GetYaxis().SetLabelSize(0.04)
+    hframe_nobj.SetMinimum(0)
+    hframe_nobj.SetMaximum(10)
+    hframe_nobj.Draw()
 
-            if collection == 'matched_muon':
-                prof_pt_br2 = 'muon_fromGenTrack_Pt'
-                prof_ptErr_br2 = 'muon_fromGenTrack_PtErr'
-                prof_chi2_br2 = 'muon_fromGenTrack_Chi2'
-                prof_ndof_br2 = 'muon_fromGenTrack_Ndof'
-                prof_nhits_br2 = 'muon_fromGenTrack_NumValidHits'
-            elif collection == 'track':
-                prof_pt_br2 = 'track_pt'
-                prof_ptErr_br2 = 'track_ptErr'
-                prof_chi2_br2 = 'track_chi2'
-                prof_ndof_br2 = 'track_ndof'
-                prof_nhits_br2 = 'track_numberOfValidHits'
-            else:  # muon
-                prof_pt_br2 = 'muon_pt'
-                prof_ptErr_br2 = 'muon_ptErr'
-                prof_chi2_br2 = 'muon_chi2'
-                prof_ndof_br2 = 'muon_comb_ndof'
-                prof_nhits_br2 = 'muon_numberOfValidHits'
+    leg_nobj = ROOT.TLegend(0.45, 0.65, 0.88, 0.9)
+    leg_nobj.SetBorderSize(0)
+    leg_nobj.SetFillStyle(0)
+    leg_nobj.SetTextFont(42)
 
-            color_numerator = 7
-            for sample in list(samples_dict.keys()):
-                color_numerator -= 1
-                if color_numerator == 1:
-                    color_numerator = 9
-                file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-                full_path = f"{file_path}_{samples_dict[sample][1]}"
-                if not os.path.exists(full_path):
-                    continue
-                df = ROOT.RDataFrame("tree", full_path)
+    labels_set = False
+    color_numerator = 7
+    for sample in list(samples_dict.keys()):
+        color_numerator -= 1
+        if color_numerator == 1:
+            color_numerator = 9
+        file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+        full_path = f"{file_path}_{samples_dict[sample][1]}"
+        if not os.path.exists(full_path):
+            continue
+        f = ROOT.TFile(full_path)
+        h2 = f.Get("h2_cutflow_nobj")
+        if not h2:
+            f.Close()
+            continue
 
-                df2 = (df
-                .Define("chi2ndof_prof2", f"ROOT::VecOps::Where({prof_ndof_br2} != 0, {prof_chi2_br2}/{prof_ndof_br2}, 999.)")
-                .Define("qmask_prof2", f"chi2ndof_prof2 < 35. && {prof_nhits_br2} > 7")
-                .Define("pt_q2", f"{prof_pt_br2}[qmask_prof2]")
-                .Define("ptErr_q2", f"{prof_ptErr_br2}[qmask_prof2]")
-                .Define("pt_argmax_q2", "pt_q2.size()>0 ? int(std::distance(pt_q2.begin(), std::max_element(pt_q2.begin(), pt_q2.end()))) : -1")
-                .Define("pt_max_q2", "pt_argmax_q2>=0 ? pt_q2[pt_argmax_q2] : -999.")
-                .Define("ptErr_abs_q2", "pt_argmax_q2>=0 ? ptErr_q2[pt_argmax_q2] : -999.")
-                .Define("ptErr_ratio_q2", "pt_argmax_q2>=0 && pt_max_q2>0 ? ptErr_abs_q2/(pt_max_q2*pt_max_q2) : -999.")
-                )
+        prof = h2.ProfileX(f"prof_nobj_{sample}")
+        prof.SetDirectory(0)
 
-                df_valid = df2.Filter(
-                "pt_argmax_q2>=0 && pt_max_q2>0"
-                " && ptErr_abs_q2>0 && ptErr_abs_q2<9000"
-                " && ptErr_ratio_q2>0 && ptErr_ratio_q2<9000"
-                " && std::isfinite(ptErr_ratio_q2)"
-                )
+        # Copy bin labels from original h2 (only once)
+        if not labels_set:
+            for b in range(1, h2.GetNbinsX() + 1):
+                label = h2.GetXaxis().GetBinLabel(b)
+                if label:
+                    hframe_nobj.GetXaxis().SetBinLabel(b, label)
+            labels_set = True
 
-                prof = df_valid.Profile1D((f"prof_ptErrPerPt2_quality_{sample}", "", pt_nbins2q, pt_lo2q, pt_hi2q), "pt_max_q2", "ptErr_ratio_q2")
-                garbage_protect_list.append(prof)
+        f.Close()
 
-                is_data = samples_dict[sample][0] == 'Data'
-                is_cosmic_bkg = sample == "Cosmic Bkg"
-                col = ROOT.kBlack if is_data else color_numerator
+        # Get mean at last bin for legend
+        last_bin = prof.GetNbinsX()
+        mean_last = prof.GetBinContent(last_bin)
 
-                p = prof.GetValue()
-                p.SetDirectory(0)
-                fold_overflow(p)
-                p.SetLineColor(col)
-                p.SetLineWidth(2)
-                p.SetMarkerColor(col)
-                if is_cosmic_bkg:
-                    p.SetFillColor(color_numerator)
-                    p.SetFillStyle(3004)
-                if is_data:
-                    p.SetMarkerStyle(20)
-                    p.SetMarkerSize(0.6)
-                    p.Draw("P SAME")
-                    leg_prof2q.AddEntry(p, sample, "p")
-                elif is_cosmic_bkg:
-                    p.SetMarkerStyle(0)
-                    p.Draw("HIST SAME")
-                    leg_prof2q.AddEntry(p, sample, "f")
-                else:
-                    p.SetMarkerStyle(0)
-                    p.Draw("HIST SAME")
-                    leg_prof2q.AddEntry(p, sample, "l")
+        is_data = samples_dict[sample][0] == "Data"
+        is_cosmic_bkg = sample == "Cosmic Bkg"
+        col = ROOT.kBlack if is_data else color_numerator
 
-            pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
-            pave.SetFillColor(0)
-            pave.SetBorderSize(0)
-            pave.SetTextAlign(12)
-            pave.SetTextSize(0.025)
-            pave.AddText(f"collection = {collection}")
-            pave.AddText("quality cuts")
-            pave.Draw()
-            leg_prof2q.Draw()
+        prof.SetLineColor(col)
+        prof.SetLineWidth(2)
+        prof.SetMarkerColor(col)
+        if is_cosmic_bkg:
+            prof.SetFillColor(color_numerator)
+            prof.SetFillStyle(3004)
+        if is_data:
+            prof.SetMarkerStyle(20)
+            prof.SetMarkerSize(0.6)
+            prof.Draw("P SAME")
+            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "p")
+        elif is_cosmic_bkg:
+            prof.SetMarkerStyle(0)
+            prof.Draw("HIST SAME")
+            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "f")
+        else:
+            prof.SetMarkerStyle(0)
+            prof.Draw("HIST SAME")
+            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "l")
 
-            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrPerPt2_vs_pT_quality.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}_profile_ptErrPerPt2_vs_pT_quality.pdf")
-            del c
-            del hframe_prof2q
+        garbage_protect_list.append(prof)
 
+    pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
+    pave.SetFillColor(0)
+    pave.SetBorderSize(0)
+    pave.SetTextAlign(12)
+    pave.SetTextSize(0.025)
+    pave.AddText(f"collection = {collection}")
+    pave.AddText("last cutflow bin value in legend")
+    pave.Draw()
+    leg_nobj.Draw()
+
+    CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_profile.png")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_profile.pdf")
+    del c
+    del hframe_nobj
+    garbage_protect_list.clear()
+
+    # -----------------------------------------------------------------
+    # Object count std dev: std(N_obj) at each cutflow step from h2_cutflow_nobj
+    # -----------------------------------------------------------------
+    print("  Object count std dev: std(N_obj) at each cutflow step")
+
+    c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+    c.SetLeftMargin(0.153)
+    c.SetRightMargin(0.1)
+
+    hframe_nobj_std = ROOT.TH1F("hframe_nobj_std", "", 6, -0.5, 5.5)
+    hframe_nobj_std.SetStats(False)
+    hframe_nobj_std.GetXaxis().SetTitle("Cutflow step")
+    hframe_nobj_std.GetYaxis().SetTitle("Std(N_{obj})")
+    hframe_nobj_std.GetXaxis().SetLabelSize(0.03)
+    hframe_nobj_std.GetYaxis().SetLabelSize(0.04)
+    hframe_nobj_std.SetMinimum(0)
+    hframe_nobj_std.SetMaximum(10)
+    hframe_nobj_std.Draw()
+
+    leg_nobj_std = ROOT.TLegend(0.45, 0.65, 0.88, 0.9)
+    leg_nobj_std.SetBorderSize(0)
+    leg_nobj_std.SetFillStyle(0)
+    leg_nobj_std.SetTextFont(42)
+
+    labels_set = False
+    color_numerator = 7
+    for sample in list(samples_dict.keys()):
+        color_numerator -= 1
+        if color_numerator == 1:
+            color_numerator = 9
+        file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+        full_path = f"{file_path}_{samples_dict[sample][1]}"
+        if not os.path.exists(full_path):
+            continue
+        f = ROOT.TFile(full_path)
+        h2 = f.Get("h2_cutflow_nobj")
+        if not h2:
+            f.Close()
+            continue
+
+        h2.SetDirectory(0)
+
+        # Copy bin labels from original h2 (only once)
+        if not labels_set:
+            for b in range(1, h2.GetNbinsX() + 1):
+                label = h2.GetXaxis().GetBinLabel(b)
+                if label:
+                    hframe_nobj_std.GetXaxis().SetBinLabel(b, label)
+            labels_set = True
+
+        f.Close()
+
+        # Build a TH1F with std dev for each x-bin
+        nx = h2.GetNbinsX()
+        h_std = ROOT.TH1F(f"h_std_nobj_{sample}", "", nx, h2.GetXaxis().GetXmin(), h2.GetXaxis().GetXmax())
+        h_std.SetDirectory(0)
+        for b in range(1, nx + 1):
+            proj = h2.ProjectionY(f"_py_std_{sample}_{b}", b, b)
+            h_std.SetBinContent(b, proj.GetStdDev())
+            del proj
+
+        # Get std at last bin for legend
+        std_last = h_std.GetBinContent(nx)
+
+        is_data = samples_dict[sample][0] == "Data"
+        is_cosmic_bkg = sample == "Cosmic Bkg"
+        col = ROOT.kBlack if is_data else color_numerator
+
+        h_std.SetLineColor(col)
+        h_std.SetLineWidth(2)
+        h_std.SetMarkerColor(col)
+        if is_cosmic_bkg:
+            h_std.SetFillColor(color_numerator)
+            h_std.SetFillStyle(3004)
+        if is_data:
+            h_std.SetMarkerStyle(20)
+            h_std.SetMarkerSize(0.6)
+            h_std.Draw("P SAME")
+            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "p")
+        elif is_cosmic_bkg:
+            h_std.SetMarkerStyle(0)
+            h_std.Draw("HIST SAME")
+            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "f")
+        else:
+            h_std.SetMarkerStyle(0)
+            h_std.Draw("HIST SAME")
+            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "l")
+
+        garbage_protect_list.append(h_std)
+
+    pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
+    pave.SetFillColor(0)
+    pave.SetBorderSize(0)
+    pave.SetTextAlign(12)
+    pave.SetTextSize(0.025)
+    pave.AddText(f"collection = {collection}")
+    pave.AddText("last cutflow bin value in legend")
+    pave.Draw()
+    leg_nobj_std.Draw()
+
+    CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_std.png")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_std.pdf")
+    del c
+    del hframe_nobj_std
+    garbage_protect_list.clear()
+
+    # -----------------------------------------------------------------
+    # N_obj distribution at each cutflow step (projection of each x-bin)
+    # -----------------------------------------------------------------
+    # Read one file first to determine binning and step labels
+    nobj_nbins, nobj_lo, nobj_hi = 20, 0, 20  # defaults
+    nobj_nx = 0
+    step_labels = {}
+    for sample in list(samples_dict.keys()):
+        file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+        full_path = f"{file_path}_{samples_dict[sample][1]}"
+        if not os.path.exists(full_path):
+            continue
+        f = ROOT.TFile(full_path)
+        h2 = f.Get("h2_cutflow_nobj")
+        if h2:
+            nobj_nbins = h2.GetNbinsY()
+            nobj_lo = h2.GetYaxis().GetXmin()
+            nobj_hi = h2.GetYaxis().GetXmax()
+            nobj_nx = h2.GetNbinsX()
+            for b in range(1, nobj_nx + 1):
+                lbl = h2.GetXaxis().GetBinLabel(b)
+                step_labels[b] = lbl if lbl else f"step{b}"
+        f.Close()
+        break
+
+    for step_bin in range(1, nobj_nx + 1):
+        step_label = step_labels.get(step_bin, f"step{step_bin}")
+        step_tag = step_label.replace(" ", "_").replace("#", "").replace("{", "").replace("}", "").replace("/", "over").replace("^", "").replace("<", "lt").replace(">", "gt").replace("|", "abs").replace(",", "").replace("(", "").replace(")", "").replace("=", "eq").replace("-", "m")
+        print(f"  N_obj distribution at cutflow step {step_bin}: {step_label}")
+
+        c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+        c.SetLeftMargin(0.153)
+        c.SetRightMargin(0.1)
+        c.SetLogy(True)
+
+        hframe_nobj_dist = ROOT.TH1F(f"hframe_nobj_dist_{step_bin}", "", nobj_nbins, nobj_lo, nobj_hi)
+        hframe_nobj_dist.SetStats(False)
+        hframe_nobj_dist.GetXaxis().SetTitle("N_{obj}")
+        hframe_nobj_dist.GetYaxis().SetTitle("Normalized Yields / Bin")
+        hframe_nobj_dist.GetXaxis().SetLabelSize(0.04)
+        hframe_nobj_dist.GetYaxis().SetLabelSize(0.04)
+        hframe_nobj_dist.SetMinimum(1e-5)
+        hframe_nobj_dist.SetMaximum(9.99)
+        hframe_nobj_dist.Draw()
+
+        leg_nobj_dist = ROOT.TLegend(0.55, 0.65, 0.88, 0.9)
+        leg_nobj_dist.SetBorderSize(0)
+        leg_nobj_dist.SetFillStyle(0)
+        leg_nobj_dist.SetTextFont(42)
+
+        color_numerator = 7
+        for sample in list(samples_dict.keys()):
+            color_numerator -= 1
+            if color_numerator == 1:
+                color_numerator = 9
+            file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+            full_path = f"{file_path}_{samples_dict[sample][1]}"
+            if not os.path.exists(full_path):
+                continue
+            f = ROOT.TFile(full_path)
+            h2 = f.Get("h2_cutflow_nobj")
+            if not h2:
+                f.Close()
+                continue
+
+            h2.SetDirectory(0)
+            f.Close()
+
+            proj = h2.ProjectionY(f"proj_nobj_s{step_bin}_{sample}", step_bin, step_bin)
+            proj.SetDirectory(0)
+
+            if proj.Integral() > 0:
+                proj.Scale(1.0 / proj.Integral())
+
+            is_data = samples_dict[sample][0] == "Data"
+            is_cosmic_bkg = sample == "Cosmic Bkg"
+            col = ROOT.kBlack if is_data else color_numerator
+
+            proj.SetLineColor(col)
+            proj.SetLineWidth(2)
+            proj.SetMarkerColor(col)
+            if is_cosmic_bkg:
+                proj.SetFillColor(color_numerator)
+                proj.SetFillStyle(3004)
+            if is_data:
+                proj.SetMarkerStyle(20)
+                proj.SetMarkerSize(0.6)
+                proj.Draw("P SAME")
+                leg_nobj_dist.AddEntry(proj, sample, "p")
+            elif is_cosmic_bkg:
+                proj.SetMarkerStyle(0)
+                proj.Draw("HIST SAME")
+                leg_nobj_dist.AddEntry(proj, sample, "f")
+            else:
+                proj.SetMarkerStyle(0)
+                proj.Draw("HIST SAME")
+                leg_nobj_dist.AddEntry(proj, sample, "l")
+
+            garbage_protect_list.append(proj)
+
+        pave = ROOT.TPaveText(0.18, 0.80, 0.42, 0.90, "NDC")
+        pave.SetFillColor(0)
+        pave.SetBorderSize(0)
+        pave.SetTextAlign(12)
+        pave.SetTextSize(0.025)
+        pave.AddText(f"collection = {collection}")
+        pave.AddText(f"cutflow step: {step_label}")
+        pave.Draw()
+        leg_nobj_dist.Draw()
+
+        CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_nobj_dist_{step_tag}.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_nobj_dist_{step_tag}.pdf")
+        del c
+        del hframe_nobj_dist
         garbage_protect_list.clear()
 
 print("Done!")
