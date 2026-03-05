@@ -5,13 +5,9 @@ import mplhep as hep
 ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Internal")
-#CMS.SetLumi(None)
-#CMS.SetEnergy(13.1, unit = '')
 
-os.makedirs("figures/presel_ch_skimmedNtuples", exist_ok=True)
-
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.6'
-collections = ['track', 'muon', 'matched_muon', 'tuneP']
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.7'
+collections = ['track', 'matched_muon', 'muon', 'tuneP']
 region = 'sr' # sr vr
 
 samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
@@ -24,58 +20,44 @@ samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinThet
                 }
 
 base_var_dict = {
-            "eta": [0, 25, -2.5, 2.5, 'eta_pretrigger', 'eta_trigger', 'eta_nminus1', 'eta_final', '#eta'],
-            "pt": [1, 500, 0, 5000, 'pt_pretrigger', 'pt_trigger', 'pt_nminus1', 'pt_final', 'p_{T} [GeV]'],
-            "phi": [2, 25, -3.15, 3.15, 'phi_pretrigger', 'phi_trigger', 'phi_nminus1', 'phi_final', '#phi'],
-            # "ntrack": [3, 20, 0, 20, None, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
-            "nseg": [4, 20, 0, 20, 'nseg_pretrigger', 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
-            "nhits": [5, 80, 0, 80, 'nhits_pretrigger', 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
-            "chi2ndof": [6, 100, 0, 100, 'chi2ndof_pretrigger', 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
-            "ptErrPerPt2": [7, 100, 0, 0.01, None, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
-            # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
-            "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
-            "ptErrPerPt2_quality_zoom": [14, 100, 0, 0.002, None, None, 'ptErrPerPt2_quality_nminus1_zoom', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
-            "ptErrPerPt_quality": [15, 50, 0, 10, None, None, 'ptErrPerPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
-            "pt_quality": [16, 500, 0, 5000, None, None, 'pt_quality_nminus1', None, 'p_{T} [GeV] (quality cuts)'],
-            # "ptErrPerPtVsPt_quality": [17, 50, 0, 10, None, None, 'ptErrPerPtVsPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
-            "ptErrPerPt_lowPt": [18, 50, 0, 10, None, 'ptErrPerPt_lowPt', 'ptErrPerPt_lowPt_nminus1', 'ptErrPerPt_lowPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} < 5 TeV)'],
-            "ptErrPerPt_highPt": [19, 50, 0, 10, None, 'ptErrPerPt_highPt', 'ptErrPerPt_highPt_nminus1', 'ptErrPerPt_highPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} > 5 TeV)'],
-            "ptErrPerPt2_lowPt": [20, 100, 0, 0.01, None, 'ptErrPerPt2_lowPt', 'ptErrPerPt2_lowPt_nminus1', 'ptErrPerPt2_lowPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} < 5 TeV)'],
-            "ptErrPerPt2_highPt": [21, 100, 0, 0.01, None, 'ptErrPerPt2_highPt', 'ptErrPerPt2_highPt_nminus1', 'ptErrPerPt2_highPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} > 5 TeV)'],
-            "ptErrPerPt2_pretrig": [22, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', None, None, None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            "nhits_highpt": [23, 80, 0, 80, None, None, None, 'nhits_highpt', 'N_{valid hits} (highest p_{T})'],
-            "chi2ndof_highpt": [24, 100, 0, 100, None, None, None, 'chi2ndof_highpt', '#chi^{2}/n_{DoF} (highest p_{T})'],
-            "ptErrPerPt2_highpt": [25, 100, 0, 0.01, None, None, None, 'ptErrPerPt2_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T})'],
-            "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
-            "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
-            "pt_highpt": [28, 500, 0, 5000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
+            # "eta": [0, 25, -2.5, 2.5, 'eta_trigger', 'eta_nminus1', 'eta_final', '#eta'],
+            # "pt": [1, 25, 0, 5000, 'pt_trigger', 'pt_nminus1', 'pT_final', 'p_{T} [GeV]'],
+            # "ntrack": [2, 20, 0, 20, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
+            # "nseg": [3, 20, 0, 20, 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
+            #"sumPt": [0, 250, 0, 5000, 'sumPt', 'sumPt_nminus1', 'sumPt_final', 'Summed p_{T} of Tracks/N_{Tracks}'],
+            "sumPtperPt": [0, 250, 0, 0.01, 'sumPtperPt', 'sumPtperPt_nminus1', 'sumPtperPt_final', 'N_{Tracks}/Summed p_{T} of Tracks'],
+            "sumPt": [1, 250, 0, 5000, 'sumPtquality', 'sumPtquality_nminus1', 'sumPtquality_final', 'Summed p_{T} of Tracks/N_{Tracks} (w/ quality)'],
+            # "ptErrPerPt2": [4, 100, 0, 0.01, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            # "ptErrPerPt2_zoom": [5, 100, 0, 0.0005, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            # "pTErrPerPtVsPt": [6, 50, 0, 10, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            # "pTErrPerPtVsPt_zoom": [7, 20, 0, 0.01, 'pTErrPerPtVsPt_zoom', 'pTErrPerPtVsPt_nminus1_zoom', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            # "ptErrPerPt2VsPt": [8, 50, 0, 10, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
             }
 
-track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, None, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
-                "track_validFraction": [9, 110, 0, 1.1, None, 'track_validFraction_trigger', 'track_validFraction_nminus1', 'track_validFraction_final', 'Track Valid Fraction'],
+track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
+                # "track_validFraction": [9, 110, 0, 1.1, 'track_validFraction_trigger', 'track_validFraction_nminus1', 'track_validFraction_final', 'Track Valid Fraction'],
+                # "track_chi2": [10, 99, 1, 100, 'track_chi2', 'track_chi2_nminus1', 'track_chi2_final', '#chi^{2}/n_{DoF}'],
                 }
 
-muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, None, 'muon_comb_ndof', 'muon_comb_ndof_nminus1', 'muon_comb_ndof_final', 'Combined n_{DoF}'],
-               # "muon_trkIso": [12, 100, 0, 1, None, 'muon_trkIso', 'muon_trkIso_nminus1', 'muon_trkIso_final', 'Track Isolation [GeV]'],
-               "muon_d0": [13, 200, -200, 200, None, 'muon_d0', 'muon_d0_nminus1', 'muon_d0_final', 'd_{0} [cm]'],
-               "muon_dZ": [14, 200, -500, 500, None, 'muon_dZ', 'muon_dZ_nminus1', 'muon_dZ_final', 'd_{Z} [cm]'],
-               "muon_validFractionTrackerHits": [15, 110, 0, 1.1, None, 'muon_validFractionTrackerHits', 'muon_validFractionTrackerHits_nminus1', 'muon_validFractionTrackerHits_final', 'Valid Fraction Tracker Hits'],
-               "muon_numberOfValidHits": [16, 80, 0, 80, None, 'muon_numberOfValidHits', 'muon_numberOfValidHits_nminus1', 'muon_numberOfValidHits_final', '# of Valid Hits'],
-               # I removed these at v4.0.4 becasue they werent helpful at all
-               #"muon_isLoose": [17, 2, 0, 2, None, 'muon_isLoose', 'muon_isLoose_nminus1', 'muon_isLoose_final', 'isLoose'],
-               #"muon_isMedium": [18, 2, 0, 2, None, 'muon_isMedium', 'muon_isMedium_nminus1', 'muon_isMedium_final', 'isMedium'],
-               #"muon_isTight": [19, 2, 0, 2, None, 'muon_isTight', 'muon_isTight_nminus1', 'muon_isTight_final', 'isTight'],
-               #"muon_isTrackerHighPtMuon": [20, 2, 0, 2, None, 'muon_isTrackerHighPtMuon', 'muon_isTrackerHighPtMuon_nminus1', 'muon_isTrackerHighPtMuon_final', 'isTrackerHighPt'],
-               #"muon_isHighPtMuon": [21, 2, 0, 2, None, 'muon_isHighPtMuon', 'muon_isHighPtMuon_nminus1', 'muon_isHighPtMuon_final', 'isHighPt'],
-               #"muon_type": [22, 32, 0, 32, None, 'muon_type', 'muon_type_nminus1', 'muon_type_final', 'Muon Type'],
-               #"muon_quality": [23, 16, 0, 16, None, 'muon_quality', 'muon_quality_nminus1', 'muon_quality_final', 'Muon Quality'],
+muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_ndof_nminus1', 'muon_comb_ndof_final', 'Combined n_{DoF}'],
+            #    "muon_trkIso": [12, 100, 0, 1, 'muon_trkIso', 'muon_trkIso_nminus1', 'muon_trkIso_final', 'Track Isolation [GeV]'],
+            #    "muon_d0": [13, 200, -200, 200, 'muon_d0', 'muon_d0_nminus1', 'muon_d0_final', 'd_{0} [cm]'],
+            #    "muon_dZ": [14, 200, -500, 500, 'muon_dZ', 'muon_dZ_nminus1', 'muon_dZ_final', 'd_{Z} [cm]'],
+            #    "muon_validFractionTrackerHits": [15, 110, 0, 1.1, 'muon_validFractionTrackerHits', 'muon_validFractionTrackerHits_nminus1', 'muon_validFractionTrackerHits_final', 'Valid Fraction Tracker Hits'],
+            #    "muon_numberOfValidHits": [16, 80, 0, 80, 'muon_numberOfValidHits', 'muon_numberOfValidHits_nminus1', 'muon_numberOfValidHits_final', '# of Valid Hits'],
+            #    "muon_isLoose": [17, 2, 0, 2, 'muon_isLoose', 'muon_isLoose_nminus1', 'muon_isLoose_final', 'isLoose'],
+            #    "muon_isMedium": [18, 2, 0, 2, 'muon_isMedium', 'muon_isMedium_nminus1', 'muon_isMedium_final', 'isMedium'],
+            #    "muon_isTight": [19, 2, 0, 2, 'muon_isTight', 'muon_isTight_nminus1', 'muon_isTight_final', 'isTight'],
+            #    "muon_isTrackerHighPtMuon": [20, 2, 0, 2, 'muon_isTrackerHighPtMuon', 'muon_isTrackerHighPtMuon_nminus1', 'muon_isTrackerHighPtMuon_final', 'isTrackerHighPt'],
+            #    "muon_isHighPtMuon": [21, 2, 0, 2, 'muon_isHighPtMuon', 'muon_isHighPtMuon_nminus1', 'muon_isHighPtMuon_final', 'isHighPt'],
+            #    "muon_type": [22, 32, 0, 32, 'muon_type', 'muon_type_nminus1', 'muon_type_final', 'Muon Type'],
+            #    "muon_quality": [23, 16, 0, 16, 'muon_quality', 'muon_quality_nminus1', 'muon_quality_final', 'Muon Quality'],
                }
 
 matched_muon_var_dict={
-               "muon_fromGenTrack_NumValidHits": [11, 77, 0, 77, None, 'muon_fromGenTrack_NumValidHits', 'muon_fromGenTrack_NumValidHits_nminus1', 'muon_fromGenTrack_NumValidHits_final', '# of Valid Hits'],
-               "muon_fromGenTrack_ValidFraction": [12, 110, 0, 1.1, None, 'muon_fromGenTrack_ValidFraction', 'muon_fromGenTrack_ValidFraction_nminus1', 'muon_fromGenTrack_ValidFraction_final', 'Valid Fraction'],
+               "muon_fromGenTrack_NumValidHits": [11, 77, 0, 77, 'muon_fromGenTrack_NumValidHits', 'muon_fromGenTrack_NumValidHits_nminus1', 'muon_fromGenTrack_NumValidHits_final', '# of Valid Hits'],
+            #    "muon_fromGenTrack_ValidFraction": [12, 110, 0, 1.1, 'muon_fromGenTrack_ValidFraction', 'muon_fromGenTrack_ValidFraction_nminus1', 'muon_fromGenTrack_ValidFraction_final', 'Valid Fraction'],
+            #    "muon_fromGenTrack_Chi2": [13, 99, 1, 100, 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Chi2_nminus1', 'muon_fromGenTrack_Chi2_final', '#chi^{2}/n_{DoF}'],
                }
 
 tuneP_var_dict={
@@ -160,10 +142,8 @@ for collection in collections:
     for main_var in list(var_dict.keys()):
         print(f"Making {main_var} plots")
         # For variables that aren't current preselection variables, only run nmin1 step
-        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom', 'ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality', 'ptErrPerPt_lowPt', 'ptErrPerPt_highPt', 'ptErrPerPt2_lowPt', 'ptErrPerPt2_highPt'):
-            for num in range(2, 3):
-                if main_var in ('ptErrPerPt2_quality', 'ptErrPerPt2_quality_zoom', 'ptErrPerPt_quality', 'pt_quality') and collection == 'tuneP':
-                    continue  # tuneP has no chi2/ndof/nhits branches
+        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom') or main_var == 'sumPt':
+            for num in range(1, 2):
                 print(f"Making {var_dict[main_var][4+num]} plot")
                 nbins = var_dict[main_var][1]
                 min = var_dict[main_var][2]
@@ -203,7 +183,61 @@ for collection in collections:
                     df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                     h = 0
 
-                    if main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom'):
+                    if main_var == 'track_chi2':
+                        df2 = df.Define( "ratio", "ROOT::VecOps::Where(track_ndof != 0, track_chi2/track_ndof, -1.)" )
+                        h = df2.Histo1D(
+                            (f"h_ratio_{sample}", "", nbins, min, max),
+                            "ratio"
+                        )
+                    elif main_var == 'muon_fromGenTrack_Chi2':
+                        df2 = df.Define( "ratio", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, -1.)" )
+                        h = df2.Histo1D(
+                            (f"h_ratio_{sample}", "", nbins, min, max),
+                            "ratio"
+                        )
+                    elif main_var in ['sumPt', 'sumPtquality']:
+                        if collection == 'matched_muon': 
+                            coll_tmp = 'muon_fromGenTrack'
+                            coll_tmp_2 = 'muon'
+                            main_var_tmp = 'Pt'
+                            validHits_tmp = 'NumValidHits'
+                            chi2_ndof_tmp = ['Chi2', 'Ndof']
+                        elif collection == 'tuneP':
+                            coll_tmp = 'muon_tuneP'
+                            coll_tmp_2 = 'muon'
+                            main_var_tmp = 'Pt'
+                            validHits_tmp = 'numberOfValidHits'
+                            chi2_ndof_tmp = ['comb_chi2', 'comb_ndof']
+                        elif collection == 'muon':
+                            coll_tmp = 'muon'
+                            coll_tmp_2 = 'muon'
+                            main_var_tmp = 'pt'
+                            validHits_tmp = 'numberOfValidHits'
+                            chi2_ndof_tmp = ['comb_chi2', 'comb_ndof']
+                        else: 
+                            coll_tmp = collection
+                            coll_tmp_2 = collection
+                            main_var_tmp = 'pt'
+                            validHits_tmp = 'numberOfValidHits'
+                            chi2_ndof_tmp = ['chi2', 'ndof']
+                        if var_dict[main_var][0] == 1:
+                            df2 = (
+                                df.Define("mask", f"{coll_tmp}_{chi2_ndof_tmp[0]}/{coll_tmp}_{chi2_ndof_tmp[1]} < 35 & {coll_tmp}_{validHits_tmp} > 7")
+                                .Define("n_pass", "Sum(mask)")
+                                .Define("sum_pT", f"n_pass > 0 ? Sum({coll_tmp}_{main_var_tmp}[mask]) : -1.")
+                                .Define("avg_pT", "n_pass > 0 ? sum_pT/n_pass : -1.")
+                            )
+                            h = df2.Histo1D(
+                                (f"h_sum_pT_{sample}", "", nbins, min, max),
+                                "avg_pT"
+                            )
+                        elif var_dict[main_var][0] == 0:
+                            df2 = df.Define( "sum_pT", f"Sum({coll_tmp}_{main_var_tmp})/{coll_tmp_2}_n" )
+                            h = df2.Histo1D(
+                                (f"h_sum_pT_{sample}", "", nbins, min, max),
+                                "sum_pT"
+                            )
+                    elif main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom'):
                         if collection == 'matched_muon':
                             coll_tmp = 'muon_fromGenTrack'
                             main_var_tmp = 'PtErr'
@@ -346,17 +380,15 @@ for collection in collections:
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
                 del h
                 del histo
-        elif main_var in ('pTErrPerPtVsPt', 'ptErrPerPt2VsPt', 'ptErrPerPtVsPt_quality'):
-            if main_var == 'ptErrPerPtVsPt_quality' and collection == 'tuneP':
-                continue  # tuneP has no chi2/ndof/nhits branches
-            num = 2  # nminus1 step index
+        elif main_var == 'pTErrPerPtVsPt' or main_var == 'pTErrPerPtVsPt_zoom' or main_var == 'ptErrPerPt2VsPt' or main_var == 'sumPtperPt':
+            num = 1
             nbins = var_dict[main_var][1]
             min = var_dict[main_var][2]
             max = var_dict[main_var][3]
@@ -366,10 +398,10 @@ for collection in collections:
             c.SetRightMargin(0.2)
 
             # define axis ranges
-            hframe = ROOT.TH2F("hframe", "", 1230, 200, 12500, nbins, min, max)
+            hframe = ROOT.TH2F("hframe", "", 800, 200, 10000, nbins, min, max)
             hframe.SetStats(False)
-            hframe.GetXaxis().SetTitle('p_{T} [GeV]')
-            hframe.GetYaxis().SetTitle(var_dict[main_var][8])
+            hframe.GetXaxis().SetTitle('Leading Object p_{T} [GeV]')
+            hframe.GetYaxis().SetTitle(var_dict[main_var][7])
             hframe.GetXaxis().SetLabelSize(0.04)
             hframe.GetYaxis().SetLabelSize(0.04)
             hframe.GetXaxis().SetMaxDigits(3)
@@ -387,49 +419,67 @@ for collection in collections:
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                 h = 0
+                
+                if main_var != 'sumPtperPt':
+                    if collection == 'matched_muon':
+                        coll_tmp = 'muon_fromGenTrack'
+                        main_var_tmp = 'PtErr'
+                        pT_tmp = 'Pt'
+                    elif collection == 'tuneP':
+                        coll_tmp = 'muon_tuneP'
+                        main_var_tmp = 'PtErr'
+                        pT_tmp = 'Pt'
+                    else:
+                        coll_tmp = collection
+                        main_var_tmp = 'ptErr'
+                        pT_tmp = 'pt'
 
-                if collection == 'matched_muon':
-                    coll_tmp = 'muon_fromGenTrack'
-                    main_var_tmp = 'PtErr'
-                    pT_tmp = 'Pt'
-                elif collection == 'tuneP':
-                    coll_tmp = 'muon_tuneP'
-                    main_var_tmp = 'PtErr'
-                    pT_tmp = 'Pt'
-                else:
-                    coll_tmp = collection
-                    main_var_tmp = 'ptErr'
-                    pT_tmp = 'pt'
-
-                pt_branch = f"{coll_tmp}_{pT_tmp}"
-                ptErr_branch = f"{coll_tmp}_{main_var_tmp}"
-
-                if main_var == 'ptErrPerPtVsPt_quality':
-                    if collection == 'track':
-                        chi2_br, ndof_br, nhits_br = 'track_chi2', 'track_ndof', 'track_numberOfValidHits'
-                    elif collection == 'matched_muon':
-                        chi2_br, ndof_br, nhits_br = 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Ndof', 'muon_fromGenTrack_NumValidHits'
-                    else:  # muon
-                        chi2_br, ndof_br, nhits_br = 'muon_chi2', 'muon_comb_ndof', 'muon_numberOfValidHits'
-                    df2 = (df
-                    .Define("chi2ndof_2d", f"ROOT::VecOps::Where({ndof_br} != 0, {chi2_br}/{ndof_br}, 999.)")
-                    .Define("qmask_2d", f"chi2ndof_2d < 35. && {nhits_br} > 7")
-                    .Define("pt_q", f"{pt_branch}[qmask_2d]")
-                    .Define("ptErr_q", f"{ptErr_branch}[qmask_2d]")
-                    .Define("imax", "pt_q.size()>0 ? int(std::distance(pt_q.begin(), std::max_element(pt_q.begin(), pt_q.end()))) : -1")
-                    .Define("pt_max", "imax>=0 ? pt_q[imax] : -999.")
-                    .Define("ratio", "imax>=0 && pt_q[imax]>0 ? ptErr_q[imax]/pt_q[imax] : -999.")
-                    )
-                else:
+                    pt_branch = f"{coll_tmp}_{pT_tmp}"
+                    ptErr_branch = f"{coll_tmp}_{main_var_tmp}"
                     df2 = (df
                     .Define("imax", f"{pt_branch}.size()>0 ? int(std::distance({pt_branch}.begin(), std::max_element({pt_branch}.begin(), {pt_branch}.end()))) : -1")
                     .Define("pt_max", f"imax>=0 ? {pt_branch}[imax] : -999.")
                     .Define("ratio",  f"imax>=0 && {pt_branch}[imax]>0 ? {ptErr_branch}[imax]/{pt_branch}[imax] : -999.")
                     )
 
-                df2 = df2.Filter("imax>=0 && pt_max>0 && ratio>0 && ratio<9000 && std::isfinite(ratio)")
-                h = df2.Histo2D(("h2","",1230,200,12500,200,0,10), "pt_max", "ratio")
+                    df2 = df2.Filter("imax>=0 && pt_max>0 && ratio>0 && ratio<9000 && std::isfinite(ratio)")
+                    h = df2.Histo2D(("h2","",1230,200,12500,200,0,10), "pt_max", "ratio")
+                else:
+                    if collection == 'matched_muon': 
+                        coll_tmp = 'muon_fromGenTrack'
+                        coll_tmp_2 = 'muon'
+                        main_var_tmp = 'Pt'
+                        validHits_tmp = 'NumValidHits'
+                        chi2_ndof_tmp = ['Chi2', 'Ndof']
+                    elif collection == 'tuneP':
+                        coll_tmp = 'muon_tuneP'
+                        coll_tmp_2 = 'muon'
+                        main_var_tmp = 'Pt'
+                        validHits_tmp = 'numberOfValidHits'
+                        chi2_ndof_tmp = ['comb_chi2', 'comb_ndof']
+                    elif collection == 'muon':
+                        coll_tmp = 'muon'
+                        coll_tmp_2 = 'muon'
+                        main_var_tmp = 'pt'
+                        validHits_tmp = 'numberOfValidHits'
+                        chi2_ndof_tmp = ['comb_chi2', 'comb_ndof']
+                    else: 
+                        coll_tmp = collection
+                        coll_tmp_2 = collection
+                        main_var_tmp = 'pt'
+                        validHits_tmp = 'numberOfValidHits'
+                        chi2_ndof_tmp = ['chi2', 'ndof']
 
+                    df2 = (
+                                df.Define("mask", f"{coll_tmp}_{chi2_ndof_tmp[0]}/{coll_tmp}_{chi2_ndof_tmp[1]} < 35 & {coll_tmp}_{validHits_tmp} > 7")
+                                .Define("n_pass", "Sum(mask)")
+                                .Define("sum_pT", f"n_pass > 0 ? Sum({coll_tmp}_{main_var_tmp}[mask]) : -1.")
+                                .Define("avg_pT", "n_pass > 0 ? n_pass/sum_pT : -1.")
+                    )
+                    h = df2.Histo2D(
+                        (f"h_ratio_{sample}", "", 800, 200, 10000, nbins, min, max),
+                        f"{coll_tmp}_{main_var_tmp}", "avg_pT"
+                    )
 
                 garbage_protect_list.append(h)
                 histo = h.GetValue()
@@ -444,11 +494,12 @@ for collection in collections:
                 #h.Draw("P SAME")
                 #leg.AddEntry(histo, sample, "l")
 
-                pave = ROOT.TPaveText(0.25, 0.80, 0.46, 0.90, "NDC")
+                pave = ROOT.TPaveText(0.25, 0.75, 0.46, 0.90, "NDC")
                 pave.SetFillColor(0)
                 pave.SetBorderSize(0)
                 pave.SetTextAlign(12)  # left aligned
                 pave.SetTextSize(0.025)
+                pave.AddText(base_path[-6:])
                 pave.AddText(f"collection = {collection}")
                 pave.AddText("Depth: 0 mm")
                 pave.AddText(presel_steps_arr[num])
@@ -456,19 +507,36 @@ for collection in collections:
                 pave.Draw()
                 #leg.Draw()
 
+                f = ROOT.TF1("f", "1/x", 0, 10000)
+                f_2 = ROOT.TF1("f_2", "2/x", 0, 10000)
+                f_3 = ROOT.TF1("f_1.5", "1.5/(x-5000)", 0, 10000)
+
+                # Style
+                f.SetLineColor(ROOT.kRed)
+                f.SetLineWidth(1)
+
+                f_2.SetLineColor(ROOT.kRed)
+                f_2.SetLineWidth(1)
+
+                f_3.SetLineColor(ROOT.kRed)
+                f_3.SetLineWidth(1)
+
+                # Draw on top
+                f.Draw("SAME")
+                f_2.Draw("SAME")
+                #f_3.Draw("SAME")
+
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
                 sample_tag = sample.replace("{", "").replace("}", "").replace(" = ", "_").replace(" ", "_").replace("_TeV", "TeV")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
 
             del c
             del hframe
             del h
             del histo
-        else: # For variables with pre-existing histograms, run all available steps
-            for num in range(4):
-                if var_dict[main_var][4+num] is None:
-                    continue
+        else: # For variables that are current preselection variables, run trigger, nminus1, and final steps
+            for num in range(3):
                 print(f"Making {var_dict[main_var][4+num]} plot")
                 nbins = var_dict[main_var][1]
                 min = var_dict[main_var][2]
@@ -554,8 +622,8 @@ for collection in collections:
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
@@ -647,8 +715,8 @@ for collection in collections:
         leg_prof.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrRatio_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrRatio_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_profile_ptErrRatio_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_profile_ptErrRatio_vs_pT.pdf")
         del c
         del hframe_prof
 

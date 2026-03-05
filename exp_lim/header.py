@@ -1434,9 +1434,11 @@ def Inter(g1,g2, interpolationType="exp"):
             listOfCrossings.append( (xcrossing,ycrossing) )
 
     if len(listOfCrossings)==0:
-        return (-1,-1)
-
-    return listOfCrossings[0]
+        return (-1,-1), (-1,-1)
+    if len(listOfCrossings)==1:
+        return listOfCrossings[0], (-1,-1)
+    else:
+        return listOfCrossings[0], listOfCrossings[-1]
 
     # xaxisrange = g1.GetXaxis().GetXmax()-g1.GetXaxis().GetXmin()
     # xaxismin = g1.GetXaxis().GetXmin()
