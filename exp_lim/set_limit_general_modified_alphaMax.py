@@ -81,6 +81,7 @@ num_rate = options.num_rate
 total_theory_xsec_list = []
 labels = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2.0e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.40e-08, 3.40e-08, 4.40e-08, 5.40e-08, 6.40e-08, 7.40e-08, 8.40e-08, 9.40e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07]
 exp_lim = []
+closed_exp_lim = []
 exp_lim_upper = []
 exp_lim_lower = []
 
@@ -401,27 +402,27 @@ for theory_xsecs in total_theory_xsec_list:
     expectedMassLimit,expectedCrossLimit = Inter(g_mclimit,graphWP) #if len(Inter(g_mclimit,graphWP)) > 0 else -1.0
     upLimit,upXsectionLim = Inter(g_mcminus,graphWP) if len(Inter(g_mcminus,graphWP)) > 0 else -1.0
     lowLimit,lowXsectionLim = Inter(g_mcplus,graphWP) if len(Inter(g_mcplus,graphWP)) > 0 else -1.0
+    print(expectedMassLimit[0])
+    a,expectedCrossLimitAt1800 = Inter(g_mclimit,graphWPFixedAt1800)[:2] #if len(Inter(g_mclimit,graphWPFixedAt1800)) > 0 else -1.0
+    a,upXsectionLimAt1800 = Inter(g_mcminus,graphWPFixedAt1800)[:2] if len(Inter(g_mcminus,graphWPFixedAt1800)) > 0 else -1.0
+    a,lowXsectionLimAt1800 = Inter(g_mcplus,graphWPFixedAt1800)[:2] if len(Inter(g_mcplus,graphWPFixedAt1800)) > 0 else -1.0
 
-    a,expectedCrossLimitAt1800 = Inter(g_mclimit,graphWPFixedAt1800) #if len(Inter(g_mclimit,graphWPFixedAt1800)) > 0 else -1.0
-    a,upXsectionLimAt1800 = Inter(g_mcminus,graphWPFixedAt1800) if len(Inter(g_mcminus,graphWPFixedAt1800)) > 0 else -1.0
-    a,lowXsectionLimAt1800 = Inter(g_mcplus,graphWPFixedAt1800) if len(Inter(g_mcplus,graphWPFixedAt1800)) > 0 else -1.0
 
-
-    expLine = TLine(expectedMassLimit,g_mclimit.GetMinimum(),expectedMassLimit,expectedCrossLimit)
+    expLine = TLine(expectedMassLimit[0],g_mclimit.GetMinimum(),expectedMassLimit[0],expectedMassLimit[1])
     expLine.SetLineStyle(2)
 
     #expLine.Draw()
 
     if options.drawIntersection:
-        expLineLabel = TPaveText(expectedMassLimit-300, expectedCrossLimit*2, expectedMassLimit+300, expectedCrossLimit*15, "NB")
+        expLineLabel = TPaveText(expectedMassLimit[0]-300, expectedMassLimit[1]*2, expectedMassLimit[0]+300, expectedMassLimit[1]*15, "NB")
         expLineLabel.SetFillColorAlpha(kWhite,0)
-        expLineLabel.AddText(str(round(expectedMassLimit,2))+' TeV')
+        expLineLabel.AddText(str(round(expectedMassLimit[0],2))+' TeV')
         expLineLabel.Draw()
 
-    print('Expected mass limit: '+str(round(expectedMassLimit,3)) + '\\twoErr{'+str(round(upLimit-expectedMassLimit,3)) +'}{'+str(round(expectedMassLimit-lowLimit,3)) + '} \\TeV')
-    print('Expected xsection limit at excluded mass: '+str(round(expectedCrossLimit,6)) + ' +'+str(round(expectedCrossLimit-upXsectionLim,6)) +' -'+str(round(lowXsectionLim-expectedCrossLimit,6)) + ' pb') 
-    print('Expected xsection limit @1800GeV: '+str(round(expectedCrossLimitAt1800,6)) + ' +'+str(round(expectedCrossLimitAt1800-upXsectionLimAt1800,6)) +' -'+str(round(lowXsectionLimAt1800-expectedCrossLimitAt1800,6)) + ' pb') 
-    print('Theory xsection limit @1800GeV: '+str(round(graphWP.Eval(1.8),6)) + ' pb')
+    #print('Expected mass limit: '+str(round(expectedMassLimit[0],3)) + '\\twoErr{'+str(round(upLimit[0]-expectedMassLimit[0],3)) +'}{'+str(round(expectedMassLimit[0]-lowLimit[0],3)) + '} \\TeV')
+    #print('Expected xsection limit at excluded mass: '+str(round(expectedMassLimit[1],6)) + ' +'+str(round(expectedMassLimit[1]-upLimit[1],6)) +' -'+str(round(lowLimit[1]-expectedMassLimit[1],6)) + ' pb') 
+    #print('Expected xsection limit @1800GeV: '+str(round(expectedCrossLimitAt1800,6)) + ' +'+str(round(expectedCrossLimitAt1800-upXsectionLimAt1800,6)) +' -'+str(round(lowXsectionLimAt1800-expectedCrossLimitAt1800,6)) + ' pb') 
+    #print('Theory xsection limit @1800GeV: '+str(round(graphWP.Eval(1.8),6)) + ' pb')
 
 
     if not options.blind:
@@ -484,7 +485,7 @@ for theory_xsecs in total_theory_xsec_list:
     tmpline.SetLineWidth(1)
     tmpline.SetLineStyle(2)
     tmpline.SetLineColor(ROOT.kGray+2)
-    tmpline.DrawLine(expectedMassLimit,0,expectedMassLimit,expectedCrossLimit)
+    tmpline.DrawLine(expectedMassLimit[0],0,expectedMassLimit[0],expectedMassLimit[1])
 
     text1 = ROOT.TLatex()
     # text1.SetNDC()
@@ -492,7 +493,7 @@ for theory_xsecs in total_theory_xsec_list:
     text1.SetTextSize(14)
     text1.SetTextColor(ROOT.kGray+2)
     text1.SetTextAngle(90)
-    text1.DrawLatex(expectedMassLimit-0.005,0, "  %0.2f TeV"%(expectedMassLimit))
+    text1.DrawLatex(expectedMassLimit[0]-0.005,0, "  %0.2f TeV"%(expectedMassLimit[0]))
 
     text2 = ROOT.TLatex()
     # text2.SetNDC()
@@ -518,21 +519,22 @@ for theory_xsecs in total_theory_xsec_list:
     CMS_lumi.cmsTextSize = 0.8
     CMS_lumi.CMS_lumi(climits, options.lumiLabel, 0, 11, sim=False)
 
-    print("Will save: ", expectedMassLimit)
-    exp_lim.append(expectedMassLimit)
-    exp_lim_upper.append(upLimit)
-    exp_lim_lower.append(lowLimit)
+    print("Will save: ", expectedMassLimit[0])
+    exp_lim.append(expectedMassLimit[0])
+    closed_exp_lim.append(expectedCrossLimit[0])
+    exp_lim_upper.append(upLimit[0])
+    exp_lim_lower.append(lowLimit[0])
 
     if not os.path.exists(options.outdir):
         os.mkdir(options.outdir)
 
-    pave = ROOT.TPaveText(0.6, 0.45, 0.9, 0.6, "NDC")
+    pave = ROOT.TPaveText(0.20, 0.68, 0.43, 0.88, "NDC")
     pave.SetFillColor(0)
     pave.SetBorderSize(0)
     pave.SetTextAlign(12)  # left aligned
     pave.AddText("m_{A'} = 0.245 GeV")
     pave.AddText(f"#varepsilon = {labels[label_counter]}")
-    pave.AddText("#alpha_{#chi}^{max} = 0.17 (#frac{m_{#chi}}{TeV})^{1.16}")
+    pave.AddText("#alpha_{#chi}^{max} = 0.17 (m_{#chi}/TeV)^{1.61}")
     pave.Draw()
 
     filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr+str(labels[label_counter])
@@ -543,5 +545,6 @@ for theory_xsecs in total_theory_xsec_list:
 
 print(labels)
 print("Exp lim: ", exp_lim)
+print("Closed Exp lim: ", closed_exp_lim)
 print("Lower Exp limt: ", exp_lim_lower)
 print("Upper Exp limit: ", exp_lim_upper)

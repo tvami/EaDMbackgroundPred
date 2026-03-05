@@ -4,7 +4,7 @@
 void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_depth_e6_17mnthNorm_rate_4e-09()
 {
 //=========Macro generated from canvas: climits/climits
-//=========  (Thu Feb  5 10:58:59 2026) by ROOT version 6.30/07
+//=========  (Thu Feb  5 11:09:25 2026) by ROOT version 6.30/07
    TCanvas *climits = new TCanvas("climits", "climits",0,0,700,600);
    gStyle->SetOptStat(0);
    gStyle->SetOptTitle(0);
@@ -439,7 +439,7 @@ void limits_combine_signals_pfbnd_9999_ep_variable_ma_245_alpha_max_depth_e6_17m
    pt->SetTextFont(42);
    TText *pt_LaTex = pt->AddText("m_{A'} = 0.245 GeV");
    pt_LaTex = pt->AddText("#varepsilon = 4e-09");
-   pt_LaTex = pt->AddText("#alpha_{#chi}^{max} = 0.17 (#frac{m_{X}}{TeV})^{1.16}");
+   pt_LaTex = pt->AddText("#alpha_{#chi}^{max} = 0.17 (#frac{m_{#chi}}{TeV})^{1.16}");
    pt->Draw();
    climits->Modified();
    climits->SetSelected(climits);

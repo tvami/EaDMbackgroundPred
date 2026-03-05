@@ -163,8 +163,6 @@ for file in subdirs:
     var_rnn = numpy.zeros(1, dtype=float)
     var_rnn_t0 = numpy.zeros(1, dtype=float)
 
-
-
     #var_gen_pt = numpy.zeros(1, dtype=float)
 
     # Define tree branches to save desired variables
