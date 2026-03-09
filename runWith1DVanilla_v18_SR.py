@@ -55,7 +55,12 @@ _rpf_options = {
     },
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
-        'constraints': _generate_constraints(4)
+        'constraints': {
+            0: {"MIN": 0.0, "MAX": 0.5},
+            1: {"MIN": 0, "MAX": 10},
+            2: {"MIN": -10, "MAX": 0},
+            3: {"MIN": 0, "MAX": 0.5}
+         }
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
@@ -390,4 +395,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    #test_FTest('1x0','2x0',"Signal_M3000GeV_SR")
+    test_FTest('1x0','2x0',"Signal_M3000GeV_SR")

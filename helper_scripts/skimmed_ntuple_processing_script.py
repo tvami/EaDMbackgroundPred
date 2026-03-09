@@ -81,7 +81,7 @@ if not os.path.exists(output_dir+"/2DA"):
 
 
 # =========================
-# BOTH loop
+# Process loop
 # =========================
 if args.runType == 'Process' or args.runType == 'Both':
     for file in tqdm(input_files):
@@ -375,58 +375,79 @@ if args.runType == 'Process' or args.runType == 'Both':
             print(f"Saving to: {output_dir}/{Path(file).stem}_wRNN.root")
             out_f["tree"] = arrays
 
+
+# =========================
+# 2DA loop
+# =========================
 if args.runType == '2DAInput' or args.runType == 'Both':
     if args.sampleType == 'Data':
+        # Chain all processed ROOT files together for combined processing
         rootTChain = ROOT.TChain("tree")
         for file in glob.glob(f'{output_dir}/*.root'):
+            # If running on 2023D data, skip files not from that run period
             if run == '2023D' and 'Run2023D' not in file: continue 
             print("running on:", Path(file).stem)
             rootTChain.Add(file)
         
         df = ROOT.RDataFrame(rootTChain)
 
+        # Define derived columns for the nominal 2D histogram inputs
         df2 = (
-            df.Define("n_Seg", "nmuon_dtSeg_t0timing")
-            .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt)")
-            .Define("pT_max_clipped", "std::min(pT_max, 12499.0)")
-            .Define("n_Seg_clipped", "std::min(n_Seg, 199)")
+            df.Define("n_Seg", "nmuon_dtSeg_t0timing")                            # Total number of DT segments per event
+            .Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")  # Chi2/ndof, protect against division by zero
+            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")  # Select good-quality muon tracks
+            .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
+            .Define("pT_max_clipped", "std::min(pT_max, 12499.0)")                            # Clip pT to stay within histogram range
+            .Define("n_Seg_clipped", "std::min(n_Seg, 199)")                                  # Clip segment count to stay within histogram range
         )
 
+        # Define pT-shifted dataframe for pT scale systematic (upward variation)
+        # pT scale factor varies by regime: +0.3% below 200 GeV, +0.5% between 200-500 GeV, +1% above 500 GeV
         pT_up_df_tmp = (
-            df.Define(
+            df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
+            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+            .Define(
                 "pT_max_up",
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.003 : "
-                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.01 : "
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.005)"
+                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.003 : "
+                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.01 : "
+                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
             .Define("pT_max_up_clipped", "std::min(pT_max_up, 12499.0)")
             .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
         )
 
+        # Define pT-shifted dataframe for pT scale systematic (downward variation)
+        # pT scale factor varies by regime: -0.3% below 200 GeV, -0.5% between 200-500 GeV, -1% above 500 GeV
         pT_down_df_tmp = (
-            df.Define(
+            df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
+            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+            .Define(
                 "pT_max_down",
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.997 : "
-                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.99 : "
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.995)"
+                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.997 : "
+                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.99 : "
+                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
             .Define("pT_max_down_clipped", "std::min(pT_max_down, 12499.0)")
             .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
         )
 
+        # Shorthand variable names for histogram filling axes
         pT_var = "pT_max_clipped"
         pT_up_var = "pT_max_up_clipped"
         pT_down_var = "pT_max_down_clipped"
         n_Seg_var = "n_Seg_clipped"
 
+        # Define RNN score cut boundaries for pass/fail regions per analysis region
+        # bnd_nominal: nominal cut, bnd_up/down: RNN score syst variations, bnd_syst: t0 noise syst
         if args.region == 'sr':
             bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
             bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
             bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
             bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
         if args.region == 'vr1':
+            # VR1 uses a window cut: pass requires intermediate RNN scores (between ~signal-like and background-like)
             bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
             bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
             bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']
@@ -437,27 +458,35 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
             bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
         
+        # Split events into pass/fail for each systematic variation:
+        # Nominal RNN cut
         pass_df = df2.Filter(bnd_nominal[0])
         fail_df = df2.Filter(bnd_nominal[1])
+        # RNN score threshold shifted up/down (RNN cut uncertainty)
         rnn_up_pass_df = df2.Filter(bnd_up[0])
         rnn_up_fail_df = df2.Filter(bnd_up[1])
         rnn_down_pass_df = df2.Filter(bnd_down[0])
         rnn_down_fail_df = df2.Filter(bnd_down[1])
+        # Nominal RNN cut applied to pT-shifted dataframes (pT scale uncertainty)
         pT_up_pass_df = pT_up_df_tmp.Filter(bnd_nominal[0])
         pT_up_fail_df = pT_up_df_tmp.Filter(bnd_nominal[1])
         pT_down_pass_df = pT_down_df_tmp.Filter(bnd_nominal[0])
         pT_down_fail_df = pT_down_df_tmp.Filter(bnd_nominal[1])
+        # t0 noise-shifted RNN score cut (t0 timing uncertainty)
         rnn_t0_up_pass_df = df2.Filter(bnd_syst[0])
         rnn_t0_up_fail_df = df2.Filter(bnd_syst[1])
         rnn_t0_down_pass_df = df2.Filter(bnd_syst[0])
         rnn_t0_down_fail_df = df2.Filter(bnd_syst[1])
 
+        # Book 2D histograms (pT vs n_Seg) for each pass/fail region and systematic variation
+        # Axes: x = muon pT [0, 12500 GeV] in 12500 bins, y = # DT segments [0, 200] in 200 bins
         pass_hist = pass_df.Histo2D(("hpass", "hpass; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
         fail_hist = fail_df.Histo2D(("hfail", "hfail; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
+        # RNN threshold systematic histograms
         pass_rnn_up_hist = rnn_up_pass_df.Histo2D(("hpass_RNNsyst_up", "hpass_RNNsyst_up; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
@@ -470,6 +499,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         fail_rnn_down_hist = rnn_down_fail_df.Histo2D(("hfail_RNNsyst_down", "hfail_RNNsyst_down; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
+        # pT scale systematic histograms
         pass_pT_up_hist = pT_up_pass_df.Histo2D(("hpass_pTsyst_up", "hpass_pTsyst_up; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_up_var, n_Seg_var)
@@ -482,6 +512,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         fail_pT_down_hist = pT_down_fail_df.Histo2D(("hfail_pTsyst_down", "hfail_pTsyst_down; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_down_var, n_Seg_var)
+        # t0 timing systematic histograms
         pass_t0_up_hist = rnn_t0_up_pass_df.Histo2D(("hpass_t0syst_up", "hpass_t0syst_up; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
@@ -495,7 +526,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
 
-        # Create root file, write histograms, and close
+        # Write all histograms to output ROOT file for use as 2DAlphabet inputs
         print("Saving to:", output_dir+f"/2DA/EaDM_{run}_Cosmics_Data_{args.region.upper()}.root")
         root_file = ROOT.TFile(output_dir+f"/2DA/EaDM_{run}_Cosmics_Data_{args.region.upper()}.root", "RECREATE")
         pass_hist.Write()
@@ -518,11 +549,13 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         for file in glob.glob(f'{output_dir}/*.root'):
             print("running on:", Path(file).stem)
 
+            # Extract signal mass point from filename (e.g. "MinP-5000" → M5000GeV)
+            # Skip surface depth samples, which use a different naming convention
             match = re.search(r'MinP-(\d+)', Path(file).stem)
             if match and "SurfaceDepth" not in Path(file).stem:
-                number = match.group(1)  # This will be '5000'
-                # Create the new string
+                number = match.group(1)
                 new_filename = f"EaDM_Signal_M{number}GeV_{args.region.upper()}.root"
+                # Override filename for special MC samples (neutrino and cosmic background)
                 if Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
                 elif Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
                 print("Saving to:", output_dir+f"/2DA/{new_filename}")
@@ -532,6 +565,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
 
             df = ROOT.RDataFrame("tree;1", file)
 
+            # Define derived columns — no quality mask for MC (all tracks used)
             df2 = (
                 df.Define("n_Seg", "nmuon_dtSeg_t0timing")
                 .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt)")
@@ -539,6 +573,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 .Define("n_Seg_clipped", "std::min(n_Seg, 199)")
             )
 
+            # pT scale systematic (up) — same regime-dependent factors as Data
             pT_up_df_tmp = (
                 df.Define(
                     "pT_max_up",
@@ -551,6 +586,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
             )
 
+            # pT scale systematic (down) — same regime-dependent factors as Data
             pT_down_df_tmp = (
                 df.Define(
                     "pT_max_down",
@@ -568,6 +604,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             pT_down_var = "pT_max_down_clipped"
             n_Seg_var = "n_Seg_clipped"
             
+            # RNN score cut boundaries — BkgMC uses looser cuts than Signal or Data
+            # to probe a region with sufficient MC statistics
             if args.region == 'sr':
                 if sample_type == 'Signal':
                     bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
@@ -590,6 +628,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
                 bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
 
+            # Split MC events into pass/fail for all systematic variations (same logic as Data)
             pass_df = df2.Filter(bnd_nominal[0])
             fail_df = df2.Filter(bnd_nominal[1])
             rnn_up_pass_df = df2.Filter(bnd_up[0])
@@ -605,6 +644,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             rnn_t0_down_pass_df = df2.Filter(bnd_syst[0])
             rnn_t0_down_fail_df = df2.Filter(bnd_syst[1])
 
+            # Book 2D histograms — same binning as Data
             pass_hist = pass_df.Histo2D(("hpass", "hpass; p_{T} (GeV);# of Hits",
                     12500, 0, 12500, 200, 0, 200),
                     pT_var, n_Seg_var)
@@ -648,27 +688,31 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     12500, 0, 12500, 200, 0, 200),
                     pT_var, n_Seg_var)
 
+            # Retrieve cutflow histogram from original (pre-RNN) ntuple to get total event count for normalization
             f = ROOT.TFile.Open(f"{file_dir_path}/{ntuple_v}/{sample_type}/{region[:2]}/{collection}/{Path(file).stem[:-5]}.root")
             cutflow_hist = f.Get("h_cutflow")
-            cutflow_hist.SetDirectory(0)
+            cutflow_hist.SetDirectory(0)   # Detach from file so it survives after Close()
             f.Close()
 
             print("Total # of events in sample:", cutflow_hist.GetBinContent(1))
 
             if sample_type == 'Signal':
-                # Scale histograms
+                # Normalize signal histograms to 100 events (arbitrary reference cross section)
+                # so that 2DAlphabet can later re-scale by the true signal cross section
                 print("Scaling histograms!")
                 for hist in [pass_hist, fail_hist, pass_pT_up_hist, pass_pT_down_hist, fail_pT_up_hist, fail_pT_down_hist, pass_t0_up_hist, pass_t0_down_hist, fail_t0_up_hist, fail_t0_down_hist, pass_rnn_up_hist, pass_rnn_down_hist, fail_rnn_up_hist, fail_rnn_down_hist]:
                     hist.Scale(100 / cutflow_hist.GetBinContent(1))
 
-            for x_bin in range(1, pass_hist.GetNbinsX() + 1, 100):  # Loop over x-axis bins
-                for y_bin in range(1, pass_hist.GetNbinsY() + 1):  # Loop over y-axis bins
+            # Replace empty bins with a small sentinel value (1e-8) to avoid log(0) issues in 2DAlphabet fits
+            # Only samples every 100th x-bin for performance (histograms are very fine-grained in pT)
+            for x_bin in range(1, pass_hist.GetNbinsX() + 1, 100):
+                for y_bin in range(1, pass_hist.GetNbinsY() + 1):
                     for hist in [pass_hist,fail_hist,pass_pT_up_hist,pass_pT_down_hist,fail_pT_up_hist,fail_pT_down_hist,pass_t0_up_hist,pass_t0_down_hist,fail_t0_up_hist,fail_t0_down_hist,pass_rnn_up_hist,pass_rnn_down_hist,fail_rnn_up_hist,fail_rnn_down_hist]:
                         bin_content = hist.GetBinContent(x_bin, y_bin)
-                        if bin_content == 0:  # Check if the bin content is 0
-                            hist.SetBinContent(x_bin, y_bin, 1e-08)  # Set the bin content to 10^-8
+                        if bin_content == 0:
+                            hist.SetBinContent(x_bin, y_bin, 1e-08)
             
-            # Create root file, write histograms, and close
+            # Write all histograms to output ROOT file for use as 2DAlphabet inputs
             root_file = ROOT.TFile(output_dir+f"/2DA/{new_filename}", "RECREATE")
             pass_hist.Write()
             fail_hist.Write()

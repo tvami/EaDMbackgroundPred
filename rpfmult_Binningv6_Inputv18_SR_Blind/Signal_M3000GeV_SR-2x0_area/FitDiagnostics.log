@@ -9,42 +9,42 @@ Set Default Value of Parameter r To : 1
 
 >> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
->> Parameter CMS_AN23122_Background_rpf_2x0_par1 does not have a valid stencil and will be dropped
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
-     - CMS_AN23122_Background_rpf_2x0_par1
      - CMS_AN23122_Background_rpf_2x0_par2
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (6584.11) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_AN23122_Background_fail_HIGH_bin_1-1=33.7945	CMS_AN23122_Background_fail_HIGH_bin_2-1=2.38659	CMS_AN23122_Background_fail_HIGH_bin_3-1=1.67849	CMS_AN23122_Background_fail_HIGH_bin_4-1=1.67421	CMS_AN23122_Background_fail_HIGH_bin_5-1=44.1477	CMS_AN23122_Background_fail_HIGH_bin_6-1=44.1477	CMS_AN23122_Background_fail_HIGH_bin_7-1=1.67329	CMS_AN23122_Background_fail_HIGH_bin_8-1=1.81236	CMS_AN23122_Background_fail_LOW_bin_1-1=2289.74	CMS_AN23122_Background_fail_LOW_bin_2-1=1179.02	CMS_AN23122_Background_fail_LOW_bin_3-1=299.017	CMS_AN23122_Background_fail_SIG_bin_1-1=97.9732	CMS_AN23122_Background_rpf_2x0_par0=0.0175714	CMS_AN23122_Background_rpf_2x0_par1=1.85021	CMS_AN23122_Background_rpf_2x0_par2=-0.812004	CMS_AN23122_Background_rpf_2x0_par3=0.446649	RNN=229.758	lumi=-0.120008	pT=0.0078892	r=0.563015	t0=0
+
 >> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
->> Parameter CMS_AN23122_Background_rpf_2x0_par1 does not have a valid stencil and will be dropped
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 18 : -0.0199639
- - -0.745857	r
- - 0.573788	CMS_AN23122_Background_fail_HIGH_bin_3-1
- - 0.313999	CMS_AN23122_Background_fail_HIGH_bin_4-1
- - 0.0779534	CMS_AN23122_Background_fail_HIGH_bin_2-1
- - 0.0579613	CMS_AN23122_Background_fail_HIGH_bin_6-1
+Eigenvalue 19 : -0.0222646
+ - -0.724806	r
+ - 0.593655	CMS_AN23122_Background_fail_HIGH_bin_2-1
+ - 0.324522	CMS_AN23122_Background_fail_HIGH_bin_3-1
+ - 0.0807644	CMS_AN23122_Background_fail_HIGH_bin_1-1
+ - 0.0541548	CMS_AN23122_Background_fail_HIGH_bin_4-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_HIGH_bin_3-1 from the hessian
+>> Dropping CMS_AN23122_Background_fail_HIGH_bin_2-1 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
-     - CMS_AN23122_Background_rpf_2x0_par1
      - CMS_AN23122_Background_rpf_2x0_par2
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_fail_HIGH_bin_3-1
+     - CMS_AN23122_Background_fail_HIGH_bin_2-1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 3.74199e-09  -3.74199e-09/+50  (68% CL)
-Done in 0.00 min (cpu), 0.00 min (real)
+Best fit r: 5.3098e-09  -5.3098e-09/+50  (68% CL)
+Done in 0.00 min (cpu), 0.01 min (real)
 37 log messages saved to combine_logger.out
