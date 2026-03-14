@@ -513,7 +513,7 @@ for theory_xsecs in total_theory_xsec_list:
     climits.RedrawAxis()
 
     #CMS_lumi.extraText = 'Preliminary'
-    CMS_lumi.extraText = 'Internal'
+    CMS_lumi.extraText = 'Data Private Work'
     CMS_lumi.lumiTextSize = 0.5
 
     CMS_lumi.cmsTextSize = 0.8

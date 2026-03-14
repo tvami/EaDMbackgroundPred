@@ -1,0 +1,19 @@
+,process,region,binning,color,process_type,scale,variation,source_filename,source_histname,alias,title,combine_idx,lnN,shapes,syst_type,direction,variation_alias
+0,data_obs,pass,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v19/EaDM_2023D_Cosmics_Data_SR.root,hpass,2023D_Cosmics_Data_SR,2023D_Cosmics_Data_SR,,,,,,
+49,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,lumi,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass,Signal_M1400GeV_SR,DM signal,,1.05,,lnN,,
+50,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,RNN,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_RNNsyst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,RNNsyst
+51,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,RNN,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_RNNsyst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,RNNsyst
+52,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,pT,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_pTsyst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,pTsyst
+53,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,pT,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_pTsyst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,pTsyst
+54,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,t0,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_t0syst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,t0syst
+55,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,t0,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass_t0syst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,t0syst
+56,Signal_M1400GeV_SR,pass,default,red,SIGNAL,1.0,nominal,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hpass,Signal_M1400GeV_SR,DM signal,,,,,,
+401,data_obs,fail,default,black,DATA,1.0,nominal,./histograms_for_2DAlphabet_v19/EaDM_2023D_Cosmics_Data_SR.root,hfail,2023D_Cosmics_Data_SR,2023D_Cosmics_Data_SR,,,,,,
+450,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,lumi,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail,Signal_M1400GeV_SR,DM signal,,1.05,,lnN,,
+451,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,RNN,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_RNNsyst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,RNNsyst
+452,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,RNN,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_RNNsyst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,RNNsyst
+453,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,pT,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_pTsyst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,pTsyst
+454,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,pT,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_pTsyst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,pTsyst
+455,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,t0,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_t0syst_up,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Up,t0syst
+456,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,t0,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail_t0syst_down,Signal_M1400GeV_SR,DM signal,,,1.0,shapes,Down,t0syst
+457,Signal_M1400GeV_SR,fail,default,red,SIGNAL,1.0,nominal,./histograms_for_2DAlphabet_v19/EaDM_Signal_M1400GeV_SR.root,hfail,Signal_M1400GeV_SR,DM signal,,,,,,
