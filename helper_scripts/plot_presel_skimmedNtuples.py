@@ -6,33 +6,50 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Internal")
 
-base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.7'
+# base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 collections = ['matched_muon', 'track', 'muon', 'tuneP']
 region = 'vr' # sr vr
 
-samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN.root"],
-                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
-                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
-                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
-                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
-                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
-                "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4_wRNN.root"]
+samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
+                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
+                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+                #"2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
+                "Run-3 Cosmics": ["Data", "Ntuplizer-Cosmics_All_v4.root"]
                 }
 
 base_var_dict = {
-            # "eta": [0, 25, -2.5, 2.5, 'eta_trigger', 'eta_nminus1', 'eta_final', '#eta'],
-            # "pt": [1, 25, 0, 5000, 'pt_trigger', 'pt_nminus1', 'pT_final', 'p_{T} [GeV]'],
-            # "ntrack": [2, 20, 0, 20, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
-            # "nseg": [3, 20, 0, 20, 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
-            #"sumPt": [0, 250, 0, 5000, 'sumPt', 'sumPt_nminus1', 'sumPt_final', 'Summed p_{T} of Tracks/N_{Tracks}'],
-            #"sumPtperPt": [0, 250, 0, 0.01, 'sumPtperPt', 'sumPtperPt_nminus1', 'sumPtperPt_final', 'N_{Tracks}/Summed p_{T} of Tracks'],
-            #"sumPt": [1, 250, 0, 5000, 'sumPtquality', 'sumPtquality_nminus1', 'sumPtquality_final', 'Summed p_{T} of Tracks/N_{Tracks} (w/ quality)'],
-            "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
-            # "ptErrPerPt2": [4, 100, 0, 0.01, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # "ptErrPerPt2_zoom": [5, 100, 0, 0.0005, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # "pTErrPerPtVsPt": [6, 50, 0, 10, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
-            # "pTErrPerPtVsPt_zoom": [7, 20, 0, 0.01, 'pTErrPerPtVsPt_zoom', 'pTErrPerPtVsPt_nminus1_zoom', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
-            # "ptErrPerPt2VsPt": [8, 50, 0, 10, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
+            "eta": [0, 25, -2.5, 2.5, 'eta_pretrigger', 'eta_trigger', 'eta_nminus1', 'eta_final', '#eta'],
+            "pt": [1, 500, 0, 10000, 'pt_pretrigger', 'pt_trigger', 'pt_nminus1', 'pt_final', 'p_{T} [GeV]'],
+            "phi": [2, 25, -3.15, 3.15, 'phi_pretrigger', 'phi_trigger', 'phi_nminus1', 'phi_final', '#phi'],
+            # "ntrack": [3, 20, 0, 20, None, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
+            "nseg": [4, 20, 0, 20, 'nseg_pretrigger', 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
+            "nhits": [5, 80, 0, 80, 'nhits_pretrigger', 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
+            "chi2ndof": [6, 100, 0, 100, 'chi2ndof_pretrigger', 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
+            "ptErrPerPt2": [7, 100, 0, 0.01, None, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
+            # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
+            "ptErrPerPt2_quality_zoom": [14, 100, 0, 0.002, None, None, 'ptErrPerPt2_quality_nminus1_zoom', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
+            "ptErrPerPt_quality": [15, 50, 0, 10, None, None, 'ptErrPerPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
+            "pt_quality": [16, 500, 0, 10000, None, None, 'pt_quality_nminus1', None, 'p_{T} [GeV] (quality cuts)'],
+            # "ptErrPerPtVsPt_quality": [17, 50, 0, 10, None, None, 'ptErrPerPtVsPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
+            "ptErrPerPt_lowPt": [18, 50, 0, 10, None, 'ptErrPerPt_lowPt', 'ptErrPerPt_lowPt_nminus1', 'ptErrPerPt_lowPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} < 5 TeV)'],
+            "ptErrPerPt_highPt": [19, 50, 0, 10, None, 'ptErrPerPt_highPt', 'ptErrPerPt_highPt_nminus1', 'ptErrPerPt_highPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} > 5 TeV)'],
+            "ptErrPerPt2_lowPt": [20, 100, 0, 0.01, None, 'ptErrPerPt2_lowPt', 'ptErrPerPt2_lowPt_nminus1', 'ptErrPerPt2_lowPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} < 5 TeV)'],
+            "ptErrPerPt2_highPt": [21, 100, 0, 0.01, None, 'ptErrPerPt2_highPt', 'ptErrPerPt2_highPt_nminus1', 'ptErrPerPt2_highPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} > 5 TeV)'],
+            "ptErrPerPt2_pretrig": [22, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', None, None, None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "nhits_highpt": [23, 80, 0, 80, None, None, None, 'nhits_highpt', 'N_{valid hits} (highest p_{T})'],
+            "chi2ndof_highpt": [24, 100, 0, 100, None, None, None, 'chi2ndof_highpt', '#chi^{2}/n_{DoF} (highest p_{T})'],
+            "ptErrPerPt2_highpt": [25, 100, 0, 0.01, None, None, None, 'ptErrPerPt2_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T})'],
+            "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
+            "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
+            "pt_highpt": [28, 500, 0, 10000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
+            # "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
             }
 
 track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
@@ -70,7 +87,7 @@ presel_steps_arr = ["pretrigger", "trigger", "nminus1", "final"]
 garbage_protect_list = []
 
 def fold_overflow(h):
-    """Fold underflow/overflow into first/last visible bins."""
+    """Fold underflow/overflow into first/last visible bins (for 2D/profile)."""
     if h.InheritsFrom("TH2"):
         nx, ny = h.GetNbinsX(), h.GetNbinsY()
         for iy in range(0, ny + 2):
@@ -89,6 +106,27 @@ def fold_overflow(h):
         h.SetBinContent(nb, h.GetBinContent(nb) + h.GetBinContent(nb+1))
         h.SetBinContent(0, 0)
         h.SetBinContent(nb+1, 0)
+
+def make_overflow_visible(h_orig):
+    """Return a new 1D histogram with one extra bin showing overflow."""
+    nb = h_orig.GetNbinsX()
+    xmin = h_orig.GetXaxis().GetXmin()
+    xmax = h_orig.GetXaxis().GetXmax()
+    bw = (xmax - xmin) / nb
+    h_new = ROOT.TH1F(h_orig.GetName() + "_ov", h_orig.GetTitle(),
+                       nb + 1, xmin, xmax + bw)
+    h_new.SetDirectory(0)
+    # Fold underflow into first visible bin
+    h_new.SetBinContent(1, h_orig.GetBinContent(0) + h_orig.GetBinContent(1))
+    h_new.SetBinError(1, (h_orig.GetBinError(0)**2 + h_orig.GetBinError(1)**2)**0.5)
+    # Copy bins 2..nb
+    for i in range(2, nb + 1):
+        h_new.SetBinContent(i, h_orig.GetBinContent(i))
+        h_new.SetBinError(i, h_orig.GetBinError(i))
+    # Move overflow into the visible extra bin
+    h_new.SetBinContent(nb + 1, h_orig.GetBinContent(nb + 1))
+    h_new.SetBinError(nb + 1, h_orig.GetBinError(nb + 1))
+    return h_new
 
 def get_cutflow_df(df, collection, region='sr'):
     """Apply full cutflow per-object selection (matching skim_ntuples.C) and define highest-pT object properties."""
@@ -341,7 +379,7 @@ for collection in collections:
                     garbage_protect_list.append(h)
                     histo = h.GetValue()
                     histo.SetDirectory(0)
-                    fold_overflow(histo)
+                    histo = make_overflow_visible(histo)
                     if histo.Integral() > 0:
                         histo.Scale(1/histo.Integral())
                     is_data = samples_dict[sample][0] == "Data"
@@ -363,6 +401,7 @@ for collection in collections:
                     else:
                         histo.Draw("HIST SAME")
                         leg.AddEntry(histo, sample, "l")
+                    garbage_protect_list.append(histo)
 
                 pave = ROOT.TPaveText(0.18, 0.80, 0.32, 0.90, "NDC")
                 pave.SetFillColor(0)
@@ -370,19 +409,19 @@ for collection in collections:
                 pave.SetTextAlign(12)  # left aligned
                 pave.SetTextSize(0.025)
                 pave.AddText(f"Collection = {collection}")
-                pave.AddText("Signal Depth: 0 mm")
+                pave.AddText("Signal Depth: 0.01 mm")
                 pave.AddText(presel_steps_arr[num])
                 pave.Draw()
                 leg.Draw()
 
-                overflow_line = ROOT.TLine(max - bin_width, hframe.GetMinimum(), max - bin_width, hframe.GetMaximum())
+                overflow_line = ROOT.TLine(max, hframe.GetMinimum(), max, hframe.GetMaximum())
                 overflow_line.SetLineStyle(2)
                 overflow_line.SetLineColor(ROOT.kGray + 2)
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
@@ -415,7 +454,8 @@ for collection in collections:
             leg.SetTextFont(42)
 
             color_numerator = 1
-            for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+            #for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+            for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
                 print(f"\tSample = {sample}")
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
@@ -502,7 +542,7 @@ for collection in collections:
                 pave.SetTextSize(0.025)
                 pave.AddText(base_path[-6:])
                 pave.AddText(f"collection = {collection}")
-                pave.AddText("Depth: 0 mm")
+                pave.AddText("Depth: 0.01 mm")
                 pave.AddText(presel_steps_arr[num])
                 pave.AddText(sample)
                 pave.Draw()
@@ -529,8 +569,8 @@ for collection in collections:
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
                 sample_tag = sample.replace("{", "").replace("}", "").replace(" = ", "_").replace(" ", "_").replace("_TeV", "TeV")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}_{sample_tag}.pdf")
 
             del c
             del hframe
@@ -567,7 +607,8 @@ for collection in collections:
             leg.SetTextFont(42)
 
             color_numerator = 7
-            for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+            # for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+            for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
                 print(f"\tSample = {sample}")
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
@@ -671,7 +712,7 @@ for collection in collections:
                         continue
                     h.SetDirectory(0)
                     f.Close()
-                    fold_overflow(h)
+                    h = make_overflow_visible(h)
                     if h.Integral() > 0:
                         h.Scale(1/h.Integral())
                     is_data = samples_dict[sample][0] == "Data"
@@ -693,6 +734,7 @@ for collection in collections:
                     else:
                         h.Draw("HIST SAME")
                         leg.AddEntry(h, sample, "l")
+                    garbage_protect_list.append(h)
 
                 pave = ROOT.TPaveText(0.18, 0.80, 0.32, 0.90, "NDC")
                 pave.SetFillColor(0)
@@ -700,19 +742,19 @@ for collection in collections:
                 pave.SetTextAlign(12)
                 pave.SetTextSize(0.025)
                 pave.AddText(f"Collection = {collection}")
-                pave.AddText("Depth: 0 mm")
+                pave.AddText("Depth: 0.01 mm")
                 pave.AddText(presel_steps_arr[num])
                 pave.Draw()
                 leg.Draw()
 
-                overflow_line = ROOT.TLine(max - bin_width, hframe.GetMinimum(), max - bin_width, hframe.GetMaximum())
+                overflow_line = ROOT.TLine(max, hframe.GetMinimum(), max, hframe.GetMaximum())
                 overflow_line.SetLineStyle(2)
                 overflow_line.SetLineColor(ROOT.kGray + 2)
                 overflow_line.Draw()
 
                 CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{var_dict[main_var][4+num]}.pdf")
 
                 del c
                 del hframe
@@ -804,8 +846,8 @@ for collection in collections:
         leg_prof.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_profile_ptErrRatio_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_profile_ptErrRatio_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrRatio_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrRatio_vs_pT.pdf")
         del c
         del hframe_prof
 
@@ -890,8 +932,8 @@ for collection in collections:
         leg_prof2.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrPerPt2_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_profile_ptErrPerPt2_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrPerPt2_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrPerPt2_vs_pT.pdf")
         del c
         del hframe_prof2
 
@@ -991,8 +1033,8 @@ for collection in collections:
     leg_nobj.Draw()
 
     CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_profile.png")
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_profile.pdf")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_profile.png")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_profile.pdf")
     del c
     del hframe_nobj
     garbage_protect_list.clear()
@@ -1098,8 +1140,8 @@ for collection in collections:
     leg_nobj_std.Draw()
 
     CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_std.png")
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_objcount_std.pdf")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_std.png")
+    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_std.pdf")
     del c
     del hframe_nobj_std
     garbage_protect_list.clear()
@@ -1215,8 +1257,8 @@ for collection in collections:
         leg_nobj_dist.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_nobj_dist_{step_tag}.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/overlay_{collection}_nobj_dist_{step_tag}.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_nobj_dist_at_cf_step{step_bin}.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_nobj_dist_at_cf_step{step_bin}.pdf")
         del c
         del hframe_nobj_dist
         garbage_protect_list.clear()
