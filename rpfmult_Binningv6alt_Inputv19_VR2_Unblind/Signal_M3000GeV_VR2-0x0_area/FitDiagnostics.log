@@ -16,12 +16,12 @@ Running Minos for POI r
 >> Found 13 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 12 : -0.000106184
- - -0.997953	r
- - 0.0536273	RNN
- - 0.0331145	CMS_AN23122_Background_rpf_0x0_par0
- - -0.010796	lumi
- - 0.000913775	CMS_AN23122_Background_fail_HIGH_bin_1-1
+Eigenvalue 12 : -0.000178261
+ - -0.997726	r
+ - 0.0579275	RNN
+ - 0.0326718	CMS_AN23122_Background_rpf_0x0_par0
+ - -0.0108623	lumi
+ - 0.000995075	CMS_AN23122_Background_fail_HIGH_bin_1-1
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
 >> Dropping RNN from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
@@ -33,6 +33,6 @@ Eigenvalue 12 : -0.000106184
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 50  -50/+1.06964e-09  (68% CL)
+Best fit r: 25  -25/+1.69951e-09  (68% CL)
 Done in 0.00 min (cpu), 0.00 min (real)
 21 log messages saved to combine_logger.out

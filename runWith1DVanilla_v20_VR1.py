@@ -56,11 +56,11 @@ _rpf_options = {
     '2x0': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 0.5},
-            1: {"MIN": 0, "MAX": 10},
-            2: {"MIN": -10, "MAX": 0},
-            3: {"MIN": 0, "MAX": 0.5}
-         }
+            0: {"MIN": 0.0, "MAX": 1},
+            1: {"MIN": 0.5, "MAX": 1},
+            2: {"MIN": -2, "MAX": 0},
+            3: {"MIN": 0, "MAX": 2}
+        }
     },
     '2x1': {
         'form': '0.1*(@0+@1*x+@2*x**2)*(1+@3*y)',
@@ -180,8 +180,8 @@ def plot_fit(signal, tf):
     print("Doing twoD.ledger.select")
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf) 
     print("Doing twoD.StdPlots")
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"RNNScore > 0.45 & < 0.9999"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"RNNScore > 0.45 & < 0.9999"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"0.45 < RNNScore < 0.9999"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'Run 3 Cosmics', pf_slice_str={"fail":"RNNScore < 0.45","pass":"0.45 < RNNScore < 0.9999"})
 
 def GOF(signal,tf,condor=True, extra=''):
     # replace the blindedFit option in the config file with COMMENT to effectively "unblind" the GoF
@@ -395,4 +395,4 @@ if __name__ == "__main__":
       #Impacts(signal,tf_type,toys=100)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    test_FTest('1x0','2x0',"Signal_M3000GeV_SR")
+    test_FTest('1x0','2x0',"Signal_M3000GeV_VR1")

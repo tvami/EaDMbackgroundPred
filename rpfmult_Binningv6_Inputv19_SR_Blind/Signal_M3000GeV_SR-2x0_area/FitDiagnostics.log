@@ -10,34 +10,34 @@ Set Default Value of Parameter r To : 1
 >> Found 20 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 19 : -8.72555e-05
+ - -0.744655	CMS_AN23122_Background_rpf_2x0_par3
+ - 0.565234	CMS_AN23122_Background_rpf_2x0_par0
+ - 0.3122	CMS_AN23122_Background_rpf_2x0_par1
+ - -0.168906	CMS_AN23122_Background_rpf_2x0_par2
+ - 0.000463229	CMS_AN23122_Background_fail_LOW_bin_3-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_AN23122_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_AN23122_Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
 >> Found 21 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
 >> Parameter CMS_AN23122_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 19 : -0.000511736
- - -0.716031	CMS_AN23122_Background_fail_HIGH_bin_2-1
- - 0.619825	r
- - -0.197026	CMS_AN23122_Background_fail_HIGH_bin_3-1
- - -0.15791	CMS_AN23122_Background_rpf_2x0_par1
- - 0.137113	RNN
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_AN23122_Background_fail_HIGH_bin_2-1 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
 >> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
      - CMS_AN23122_Background_rpf_2x0_par2
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_AN23122_Background_fail_HIGH_bin_2-1
 Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 43.2007  -43.2007/+6.79929  (68% CL)
+Best fit r: 49.7939  -49.7939/+0.206088  (68% CL)
 Done in 0.00 min (cpu), 0.01 min (real)
 27 log messages saved to combine_logger.out

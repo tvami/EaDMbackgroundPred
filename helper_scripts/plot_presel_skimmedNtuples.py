@@ -6,17 +6,17 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Internal")
 
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.7'
-collections = ['track', 'matched_muon', 'muon', 'tuneP']
-region = 'sr' # sr vr
+base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
+collections = ['matched_muon', 'track', 'muon', 'tuneP']
+region = 'vr' # sr vr
 
-samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
-                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
+samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN.root"],
+                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
+                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
+                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
+                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
+                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN.root"],
+                "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4_wRNN.root"]
                 }
 
 base_var_dict = {
@@ -25,8 +25,9 @@ base_var_dict = {
             # "ntrack": [2, 20, 0, 20, 'ntrack_trigger', 'ntrack_nminus1', 'ntrack_final', 'n_{Tracks}'],
             # "nseg": [3, 20, 0, 20, 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
             #"sumPt": [0, 250, 0, 5000, 'sumPt', 'sumPt_nminus1', 'sumPt_final', 'Summed p_{T} of Tracks/N_{Tracks}'],
-            "sumPtperPt": [0, 250, 0, 0.01, 'sumPtperPt', 'sumPtperPt_nminus1', 'sumPtperPt_final', 'N_{Tracks}/Summed p_{T} of Tracks'],
-            "sumPt": [1, 250, 0, 5000, 'sumPtquality', 'sumPtquality_nminus1', 'sumPtquality_final', 'Summed p_{T} of Tracks/N_{Tracks} (w/ quality)'],
+            #"sumPtperPt": [0, 250, 0, 0.01, 'sumPtperPt', 'sumPtperPt_nminus1', 'sumPtperPt_final', 'N_{Tracks}/Summed p_{T} of Tracks'],
+            #"sumPt": [1, 250, 0, 5000, 'sumPtquality', 'sumPtquality_nminus1', 'sumPtquality_final', 'Summed p_{T} of Tracks/N_{Tracks} (w/ quality)'],
+            "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
             # "ptErrPerPt2": [4, 100, 0, 0.01, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             # "ptErrPerPt2_zoom": [5, 100, 0, 0.0005, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             # "pTErrPerPtVsPt": [6, 50, 0, 10, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
@@ -535,6 +536,94 @@ for collection in collections:
             del hframe
             del h
             del histo
+        elif main_var == 'RNNScore':
+            num = 2
+            nbins = var_dict[main_var][1]
+            min = var_dict[main_var][2]
+            max = var_dict[main_var][3]
+
+            c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+            c.SetLeftMargin(0.2)
+            c.SetRightMargin(0.2)
+            c.SetLogy(True)
+
+            # define axis ranges
+            hframe = ROOT.TH1F("hframe", "", nbins, min, max)
+            hframe.SetStats(False)
+            hframe.GetXaxis().SetTitle('RNN Score')
+            hframe.GetYaxis().SetTitle(var_dict[main_var][7])
+            hframe.GetXaxis().SetLabelSize(0.04)
+            hframe.GetYaxis().SetLabelSize(0.04)
+            hframe.GetXaxis().SetMaxDigits(3)
+            hframe.GetXaxis().SetNdivisions(510)
+            hframe.Draw()
+
+            hframe.SetMinimum(5e-5)  # force log Y minimum
+            hframe.SetMaximum(1)     # optional
+
+            leg = ROOT.TLegend(0.525, 0.7, 0.725, 0.9)
+            leg.SetBorderSize(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+
+            color_numerator = 7
+            for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
+                print(f"\tSample = {sample}")
+                file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+                df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
+                h = 0
+                h = df.Histo1D(
+                        (f"h_RNNScore_{sample}", "", nbins, min, max),
+                        "RNNScore"
+                    )
+
+                garbage_protect_list.append(h)
+                histo = h.GetValue()
+                histo.SetDirectory(0)
+                fold_overflow(histo)
+                if histo.Integral() > 0:
+                    histo.Scale(1/histo.Integral())
+                is_data = samples_dict[sample][0] == "Data"
+                is_cosmic_bkg = sample == "Cosmic Bkg"
+                histo.SetLineColor(ROOT.kBlack if is_data else color_numerator)
+                histo.SetMarkerColor(ROOT.kBlack if is_data else color_numerator)
+                histo.SetMarkerStyle(20)
+                histo.SetMarkerSize(0.6 if is_data else 1.0)
+                histo.SetLineWidth(2)
+                if is_cosmic_bkg:
+                    histo.SetFillColor(color_numerator)
+                    histo.SetFillStyle(3004)
+                if is_data:
+                    histo.Draw("P SAME")
+                    leg.AddEntry(histo, sample, "p")
+                elif is_cosmic_bkg:
+                    histo.Draw("HIST SAME")
+                    leg.AddEntry(histo, sample, "f")
+                else:
+                    histo.Draw("HIST SAME")
+                    leg.AddEntry(histo, sample, "l")
+                color_numerator -= 1
+
+            pave = ROOT.TPaveText(0.23, 0.80, 0.38, 0.90, "NDC")
+            pave.SetFillColor(0)
+            pave.SetBorderSize(0)
+            pave.SetTextAlign(12)  # left aligned
+            pave.SetTextSize(0.025)
+            pave.AddText(f"Collection = {collection}")
+            pave.AddText("Signal Depth: 0 mm")
+            pave.AddText(presel_steps_arr[num])
+            pave.Draw()
+            leg.Draw()
+            
+            # overflow_line = ROOT.TLine(max - bin_width, hframe.GetMinimum(), max - bin_width, hframe.GetMaximum())
+            # overflow_line.SetLineStyle(2)
+            # overflow_line.SetLineColor(ROOT.kGray + 2)
+            # overflow_line.Draw()
+
+            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
+
         else: # For variables that are current preselection variables, run trigger, nminus1, and final steps
             for num in range(3):
                 print(f"Making {var_dict[main_var][4+num]} plot")

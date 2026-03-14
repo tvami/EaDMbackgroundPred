@@ -15,7 +15,7 @@ import time
 # Parse command-line arguments
 # =========================
 parser = argparse.ArgumentParser()
-parser.add_argument("-n", "--ntupleVersion")  # e.g. Ntuples_v4.0.7
+parser.add_argument("-n", "--ntupleVersion")  # e.g. 4.0.7
 parser.add_argument("-s", "--sampleType")     # BkgMC, Data, ExpressData, Signal
 parser.add_argument("-r", "--region")         # sr, vr1, vr2
 parser.add_argument("-R", "--Run")            # MC, 2023D, Run3
@@ -29,22 +29,23 @@ args = parser.parse_args()
 
 
 # =========================
-# Load pretrained RNN model
+# Load pretrained RNN model if not 2DAInput only
 # =========================
 
-# Path to trained RNN weights
-checkpoint_path = '/home/users/smasanam/EarthAsDMProject/CMSSW_13_0_10/src/CosmicsAnalyzer/EarthAsDMAnalyzer/test/rnn_v5_188k_final_weights.ckpt'
+if args.runType != '2DAInput':
+    # Path to trained RNN weights
+    checkpoint_path = '/home/users/smasanam/EarthAsDMProject/CMSSW_13_0_10/src/CosmicsAnalyzer/EarthAsDMAnalyzer/test/rnn_v5_188k_final_weights.ckpt'
 
-# Define model architecture (must match training architecture exactly)
-model = Sequential([
-    layers.Masking(mask_value=-9999.),          # Ignore padded values
-    layers.Bidirectional(layers.LSTM(64)),     # BiLSTM layer
-    layers.Dense(64, activation='relu'),       # Fully connected layer
-    layers.Dense(1, activation='sigmoid')      # Output: binary classification score
-])
+    # Define model architecture (must match training architecture exactly)
+    model = Sequential([
+        layers.Masking(mask_value=-9999.),          # Ignore padded values
+        layers.Bidirectional(layers.LSTM(64)),     # BiLSTM layer
+        layers.Dense(64, activation='relu'),       # Fully connected layer
+        layers.Dense(1, activation='sigmoid')      # Output: binary classification score
+    ])
 
-# Load trained weights
-model.load_weights(checkpoint_path)
+    # Load trained weights
+    model.load_weights(checkpoint_path)
 
 
 # =========================
@@ -56,9 +57,11 @@ file_dir_path = '/home/users/tvami/EarthAsDM'
 ntuple_v   = args.ntupleVersion
 sample_type = args.sampleType
 run = args.Run
+if run == None: run = 'Run3'
 if args.region == 'vr1': region = 'sr'
 else: region = args.region
 collection  = args.collection
+runType = args.runType
 
 print("============ Running on ============")
 print("ntupleVersion:",ntuple_v)
@@ -66,14 +69,15 @@ print("sampleType:",sample_type)
 print("region:",region[:2], f"({args.region})")
 print("run:",run)
 print("collection:",collection)
+print("Run Type:",runType)
 print("====================================")
 
 # Find all ROOT files matching pattern
-input_files = glob.glob(f'{file_dir_path}/{ntuple_v}/{sample_type}/{region[:2]}/{collection}/*.root')
-if sample_type == 'Data' and region[:2] == 'sr': input_files.remove(f"/home/users/tvami/EarthAsDM/{ntuple_v}/Data/{region[:2]}/{collection}/skimmed_{collection}_{region[:2]}_Ntuplizer-Cosmics_All_v4.root")
+input_files = glob.glob(f'{file_dir_path}/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}/*.root')
+if sample_type == 'Data' and region[:2] == 'sr': input_files.remove(f"/home/users/tvami/EarthAsDM/Ntuples_v{ntuple_v}/Data/{region[:2]}/{collection}/skimmed_{collection}_{region[:2]}_Ntuplizer-Cosmics_All_v4.root")
 
 # Output directory for RNN-scored files
-output_dir = f'/home/users/smasanam/EarthAsDMProject/samples/{ntuple_v}/{sample_type}/{region[:2]}/{collection}'
+output_dir = f'/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}'
 
 # Create output directory if missing
 if not os.path.exists(output_dir+"/2DA"):
@@ -377,7 +381,7 @@ if args.runType == 'Process' or args.runType == 'Both':
 
 
 # =========================
-# 2DA loop
+# 2DAInput loop
 # =========================
 if args.runType == '2DAInput' or args.runType == 'Both':
     if args.sampleType == 'Data':
@@ -395,9 +399,9 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         df2 = (
             df.Define("n_Seg", "nmuon_dtSeg_t0timing")                            # Total number of DT segments per event
             .Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")  # Chi2/ndof, protect against division by zero
-            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")  # Select good-quality muon tracks
+            .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")  # Select good-quality muon tracks
             .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
-            .Define("pT_max_clipped", "std::min(pT_max, 12499.0)")                            # Clip pT to stay within histogram range
+            .Define("pT_max_clipped", "std::min(pT_max, 5599.0)")                            # Clip pT to stay within histogram range
             .Define("n_Seg_clipped", "std::min(n_Seg, 199)")                                  # Clip segment count to stay within histogram range
         )
 
@@ -405,7 +409,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # pT scale factor varies by regime: +0.3% below 200 GeV, +0.5% between 200-500 GeV, +1% above 500 GeV
         pT_up_df_tmp = (
             df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
-            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+            .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
             .Define(
                 "pT_max_up",
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.003 : "
@@ -413,7 +417,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
-            .Define("pT_max_up_clipped", "std::min(pT_max_up, 12499.0)")
+            .Define("pT_max_up_clipped", "std::min(pT_max_up, 5599.0)")
             .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
         )
 
@@ -421,7 +425,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # pT scale factor varies by regime: -0.3% below 200 GeV, -0.5% between 200-500 GeV, -1% above 500 GeV
         pT_down_df_tmp = (
             df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
-            .Define("quality_mask", f"chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+            .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
             .Define(
                 "pT_max_down",
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.997 : "
@@ -429,7 +433,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
-            .Define("pT_max_down_clipped", "std::min(pT_max_down, 12499.0)")
+            .Define("pT_max_down_clipped", "std::min(pT_max_down, 5599.0)")
             .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
         )
 
@@ -525,6 +529,11 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         fail_t0_down_hist = rnn_t0_down_fail_df.Histo2D(("hfail_t0syst_down", "hfail_t0syst_down; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
+        if args.region == 'vr2':
+                rnn_score_hist = df2.Histo1D(("hist_RNNScore", "hist_RNNScore; RNN Score; Ratio of Events / Bin", 
+                    100, 0, 1),
+                    "RNNScore")
+                rnn_score_hist.Scale(1 / rnn_score_hist.Integral())
 
         # Write all histograms to output ROOT file for use as 2DAlphabet inputs
         print("Saving to:", output_dir+f"/2DA/EaDM_{run}_Cosmics_Data_{args.region.upper()}.root")
@@ -543,6 +552,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         pass_rnn_down_hist.Write()
         fail_rnn_up_hist.Write()
         fail_rnn_down_hist.Write()
+        if args.region == 'vr2': rnn_score_hist.Write()
         root_file.Close()
 
     elif args.sampleType in ['Signal', 'BkgMC']:
@@ -556,46 +566,58 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 number = match.group(1)
                 new_filename = f"EaDM_Signal_M{number}GeV_{args.region.upper()}.root"
                 # Override filename for special MC samples (neutrino and cosmic background)
-                if Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
-                elif Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
-                print("Saving to:", output_dir+f"/2DA/{new_filename}")
+                if Path(file).stem == f"skimmed_matched_muon_{region[:2]}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
+                elif Path(file).stem == f"skimmed_matched_muon_{region[:2]}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
+            elif match and "SurfaceDepth" in Path(file).stem:
+                depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
+                number = match.group(1)
+                new_filename = f"EaDM_Signal_M{number}GeV_e{depth.group(1)}_{args.region.upper()}.root"
             else:
-                print("No matching number found or encountered Surface Depth sample")
+                print("No matching number found")
                 continue
+            print("Saving to:", output_dir+f"/2DA/{new_filename}")
 
             df = ROOT.RDataFrame("tree;1", file)
 
-            # Define derived columns — no quality mask for MC (all tracks used)
+            # Define derived columns for the nominal 2D histogram inputs
             df2 = (
-                df.Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt)")
-                .Define("pT_max_clipped", "std::min(pT_max, 12499.0)")
-                .Define("n_Seg_clipped", "std::min(n_Seg, 199)")
+                df.Define("n_Seg", "nmuon_dtSeg_t0timing")                            # Total number of DT segments per event
+                .Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")  # Chi2/ndof, protect against division by zero
+                .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")  # Select good-quality muon tracks
+                .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
+                .Define("pT_max_clipped", "std::min(pT_max, 5599.0)")                            # Clip pT to stay within histogram range
+                .Define("n_Seg_clipped", "std::min(n_Seg, 199)")                                  # Clip segment count to stay within histogram range
             )
 
-            # pT scale systematic (up) — same regime-dependent factors as Data
+            # Define pT-shifted dataframe for pT scale systematic (upward variation)
+            # pT scale factor varies by regime: +0.3% below 200 GeV, +0.5% between 200-500 GeV, +1% above 500 GeV
             pT_up_df_tmp = (
-                df.Define(
+                df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
+                .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+                .Define(
                     "pT_max_up",
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.003 : "
-                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.01 : "
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt)*1.005)"
+                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.003 : "
+                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.01 : "
+                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max_up_clipped", "std::min(pT_max_up, 12499.0)")
+                .Define("pT_max_up_clipped", "std::min(pT_max_up, 5599.0)")
                 .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
             )
 
-            # pT scale systematic (down) — same regime-dependent factors as Data
+            # Define pT-shifted dataframe for pT scale systematic (downward variation)
+            # pT scale factor varies by regime: -0.3% below 200 GeV, -0.5% between 200-500 GeV, -1% above 500 GeV
             pT_down_df_tmp = (
-                df.Define(
+                df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
+                .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7")
+                .Define(
                     "pT_max_down",
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.997 : "
-                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.99 : "
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt)*0.995)"
+                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.997 : "
+                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.99 : "
+                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max_down_clipped", "std::min(pT_max_down, 12499.0)")
+                .Define("pT_max_down_clipped", "std::min(pT_max_down, 5599.0)")
                 .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
             )
 
@@ -614,9 +636,9 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
                 elif sample_type == 'BkgMC':
                     bnd_nominal = ['RNNScore >= 0.9', 'RNNScore < 0.9']
-                    bnd_up = ['RNNScore >= 0.9', 'RNNScore < 0.9']
+                    bnd_up = ['RNNScore >= 0.95', 'RNNScore < 0.95']
                     bnd_down = ['RNNScore >= 0.81', 'RNNScore < 0.81']
-                    bnd_syst = ['RNNScore_noiseSyst >= 0.99', 'RNNScore_noiseSyst < 0.99']
+                    bnd_syst = ['RNNScore_noiseSyst >= 0.9', 'RNNScore_noiseSyst < 0.9']
             if args.region == 'vr1':
                 bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
                 bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
@@ -687,14 +709,19 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             fail_t0_down_hist = rnn_t0_down_fail_df.Histo2D(("hfail_t0syst_down", "hfail_t0syst_down; p_{T} (GeV);# of Hits",
                     12500, 0, 12500, 200, 0, 200),
                     pT_var, n_Seg_var)
+            if args.region == 'vr2':
+                rnn_score_hist = df2.Histo1D(("hist_RNNScore", "hist_RNNScore; RNN Score; Ratio of Events / Bin", 
+                    100, 0, 1),
+                    "RNNScore")
+                rnn_score_hist.Scale(1 / rnn_score_hist.Integral())
 
             # Retrieve cutflow histogram from original (pre-RNN) ntuple to get total event count for normalization
-            f = ROOT.TFile.Open(f"{file_dir_path}/{ntuple_v}/{sample_type}/{region[:2]}/{collection}/{Path(file).stem[:-5]}.root")
+            f = ROOT.TFile.Open(f"{file_dir_path}/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}/{Path(file).stem[:-5]}.root")
             cutflow_hist = f.Get("h_cutflow")
             cutflow_hist.SetDirectory(0)   # Detach from file so it survives after Close()
             f.Close()
 
-            print("Total # of events in sample:", cutflow_hist.GetBinContent(1))
+            print(f"Total # of events in sample {Path(file).stem[:-5]}:", cutflow_hist.GetBinContent(1))
 
             if sample_type == 'Signal':
                 # Normalize signal histograms to 100 events (arbitrary reference cross section)
@@ -728,4 +755,5 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             pass_rnn_down_hist.Write()
             fail_rnn_up_hist.Write()
             fail_rnn_down_hist.Write()
+            if args.region == 'vr2': rnn_score_hist.Write()
             root_file.Close()
