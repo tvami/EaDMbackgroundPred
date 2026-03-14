@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Destination base directory
-BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/
+BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/
 
 # ------------------------------------------------------------------
 # 1) Create full directory tree
@@ -19,8 +19,17 @@ done
 # 2) Move skimmed ROOT files from ./ into the tree
 # ------------------------------------------------------------------
 shopt -s nullglob
-for f in ./skimmed_*.root; do
+for f in ./skimmed_*.root ./trigger_study_*.root; do
   fname=$(basename "$f")
+
+  # Determine output base: append "_trigger_study" for trigger_study files
+  if [[ "$fname" == trigger_study_* ]]; then
+    OUTBASE="${BASE%/}_trigger_study/"
+    prefix=trigger_study
+  else
+    OUTBASE="$BASE"
+    prefix=skimmed
+  fi
 
   # Extract region
   if [[ "$fname" == *_sr_* ]]; then
@@ -34,10 +43,10 @@ for f in ./skimmed_*.root; do
 
   # Extract object (explicit mapping)
   case "$fname" in
-    skimmed_matched_muon_*) object=matched_muon ;;
-    skimmed_muon_*)         object=muon ;;
-    skimmed_track_*)        object=track ;;
-    skimmed_tuneP_*)        object=tuneP ;;
+    ${prefix}_matched_muon_*) object=matched_muon ;;
+    ${prefix}_muon_*)         object=muon ;;
+    ${prefix}_track_*)        object=track ;;
+    ${prefix}_tuneP_*)        object=tuneP ;;
     *)
       echo "WARNING: cannot determine object for $fname — skipping"
       continue
@@ -55,6 +64,7 @@ for f in ./skimmed_*.root; do
     sample=Signal
   fi
 
-  mv "$f" "$BASE/$sample/$region/$object/"
+  mkdir -p "$OUTBASE/$sample/$region/$object"
+  mv "$f" "$OUTBASE/$sample/$region/$object/"
 done
 

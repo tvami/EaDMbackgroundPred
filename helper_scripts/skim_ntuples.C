@@ -12,6 +12,7 @@
 // v4.0.5: Add cut on pT error (ptErr/pt^2 < 1e-3) for highest-pT object, add corresponding N-1 plot, add histograms of ptErr/pt^2 at trigger level (with no quality cuts) for monitoring
 // v4.0.6: Move cutflow to be object level, so that it's more inclusive. Removed alternative cutflow and trigger studies. Add N-1 plot with object level
 // v4.0.7: Move pt boundary to 10000 GeV
+// v4.0.8: Add 2D histograms of leading object (and leading quality object) kinematics vs trigger
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
 
     // Enable multi-threading (use all available cores)
@@ -23,6 +24,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     if (base_dir_copy.EndsWith("/")) base_dir_copy.Remove(base_dir_copy.Length()-1);
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
+    if (dataset_name.EndsWith(".root")) dataset_name.Remove(dataset_name.Length()-5);
     TString output_file = TString::Format("skimmed_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
 
     // Set variable names based on object
@@ -175,6 +177,76 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_phi_pretrigger = df_pretrig_histos.Histo1D({"h_phi_pretrigger", "#phi (pretrigger);#phi;Objects", 100, -3.15, 3.15}, phi_var.Data());
     auto h_pt_pretrigger = df_pretrig_histos.Histo1D({"h_pt_pretrigger", "p_{T} (pretrigger);p_{T} [GeV];Objects", 500, 0, 10000}, pt_var.Data());
     auto h_nseg_pretrigger = df_with_count.Histo1D({"h_nseg_pretrigger", "DT segments (pretrigger);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
+
+    // 2D histograms: leading object kinematics vs trigger (before any cuts)
+    auto df_leading_vs_trigger = df_with_count
+    .Filter(TString::Format("%s > 0", n_var.Data()).Data())
+    .Define("leading_idx_pretrig", [](const ROOT::VecOps::RVec<float>& pt) {
+        int best = -1; float best_pt = -1;
+        for (size_t i = 0; i < pt.size(); ++i)
+            if (pt[i] > best_pt) { best = i; best_pt = pt[i]; }
+        return best;
+    }, {pt_var.Data()})
+    .Define("leading_eta_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {eta_var.Data(), "leading_idx_pretrig"})
+    .Define("leading_phi_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {phi_var.Data(), "leading_idx_pretrig"})
+    .Define("leading_pt_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {pt_var.Data(), "leading_idx_pretrig"})
+    .Define("leading_energy_pretrig", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& eta, int idx) {
+        return static_cast<double>(pt[idx] * std::cosh(eta[idx]));
+    }, {pt_var.Data(), eta_var.Data(), "leading_idx_pretrig"})
+    .Define("trigger_passed", "static_cast<double>(HLT_L1SingleMuCosmics)");
+
+    auto h_eta_vs_trigger = df_leading_vs_trigger.Histo2D(
+        {"h_eta_vs_trigger", "Leading obj #eta vs trigger;#eta;Trigger", 100, -3, 3, 2, -0.5, 1.5},
+        "leading_eta_pretrig", "trigger_passed");
+    auto h_phi_vs_trigger = df_leading_vs_trigger.Histo2D(
+        {"h_phi_vs_trigger", "Leading obj #phi vs trigger;#phi;Trigger", 100, -3.15, 3.15, 2, -0.5, 1.5},
+        "leading_phi_pretrig", "trigger_passed");
+    auto h_pt_vs_trigger = df_leading_vs_trigger.Histo2D(
+        {"h_pt_vs_trigger", "Leading obj p_{T} vs trigger;p_{T} [GeV];Trigger", 500, 0, 10000, 2, -0.5, 1.5},
+        "leading_pt_pretrig", "trigger_passed");
+    auto h_energy_vs_trigger = df_leading_vs_trigger.Histo2D(
+        {"h_energy_vs_trigger", "Leading obj energy vs trigger;E [GeV];Trigger", 500, 0, 10000, 2, -0.5, 1.5},
+        "leading_energy_pretrig", "trigger_passed");
+
+    // 2D histograms: leading quality object kinematics vs trigger (before any cuts)
+    // Quality: nHits > 7, chi2/ndof < 35, ptErr/pT^2 < 1e-3
+    auto df_quality_vs_trigger = df_with_count
+    .Filter(TString::Format("%s > 0", n_var.Data()).Data())
+    .Define("quality_leading_idx", [](const ROOT::VecOps::RVec<float>& pt,
+                                       const ROOT::VecOps::RVec<int>& nhits,
+                                       const ROOT::VecOps::RVec<float>& chi2,
+                                       const ROOT::VecOps::RVec<float>& ndof,
+                                       const ROOT::VecOps::RVec<float>& ptErr) {
+        int best = -1; float best_pt = -1;
+        for (size_t i = 0; i < pt.size(); ++i) {
+            if (nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3 && pt[i] > best_pt) {
+                best = i; best_pt = pt[i];
+            }
+        }
+        return best;
+    }, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+    .Filter("quality_leading_idx >= 0")
+    .Define("quality_leading_eta", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {eta_var.Data(), "quality_leading_idx"})
+    .Define("quality_leading_phi", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {phi_var.Data(), "quality_leading_idx"})
+    .Define("quality_leading_pt", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {pt_var.Data(), "quality_leading_idx"})
+    .Define("quality_leading_energy", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& eta, int idx) {
+        return static_cast<double>(pt[idx] * std::cosh(eta[idx]));
+    }, {pt_var.Data(), eta_var.Data(), "quality_leading_idx"})
+    .Define("trigger_passed_q", "static_cast<double>(HLT_L1SingleMuCosmics)");
+
+    auto h_eta_vs_trigger_with_quality_obj = df_quality_vs_trigger.Histo2D(
+        {"h_eta_vs_trigger_with_quality_obj", "Leading quality obj #eta vs trigger;#eta;Trigger", 100, -3, 3, 2, -0.5, 1.5},
+        "quality_leading_eta", "trigger_passed_q");
+    auto h_phi_vs_trigger_with_quality_obj = df_quality_vs_trigger.Histo2D(
+        {"h_phi_vs_trigger_with_quality_obj", "Leading quality obj #phi vs trigger;#phi;Trigger", 100, -3.15, 3.15, 2, -0.5, 1.5},
+        "quality_leading_phi", "trigger_passed_q");
+    auto h_pt_vs_trigger_with_quality_obj = df_quality_vs_trigger.Histo2D(
+        {"h_pt_vs_trigger_with_quality_obj", "Leading quality obj p_{T} vs trigger;p_{T} [GeV];Trigger", 500, 0, 10000, 2, -0.5, 1.5},
+        "quality_leading_pt", "trigger_passed_q");
+    auto h_energy_vs_trigger_with_quality_obj = df_quality_vs_trigger.Histo2D(
+        {"h_energy_vs_trigger_with_quality_obj", "Leading quality obj energy vs trigger;E [GeV];Trigger", 500, 0, 10000, 2, -0.5, 1.5},
+        "quality_leading_energy", "trigger_passed_q");
 
     // --- Object-level cutflow ---
     // Each step counts objects passing progressively tighter cuts,
@@ -551,6 +623,13 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         h_eta_highpt, h_phi_highpt, h_pt_highpt
     };
     for (auto& h : histograms_1d) h->Write();
+
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> histograms_2d = {
+        h_eta_vs_trigger, h_phi_vs_trigger, h_pt_vs_trigger, h_energy_vs_trigger,
+        h_eta_vs_trigger_with_quality_obj, h_phi_vs_trigger_with_quality_obj,
+        h_pt_vs_trigger_with_quality_obj, h_energy_vs_trigger_with_quality_obj
+    };
+    for (auto& h : histograms_2d) h->Write();
 
     f->Close();
     delete f;

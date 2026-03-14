@@ -931,8 +931,13 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Set style: color by minP, line style & marker by surfaceDepth
             params = file_params[i]
             color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
-            # Dont append if skip_depth is True and depth is not None
-            if skip_depth and params.get('depth') is not None:
+            # # Dont append if skip_depth is True and depth is not None
+            # if skip_depth and params.get('depth') is not None:
+            #     tfile.Close()
+            #     continue
+
+            # Keep only SurfaceDepth-e2 (parsed as depth=100); skip all other depth-tagged files
+            if skip_depth and params.get('depth') != 100:
                 tfile.Close()
                 continue
 
@@ -1016,9 +1021,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     # print("\nCreating ProfileX overlays for 2D trigger histograms...")
 
     profile_hists = {
-        # 'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
-        # 'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
-        # 'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
+        'h_eta_vs_trigger': {'x_title': '#eta', 'y_title': '<Trigger>', 'log_y': False},
+        'h_pt_vs_trigger':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger>', 'log_y': False},
+        'h_phi_vs_trigger': {'x_title': '#phi', 'y_title': '<Trigger>', 'log_y': False},
         # 'h_eta_vs_trigger_obj_eta': {'x_title': '#eta', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
         # 'h_pt_vs_trigger_obj_eta':  {'x_title': 'p_{T} [GeV]', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
         # 'h_phi_vs_trigger_obj_eta': {'x_title': '#phi', 'y_title': '<Trigger> (obj found, |#eta|<0.9)', 'log_y': False},
@@ -1139,9 +1144,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/Signal/": "Signal",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/BkgMC/": "BkgMC",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/BkgMC/": "BkgMC",
         #"/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/ExpressData/": "ExpressData",
     }
 
