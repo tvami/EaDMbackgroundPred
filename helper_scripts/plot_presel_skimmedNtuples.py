@@ -1,15 +1,16 @@
 import os
 import ROOT, cmsstyle as CMS
 import mplhep as hep
+from tqdm import tqdm
 
 ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
-CMS.SetExtraText("Internal")
+CMS.SetExtraText("Work in Progress")
 
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.7'
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.8'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 collections = ['matched_muon', 'track', 'muon', 'tuneP']
-region = 'vr' # sr vr
+region = 'sr' # sr vr
 
 samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
                 "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
@@ -33,16 +34,16 @@ base_var_dict = {
             "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
             # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
-            "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
-            "ptErrPerPt2_quality_zoom": [14, 100, 0, 0.002, None, None, 'ptErrPerPt2_quality_nminus1_zoom', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
-            "ptErrPerPt_quality": [15, 50, 0, 10, None, None, 'ptErrPerPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
-            "pt_quality": [16, 500, 0, 10000, None, None, 'pt_quality_nminus1', None, 'p_{T} [GeV] (quality cuts)'],
+            # "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
+            # "ptErrPerPt2_quality_zoom": [14, 100, 0, 0.002, None, None, 'ptErrPerPt2_quality_nminus1_zoom', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
+            # "ptErrPerPt_quality": [15, 50, 0, 10, None, None, 'ptErrPerPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
+            # "pt_quality": [16, 500, 0, 10000, None, None, 'pt_quality_nminus1', None, 'p_{T} [GeV] (quality cuts)'],
             # "ptErrPerPtVsPt_quality": [17, 50, 0, 10, None, None, 'ptErrPerPtVsPt_quality_nminus1', None, '#sigma_{p_{T}} / p_{T} (quality cuts)'],
-            "ptErrPerPt_lowPt": [18, 50, 0, 10, None, 'ptErrPerPt_lowPt', 'ptErrPerPt_lowPt_nminus1', 'ptErrPerPt_lowPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} < 5 TeV)'],
-            "ptErrPerPt_highPt": [19, 50, 0, 10, None, 'ptErrPerPt_highPt', 'ptErrPerPt_highPt_nminus1', 'ptErrPerPt_highPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} > 5 TeV)'],
-            "ptErrPerPt2_lowPt": [20, 100, 0, 0.01, None, 'ptErrPerPt2_lowPt', 'ptErrPerPt2_lowPt_nminus1', 'ptErrPerPt2_lowPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} < 5 TeV)'],
-            "ptErrPerPt2_highPt": [21, 100, 0, 0.01, None, 'ptErrPerPt2_highPt', 'ptErrPerPt2_highPt_nminus1', 'ptErrPerPt2_highPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} > 5 TeV)'],
-            "ptErrPerPt2_pretrig": [22, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', None, None, None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            # "ptErrPerPt_lowPt": [18, 50, 0, 10, None, 'ptErrPerPt_lowPt', 'ptErrPerPt_lowPt_nminus1', 'ptErrPerPt_lowPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} < 5 TeV)'],
+            # "ptErrPerPt_highPt": [19, 50, 0, 10, None, 'ptErrPerPt_highPt', 'ptErrPerPt_highPt_nminus1', 'ptErrPerPt_highPt_final', '#sigma_{p_{T}} / p_{T} (p_{T} > 5 TeV)'],
+            # "ptErrPerPt2_lowPt": [20, 100, 0, 0.01, None, 'ptErrPerPt2_lowPt', 'ptErrPerPt2_lowPt_nminus1', 'ptErrPerPt2_lowPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} < 5 TeV)'],
+            # "ptErrPerPt2_highPt": [21, 100, 0, 0.01, None, 'ptErrPerPt2_highPt', 'ptErrPerPt2_highPt_nminus1', 'ptErrPerPt2_highPt_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (p_{T} > 5 TeV)'],
+            # "ptErrPerPt2_pretrig": [22, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', None, None, None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             "nhits_highpt": [23, 80, 0, 80, None, None, None, 'nhits_highpt', 'N_{valid hits} (highest p_{T})'],
             "chi2ndof_highpt": [24, 100, 0, 100, None, None, None, 'chi2ndof_highpt', '#chi^{2}/n_{DoF} (highest p_{T})'],
             "ptErrPerPt2_highpt": [25, 100, 0, 0.01, None, None, None, 'ptErrPerPt2_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T})'],
@@ -165,11 +166,10 @@ def get_cutflow_df(df, collection, region='sr'):
         .Define("highpt_ptErrPerPt2", "highpt_ptErr / (highpt_pt * highpt_pt)")
     )
 
-print("Starting!")
-for collection in collections:
-    print(f"\n{'='*60}")
-    print(f"Collection: {collection}")
-    print(f"{'='*60}")
+os.makedirs("figures/presel_ch_skimmedNtuples", exist_ok=True)
+for collection in tqdm(collections, desc="Collections"):
+    os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
+    tqdm.write(f"Collection: {collection}")
 
     var_dict = dict(base_var_dict)
     if collection == 'track': var_dict.update(track_var_dict)
@@ -178,12 +178,10 @@ for collection in collections:
     if collection == 'tuneP': var_dict.update(tuneP_var_dict)
 
     _profiles_done = False
-    for main_var in list(var_dict.keys()):
-        print(f"Making {main_var} plots")
+    for main_var in tqdm(list(var_dict.keys()), desc=f"  {collection} vars", leave=False):
         # For variables that aren't current preselection variables, only run nmin1 step
         if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom') or main_var == 'sumPt':
             for num in range(1, 2):
-                print(f"Making {var_dict[main_var][4+num]} plot")
                 nbins = var_dict[main_var][1]
                 min = var_dict[main_var][2]
                 max = var_dict[main_var][3]
@@ -193,11 +191,11 @@ for collection in collections:
                 c.SetLeftMargin(0.153)
                 c.SetRightMargin(0.1)
 
-                # define axis ranges (one extra bin so the overflow line at x=max is visible)
+                # define axis ranges (extend by one bin so overflow line is visible)
                 bin_width = (max - min) / nbins
                 hframe = ROOT.TH1F("hframe", "", nbins + 1, min, max + bin_width)
                 hframe.SetStats(False)
-                hframe.GetXaxis().SetTitle(var_dict[main_var][8])
+                hframe.GetXaxis().SetTitle(var_dict[main_var][-1])
                 hframe.GetYaxis().SetTitle("Normalized Yields / Bin")
                 hframe.GetXaxis().SetLabelSize(0.04)
                 hframe.GetYaxis().SetLabelSize(0.04)
@@ -214,7 +212,7 @@ for collection in collections:
 
                 color_numerator = 7
                 for sample in list(samples_dict.keys()):
-                    print(f"\tSample: {sample}")
+
                     color_numerator -= 1
                     if color_numerator == 1:  # skip kBlack (reserved for data)
                         color_numerator = 9
@@ -379,7 +377,7 @@ for collection in collections:
                     garbage_protect_list.append(h)
                     histo = h.GetValue()
                     histo.SetDirectory(0)
-                    histo = make_overflow_visible(histo)
+                    fold_overflow(histo)
                     if histo.Integral() > 0:
                         histo.Scale(1/histo.Integral())
                     is_data = samples_dict[sample][0] == "Data"
@@ -456,7 +454,7 @@ for collection in collections:
             color_numerator = 1
             #for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
             for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
-                print(f"\tSample = {sample}")
+
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                 h = 0
@@ -609,7 +607,7 @@ for collection in collections:
             color_numerator = 7
             # for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
             for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
-                print(f"\tSample = {sample}")
+
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                 h = 0
@@ -665,9 +663,10 @@ for collection in collections:
             c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
             c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
 
-        else: # For variables that are current preselection variables, run trigger, nminus1, and final steps
-            for num in range(3):
-                print(f"Making {var_dict[main_var][4+num]} plot")
+        else: # For variables that are current preselection variables, run all steps (pretrigger, trigger, nminus1, final)
+            for num in range(4):
+                if var_dict[main_var][4+num] is None:
+                    continue
                 nbins = var_dict[main_var][1]
                 min = var_dict[main_var][2]
                 max = var_dict[main_var][3]
@@ -677,13 +676,12 @@ for collection in collections:
                 c.SetLeftMargin(0.153)
                 c.SetRightMargin(0.08)
 
-                print(f"\t{nbins} bins")
-                # define axis ranges (one extra bin so the overflow line at x=max is visible)
+                # define axis ranges (extend by one bin so overflow line is visible)
                 bin_width = (max - min) / nbins
                 hframe = ROOT.TH1F("hframe", "", nbins + 1, min, max + bin_width)
                 hframe.SetStats(False)
-                hframe.GetXaxis().SetTitle(var_dict[main_var][8])
-                hframe.GetYaxis().SetTitle("Normalized Yields / Bin")
+                hframe.GetXaxis().SetTitle(var_dict[main_var][-1])
+                hframe.GetYaxis().SetTitle("Fraction of Events")
                 hframe.GetXaxis().SetLabelSize(0.04)
                 hframe.GetYaxis().SetLabelSize(0.04)
                 hframe.GetXaxis().SetMaxDigits(3)
@@ -700,19 +698,20 @@ for collection in collections:
                 color_numerator = 7
                 for sample in list(samples_dict.keys()):
                     hist_name = f"h_{var_dict[main_var][4+num]}"
-                    print(f"\t{sample} {hist_name}")
+
                     color_numerator -= 1
                     if color_numerator == 1:  # skip kBlack (reserved for data)
                         color_numerator = 9
                     file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                     f = ROOT.TFile(f"{file_path}_{samples_dict[sample][1]}")
                     h = f.Get(hist_name)
-                    if h is None:
-                        print(f"\t\tWARNING: histogram {hist_name} not found in {file_path}_{samples_dict[sample][1]}")
+                    if not h or not h.InheritsFrom("TH1"):
+                        tqdm.write(f"  WARNING: {hist_name} not found in {file_path}_{samples_dict[sample][1]}")
+                        f.Close()
                         continue
                     h.SetDirectory(0)
                     f.Close()
-                    h = make_overflow_visible(h)
+                    fold_overflow(h)
                     if h.Integral() > 0:
                         h.Scale(1/h.Integral())
                     is_data = samples_dict[sample][0] == "Data"
@@ -768,7 +767,7 @@ for collection in collections:
         # -----------------------------------------------------------------
         # Profile plot: mean sigma(pT)/pT  vs  pT  (full cutflow)
         # -----------------------------------------------------------------
-        print("  Profile: mean sigma(pT)/pT vs pT")
+        # print("  Profile: mean sigma(pT)/pT vs pT")
         pt_lo, pt_hi, pt_nbins = 200, 12500, 123
 
         c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
@@ -854,7 +853,7 @@ for collection in collections:
         # -----------------------------------------------------------------
         # Profile plot: mean sigma(pT)/pT^2  vs  pT  (full cutflow)
         # -----------------------------------------------------------------
-        print("  Profile: mean sigma(pT)/pT^2 vs pT")
+        # print("  Profile: mean sigma(pT)/pT^2 vs pT")
         pt_lo2, pt_hi2, pt_nbins2 = 200, 12500, 123
 
         c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
@@ -942,7 +941,7 @@ for collection in collections:
     # -----------------------------------------------------------------
     # Object count profile: <N_obj> at each cutflow step from h2_cutflow_nobj
     # -----------------------------------------------------------------
-    print("  Object count profile: <N_obj> at each cutflow step")
+    # print("  Object count profile: <N_obj> at each cutflow step")
 
     c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
     c.SetLeftMargin(0.153)
@@ -952,6 +951,7 @@ for collection in collections:
     hframe_nobj.SetStats(False)
     hframe_nobj.GetXaxis().SetTitle("Cutflow step")
     hframe_nobj.GetYaxis().SetTitle("<N_{obj}>")
+    hframe_nobj.GetYaxis().SetTitleOffset(1.2)
     hframe_nobj.GetXaxis().SetLabelSize(0.03)
     hframe_nobj.GetYaxis().SetLabelSize(0.04)
     hframe_nobj.SetMinimum(0)
@@ -1042,7 +1042,7 @@ for collection in collections:
     # -----------------------------------------------------------------
     # Object count std dev: std(N_obj) at each cutflow step from h2_cutflow_nobj
     # -----------------------------------------------------------------
-    print("  Object count std dev: std(N_obj) at each cutflow step")
+    # print("  Object count std dev: std(N_obj) at each cutflow step")
 
     c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
     c.SetLeftMargin(0.153)
@@ -1052,6 +1052,7 @@ for collection in collections:
     hframe_nobj_std.SetStats(False)
     hframe_nobj_std.GetXaxis().SetTitle("Cutflow step")
     hframe_nobj_std.GetYaxis().SetTitle("Std(N_{obj})")
+    hframe_nobj_std.GetYaxis().SetTitleOffset(1.2)
     hframe_nobj_std.GetXaxis().SetLabelSize(0.03)
     hframe_nobj_std.GetYaxis().SetLabelSize(0.04)
     hframe_nobj_std.SetMinimum(0)
@@ -1174,7 +1175,6 @@ for collection in collections:
     for step_bin in range(1, nobj_nx + 1):
         step_label = step_labels.get(step_bin, f"step{step_bin}")
         step_tag = step_label.replace(" ", "_").replace("#", "").replace("{", "").replace("}", "").replace("/", "over").replace("^", "").replace("<", "lt").replace(">", "gt").replace("|", "abs").replace(",", "").replace("(", "").replace(")", "").replace("=", "eq").replace("-", "m")
-        print(f"  N_obj distribution at cutflow step {step_bin}: {step_label}")
 
         c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
         c.SetLeftMargin(0.153)
@@ -1184,7 +1184,7 @@ for collection in collections:
         hframe_nobj_dist = ROOT.TH1F(f"hframe_nobj_dist_{step_bin}", "", nobj_nbins, nobj_lo, nobj_hi)
         hframe_nobj_dist.SetStats(False)
         hframe_nobj_dist.GetXaxis().SetTitle("N_{obj}")
-        hframe_nobj_dist.GetYaxis().SetTitle("Normalized Yields / Bin")
+        hframe_nobj_dist.GetYaxis().SetTitle("Fraction of Events")
         hframe_nobj_dist.GetXaxis().SetLabelSize(0.04)
         hframe_nobj_dist.GetYaxis().SetLabelSize(0.04)
         hframe_nobj_dist.SetMinimum(1e-5)

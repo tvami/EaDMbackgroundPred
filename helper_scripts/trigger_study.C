@@ -8,6 +8,9 @@
 /// Usage:
 ///       root -l -b -q 'trigger_study.C("track", "sr", "/path/to/files/")'
 ///       root -l -b -q 'trigger_study.C("muon", "sr", "/path/to/files/", true)'  // with file validation
+/// Version:
+///       v1: initial version, 10 TeV pT range
+///       v2: restricted pT range to 5 TeV, added cutflows, and subleading object plots
 
 void trigger_study(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
 
@@ -181,9 +184,82 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
         trigeff_pretrig.push_back(df_leading_pretrig.Histo2D(
             {("h2_trigeff_pt_pretrig_" + t.label).c_str(),
              (t.label + " vs leading obj p_{T} (pretrig);p_{T} [GeV];" + t.label).c_str(),
-             500, 0, 10000, 2, -0.5, 1.5},
+             250, 0, 5000, 2, -0.5, 1.5},
             "leading_pt_pretrig", t.col));
     }
+
+    // --- Subleading object kinematics vs trigger (pre-trigger) ---
+    // Same event selection as leading, but plot subleading object kinematics
+    auto df_subleading_pretrig = df_leading_pretrig
+        .Define("subleading_idx_pretrig", [](const ROOT::VecOps::RVec<float>& pt) {
+            int best = -1, second = -1;
+            float best_pt = -1, second_pt = -1;
+            for (size_t i = 0; i < pt.size(); ++i) {
+                if (pt[i] > best_pt) {
+                    second = best; second_pt = best_pt;
+                    best = i; best_pt = pt[i];
+                } else if (pt[i] > second_pt) {
+                    second = i; second_pt = pt[i];
+                }
+            }
+            return second;
+        }, {pt_var.Data()})
+        .Filter("subleading_idx_pretrig >= 0")
+        .Define("subleading_eta_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {eta_var.Data(), "subleading_idx_pretrig"})
+        .Define("subleading_phi_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {phi_var.Data(), "subleading_idx_pretrig"})
+        .Define("subleading_pt_pretrig", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {pt_var.Data(), "subleading_idx_pretrig"});
+
+    // Book 2D trigger efficiency histograms for subleading object (pre-trigger)
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_subleading_pretrig;
+    for (auto& t : triggers) {
+        trigeff_subleading_pretrig.push_back(df_subleading_pretrig.Histo2D(
+            {("h2_trigeff_eta_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs subleading obj #eta (pretrig);#eta;" + t.label).c_str(),
+             100, -3, 3, 2, -0.5, 1.5},
+            "subleading_eta_pretrig", t.col));
+        trigeff_subleading_pretrig.push_back(df_subleading_pretrig.Histo2D(
+            {("h2_trigeff_phi_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs subleading obj #phi (pretrig);#phi;" + t.label).c_str(),
+             100, -3.15, 3.15, 2, -0.5, 1.5},
+            "subleading_phi_pretrig", t.col));
+        trigeff_subleading_pretrig.push_back(df_subleading_pretrig.Histo2D(
+            {("h2_trigeff_pt_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs subleading obj p_{T} (pretrig);p_{T} [GeV];" + t.label).c_str(),
+             250, 0, 5000, 2, -0.5, 1.5},
+            "subleading_pt_pretrig", t.col));
+    }
+
+    // --- Both legs: fill leading AND subleading kinematics with same trigger (pre-trigger) ---
+    // This gives an OR-style efficiency: "given a muon at this eta/phi/pt, does the event trigger?"
+    auto df_bothlegs_pretrig = df_subleading_pretrig
+        .Define("bothlegs_eta_pretrig", [](double lead_eta, double sub_eta) {
+            return ROOT::VecOps::RVec<double>{lead_eta, sub_eta};
+        }, {"leading_eta_pretrig", "subleading_eta_pretrig"})
+        .Define("bothlegs_phi_pretrig", [](double lead_phi, double sub_phi) {
+            return ROOT::VecOps::RVec<double>{lead_phi, sub_phi};
+        }, {"leading_phi_pretrig", "subleading_phi_pretrig"})
+        .Define("bothlegs_pt_pretrig", [](double lead_pt, double sub_pt) {
+            return ROOT::VecOps::RVec<double>{lead_pt, sub_pt};
+        }, {"leading_pt_pretrig", "subleading_pt_pretrig"})
+        .Define("bothlegs_trig_L1SingleMuCosmics", [](int trig) { return ROOT::VecOps::RVec<int>{trig, trig}; }, {"trig_L1SingleMuCosmics"});
+
+    // Book 2D trigger efficiency histograms for both legs (pre-trigger) - L1SingleMuCosmics only
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_bothlegs_pretrig;
+    trigeff_bothlegs_pretrig.push_back(df_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_eta_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs #eta (pretrig);#eta;L1SingleMuCosmics",
+         100, -3, 3, 2, -0.5, 1.5},
+        "bothlegs_eta_pretrig", "bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_bothlegs_pretrig.push_back(df_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_phi_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs #phi (pretrig);#phi;L1SingleMuCosmics",
+         100, -3.15, 3.15, 2, -0.5, 1.5},
+        "bothlegs_phi_pretrig", "bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_bothlegs_pretrig.push_back(df_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_pt_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs p_{T} (pretrig);p_{T} [GeV];L1SingleMuCosmics",
+         250, 0, 5000, 2, -0.5, 1.5},
+        "bothlegs_pt_pretrig", "bothlegs_trig_L1SingleMuCosmics"));
 
     // --- Leading quality object kinematics vs trigger (pre-trigger) ---
     // Selection: object exists + quality cuts (nHits > 7, chi2/ndof < 35, ptErr/pT^2 < 1e-3)
@@ -231,9 +307,115 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
         trigeff_quality_pretrig.push_back(df_quality_pretrig.Histo2D(
             {("h2_trigeff_pt_quality_pretrig_" + t.label).c_str(),
              (t.label + " vs quality obj p_{T} (pretrig);p_{T} [GeV];" + t.label).c_str(),
-             500, 0, 10000, 2, -0.5, 1.5},
+             250, 0, 5000, 2, -0.5, 1.5},
             "quality_leading_pt", t.col));
     }
+
+    // --- Subleading quality object kinematics vs trigger (pre-trigger) ---
+    // Same event selection as leading quality, but plot subleading quality object kinematics
+    auto df_quality_subleading_pretrig = df_quality_pretrig
+        .Define("quality_subleading_idx", [](const ROOT::VecOps::RVec<float>& pt,
+                                              const ROOT::VecOps::RVec<int>& nhits,
+                                              const ROOT::VecOps::RVec<float>& chi2,
+                                              const ROOT::VecOps::RVec<float>& ndof,
+                                              const ROOT::VecOps::RVec<float>& ptErr) {
+            int best = -1, second = -1;
+            float best_pt = -1, second_pt = -1;
+            for (size_t i = 0; i < pt.size(); ++i) {
+                if (nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                    pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) {
+                    if (pt[i] > best_pt) {
+                        second = best; second_pt = best_pt;
+                        best = i; best_pt = pt[i];
+                    } else if (pt[i] > second_pt) {
+                        second = i; second_pt = pt[i];
+                    }
+                }
+            }
+            return second;
+        }, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Filter("quality_subleading_idx >= 0")
+        .Define("quality_subleading_eta", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {eta_var.Data(), "quality_subleading_idx"})
+        .Define("quality_subleading_phi", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {phi_var.Data(), "quality_subleading_idx"})
+        .Define("quality_subleading_pt", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {pt_var.Data(), "quality_subleading_idx"});
+
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_quality_subleading_pretrig;
+    for (auto& t : triggers) {
+        trigeff_quality_subleading_pretrig.push_back(df_quality_subleading_pretrig.Histo2D(
+            {("h2_trigeff_eta_quality_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs quality subleading obj #eta (pretrig);#eta;" + t.label).c_str(),
+             100, -3, 3, 2, -0.5, 1.5},
+            "quality_subleading_eta", t.col));
+        trigeff_quality_subleading_pretrig.push_back(df_quality_subleading_pretrig.Histo2D(
+            {("h2_trigeff_phi_quality_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs quality subleading obj #phi (pretrig);#phi;" + t.label).c_str(),
+             100, -3.15, 3.15, 2, -0.5, 1.5},
+            "quality_subleading_phi", t.col));
+        trigeff_quality_subleading_pretrig.push_back(df_quality_subleading_pretrig.Histo2D(
+            {("h2_trigeff_pt_quality_subleading_pretrig_" + t.label).c_str(),
+             (t.label + " vs quality subleading obj p_{T} (pretrig);p_{T} [GeV];" + t.label).c_str(),
+             250, 0, 5000, 2, -0.5, 1.5},
+            "quality_subleading_pt", t.col));
+    }
+
+    // --- Both legs: fill leading AND subleading quality kinematics with same trigger (pre-trigger) ---
+    auto df_quality_bothlegs_pretrig = df_quality_subleading_pretrig
+        .Define("quality_bothlegs_eta", [](double lead_eta, double sub_eta) {
+            return ROOT::VecOps::RVec<double>{lead_eta, sub_eta};
+        }, {"quality_leading_eta", "quality_subleading_eta"})
+        .Define("quality_bothlegs_phi", [](double lead_phi, double sub_phi) {
+            return ROOT::VecOps::RVec<double>{lead_phi, sub_phi};
+        }, {"quality_leading_phi", "quality_subleading_phi"})
+        .Define("quality_bothlegs_pt", [](double lead_pt, double sub_pt) {
+            return ROOT::VecOps::RVec<double>{lead_pt, sub_pt};
+        }, {"quality_leading_pt", "quality_subleading_pt"})
+        .Define("quality_bothlegs_trig_L1SingleMuCosmics", [](int trig) { return ROOT::VecOps::RVec<int>{trig, trig}; }, {"trig_L1SingleMuCosmics"});
+
+    // Book 2D trigger efficiency histograms for both quality legs (pre-trigger) - L1SingleMuCosmics only
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_quality_bothlegs_pretrig;
+    trigeff_quality_bothlegs_pretrig.push_back(df_quality_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_eta_quality_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs quality both legs #eta (pretrig);#eta;L1SingleMuCosmics",
+         100, -3, 3, 2, -0.5, 1.5},
+        "quality_bothlegs_eta", "quality_bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_quality_bothlegs_pretrig.push_back(df_quality_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_phi_quality_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs quality both legs #phi (pretrig);#phi;L1SingleMuCosmics",
+         100, -3.15, 3.15, 2, -0.5, 1.5},
+        "quality_bothlegs_phi", "quality_bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_quality_bothlegs_pretrig.push_back(df_quality_bothlegs_pretrig.Histo2D(
+        {"h2_trigeff_pt_quality_bothlegs_pretrig_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs quality both legs p_{T} (pretrig);p_{T} [GeV];L1SingleMuCosmics",
+         250, 0, 5000, 2, -0.5, 1.5},
+        "quality_bothlegs_pt", "quality_bothlegs_trig_L1SingleMuCosmics"));
+
+    // 1D cutflow at quality_pretrig level: DT segments > 2 -> Has quality muon -> L1SingleMuCosmics Triggered
+    // Start from df_with_count to count all events, then filter for quality muon
+    auto df_all_events_for_quality = df_with_count
+        .Define("trig_L1SingleMuCosmics_all", "(int)(HLT_L1SingleMuCosmics)")
+        .Define("has_dt_segments_quality", [](int n) { return n > 2 ? 1 : 0; }, {"muon_dtSeg_valid_n"})
+        .Define("has_quality_muon", [](const ROOT::VecOps::RVec<float>& pt,
+                                        const ROOT::VecOps::RVec<int>& nhits,
+                                        const ROOT::VecOps::RVec<float>& chi2,
+                                        const ROOT::VecOps::RVec<float>& ndof,
+                                        const ROOT::VecOps::RVec<float>& ptErr) {
+            for (size_t i = 0; i < pt.size(); ++i) {
+                if (nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                    pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) return 1;
+            }
+            return 0;
+        }, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("cutflow_quality_pretrig_bins", [](int has_dt, int has_quality, int trig) {
+            ROOT::VecOps::RVec<double> bins;
+            bins.push_back(0.);  // All events
+            if (has_dt) bins.push_back(1.);  // Has DT segments
+            if (has_dt && has_quality) bins.push_back(2.);  // Has quality muon
+            if (has_dt && has_quality && trig) bins.push_back(3.);  // Triggered
+            return bins;
+        }, {"has_dt_segments_quality", "has_quality_muon", "trig_L1SingleMuCosmics_all"});
+    auto h_cutflow_quality_pretrig = df_all_events_for_quality.Histo1D(
+        {"h_cutflow_quality_pretrig", "Cutflow (quality pretrig);Selection;Events", 4, -0.5, 3.5},
+        "cutflow_quality_pretrig_bins");
 
     // 1D histogram: which triggers fire (pre-trigger level, leading object exists)
     auto df_trig_bins_pretrig = df_leading_pretrig
@@ -254,6 +436,20 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
     auto h_trig_fired = df_trig_bins_pretrig.Histo1D(
         {"h_trig_fired", "Individual trigger counts (pretrig);Trigger;Events", 8, -0.5, 7.5},
         "trig_fired_bins");
+
+    // 1D cutflow at pretrig level: All events -> DT segments > 2 -> L1SingleMuCosmics Triggered
+    auto df_pretrig_cutflow = df_leading_pretrig
+        .Define("has_dt_segments_pretrig", [](int n) { return n > 2 ? 1 : 0; }, {"muon_dtSeg_valid_n"})
+        .Define("cutflow_pretrig_bins", [](int has_dt, int trig) {
+            ROOT::VecOps::RVec<double> bins;
+            bins.push_back(0.);  // All events
+            if (has_dt) bins.push_back(1.);  // Has DT segments
+            if (has_dt && trig) bins.push_back(2.);  // Triggered
+            return bins;
+        }, {"has_dt_segments_pretrig", "trig_L1SingleMuCosmics"});
+    auto h_cutflow_pretrig = df_pretrig_cutflow.Histo1D(
+        {"h_cutflow_pretrig", "Cutflow (pretrig);Selection;Events", 3, -0.5, 2.5},
+        "cutflow_pretrig_bins");
 
     // ============================================================
     // Trigger efficiency at end of cutflow
@@ -394,9 +590,92 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
         trigeff_final.push_back(df_final_notrig.Histo2D(
             {("h2_trigeff_pt_final_" + t.label).c_str(),
              (t.label + " vs p_{T} (final);p_{T} [GeV];" + t.label).c_str(),
-             500, 0, 10000, 2, -0.5, 1.5},
+             250, 0, 5000, 2, -0.5, 1.5},
             "final_pt", t.col));
     }
+
+    // --- Subleading quality object at final level ---
+    // Same event selection as leading final, but plot subleading object kinematics
+    auto df_final_subleading_notrig = df_final_notrig
+        .Define("final_subleading_idx", [region, pt_cut_value](
+                const ROOT::VecOps::RVec<float>& pt,
+                const ROOT::VecOps::RVec<float>& eta,
+                const ROOT::VecOps::RVec<int>& nhits,
+                const ROOT::VecOps::RVec<float>& chi2,
+                const ROOT::VecOps::RVec<float>& ndof,
+                const ROOT::VecOps::RVec<float>& ptErr) {
+            int best = -1, second = -1;
+            float best_pt = -1, second_pt = -1;
+            for (size_t i = 0; i < pt.size(); ++i) {
+                bool pass = nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                    pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3 && std::abs(eta[i]) < 0.9;
+                if (!pass) continue;
+                if (region == "sr" && pt[i] <= pt_cut_value) continue;
+                if (region == "vr" && pt[i] >= pt_cut_value) continue;
+                if (pt[i] > best_pt) {
+                    second = best; second_pt = best_pt;
+                    best = i; best_pt = pt[i];
+                } else if (pt[i] > second_pt) {
+                    second = i; second_pt = pt[i];
+                }
+            }
+            return second;
+        }, {pt_var.Data(), eta_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Filter("final_subleading_idx >= 0")
+        .Define("final_subleading_eta", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {eta_var.Data(), "final_subleading_idx"})
+        .Define("final_subleading_phi", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {phi_var.Data(), "final_subleading_idx"})
+        .Define("final_subleading_pt", [](const ROOT::VecOps::RVec<float>& v, int idx) { return static_cast<double>(v[idx]); }, {pt_var.Data(), "final_subleading_idx"});
+
+    // Book 2D trigger efficiency histograms for subleading object at end of cutflow
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_subleading_final;
+    for (auto& t : triggers) {
+        trigeff_subleading_final.push_back(df_final_subleading_notrig.Histo2D(
+            {("h2_trigeff_eta_subleading_final_" + t.label).c_str(),
+             (t.label + " vs subleading #eta (final);#eta;" + t.label).c_str(),
+             100, -3, 3, 2, -0.5, 1.5},
+            "final_subleading_eta", t.col));
+        trigeff_subleading_final.push_back(df_final_subleading_notrig.Histo2D(
+            {("h2_trigeff_phi_subleading_final_" + t.label).c_str(),
+             (t.label + " vs subleading #phi (final);#phi;" + t.label).c_str(),
+             100, -3.15, 3.15, 2, -0.5, 1.5},
+            "final_subleading_phi", t.col));
+        trigeff_subleading_final.push_back(df_final_subleading_notrig.Histo2D(
+            {("h2_trigeff_pt_subleading_final_" + t.label).c_str(),
+             (t.label + " vs subleading p_{T} (final);p_{T} [GeV];" + t.label).c_str(),
+             250, 0, 5000, 2, -0.5, 1.5},
+            "final_subleading_pt", t.col));
+    }
+
+    // --- Both legs: fill leading AND subleading final kinematics with same trigger ---
+    auto df_final_bothlegs_notrig = df_final_subleading_notrig
+        .Define("final_bothlegs_eta", [](double lead_eta, double sub_eta) {
+            return ROOT::VecOps::RVec<double>{lead_eta, sub_eta};
+        }, {"final_eta", "final_subleading_eta"})
+        .Define("final_bothlegs_phi", [](double lead_phi, double sub_phi) {
+            return ROOT::VecOps::RVec<double>{lead_phi, sub_phi};
+        }, {"final_phi", "final_subleading_phi"})
+        .Define("final_bothlegs_pt", [](double lead_pt, double sub_pt) {
+            return ROOT::VecOps::RVec<double>{lead_pt, sub_pt};
+        }, {"final_pt", "final_subleading_pt"})
+        .Define("final_bothlegs_trig_L1SingleMuCosmics", [](int trig) { return ROOT::VecOps::RVec<int>{trig, trig}; }, {"trig_L1SingleMuCosmics"});
+
+    // Book 2D trigger efficiency histograms for both legs at final level - L1SingleMuCosmics only
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> trigeff_bothlegs_final;
+    trigeff_bothlegs_final.push_back(df_final_bothlegs_notrig.Histo2D(
+        {"h2_trigeff_eta_bothlegs_final_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs #eta (final);#eta;L1SingleMuCosmics",
+         100, -3, 3, 2, -0.5, 1.5},
+        "final_bothlegs_eta", "final_bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_bothlegs_final.push_back(df_final_bothlegs_notrig.Histo2D(
+        {"h2_trigeff_phi_bothlegs_final_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs #phi (final);#phi;L1SingleMuCosmics",
+         100, -3.15, 3.15, 2, -0.5, 1.5},
+        "final_bothlegs_phi", "final_bothlegs_trig_L1SingleMuCosmics"));
+    trigeff_bothlegs_final.push_back(df_final_bothlegs_notrig.Histo2D(
+        {"h2_trigeff_pt_bothlegs_final_L1SingleMuCosmics",
+         "L1SingleMuCosmics vs both legs p_{T} (final);p_{T} [GeV];L1SingleMuCosmics",
+         250, 0, 5000, 2, -0.5, 1.5},
+        "final_bothlegs_pt", "final_bothlegs_trig_L1SingleMuCosmics"));
 
     // 1D histogram: which triggers fire at end of cutflow
     auto df_trig_bins_final = df_final_notrig
@@ -418,6 +697,51 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
         {"h_trig_fired_final", "Individual trigger counts (final);Trigger;Events", 8, -0.5, 7.5},
         "trig_fired_bins_final");
 
+    // 1D cutflow at final level: DT segments > 2 -> Has quality muon -> Quality + eta + pT -> L1SingleMuCosmics Triggered
+    auto df_all_events_for_final = df_with_count
+        .Define("trig_L1SingleMuCosmics_final", "(int)(HLT_L1SingleMuCosmics)")
+        .Define("has_dt_segments_final", [](int n) { return n > 2 ? 1 : 0; }, {"muon_dtSeg_valid_n"})
+        .Define("has_quality_muon_final", [](const ROOT::VecOps::RVec<float>& pt,
+                                              const ROOT::VecOps::RVec<int>& nhits,
+                                              const ROOT::VecOps::RVec<float>& chi2,
+                                              const ROOT::VecOps::RVec<float>& ndof,
+                                              const ROOT::VecOps::RVec<float>& ptErr) {
+            for (size_t i = 0; i < pt.size(); ++i) {
+                if (nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                    pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) return 1;
+            }
+            return 0;
+        }, {pt_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("has_quality_muon_eta_pt", [region, pt_cut_value](const ROOT::VecOps::RVec<float>& pt,
+                                                                   const ROOT::VecOps::RVec<float>& eta,
+                                                                   const ROOT::VecOps::RVec<int>& nhits,
+                                                                   const ROOT::VecOps::RVec<float>& chi2,
+                                                                   const ROOT::VecOps::RVec<float>& ndof,
+                                                                   const ROOT::VecOps::RVec<float>& ptErr) {
+            for (size_t i = 0; i < pt.size(); ++i) {
+                bool pass_quality = nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
+                                    pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3;
+                if (!pass_quality) continue;
+                if (std::abs(eta[i]) >= 0.9) continue;
+                if (region == "sr" && pt[i] <= pt_cut_value) continue;
+                if (region == "vr" && pt[i] >= pt_cut_value) continue;
+                return 1;
+            }
+            return 0;
+        }, {pt_var.Data(), eta_var.Data(), nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), ptErr_var.Data()})
+        .Define("cutflow_final_bins", [](int has_dt, int has_quality, int has_quality_eta_pt, int trig) {
+            ROOT::VecOps::RVec<double> bins;
+            bins.push_back(0.);  // All events
+            if (has_dt) bins.push_back(1.);  // Has DT segments
+            if (has_dt && has_quality) bins.push_back(2.);  // Has quality muon
+            if (has_dt && has_quality_eta_pt) bins.push_back(3.);  // Has quality muon with eta+pT
+            if (has_dt && has_quality_eta_pt && trig) bins.push_back(4.);  // Triggered
+            return bins;
+        }, {"has_dt_segments_final", "has_quality_muon_final", "has_quality_muon_eta_pt", "trig_L1SingleMuCosmics_final"});
+    auto h_cutflow_final = df_all_events_for_final.Histo1D(
+        {"h_cutflow_final", "Cutflow (final);Selection;Events", 5, -0.5, 4.5},
+        "cutflow_final_bins");
+
     // ============================================================
     // Write output
     // ============================================================
@@ -438,17 +762,48 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
     for (int i = 0; i < 8; ++i) h_tf_final->GetXaxis()->SetBinLabel(i+1, trig_labels[i].c_str());
     h_tf_final->Write();
 
+    // Write cutflow histograms with bin labels
+    std::vector<std::string> cutflow_pretrig_labels = {"All events", "DT segments > 2", "L1SingleMuCosmics"};
+    auto* h_cf_pretrig = h_cutflow_pretrig.GetPtr();
+    for (size_t i = 0; i < cutflow_pretrig_labels.size(); ++i)
+        h_cf_pretrig->GetXaxis()->SetBinLabel(i+1, cutflow_pretrig_labels[i].c_str());
+    h_cf_pretrig->Write();
+
+    std::vector<std::string> cutflow_quality_labels = {"All events", "DT segments > 2", "Has quality muon", "L1SingleMuCosmics"};
+    auto* h_cf_quality = h_cutflow_quality_pretrig.GetPtr();
+    for (size_t i = 0; i < cutflow_quality_labels.size(); ++i)
+        h_cf_quality->GetXaxis()->SetBinLabel(i+1, cutflow_quality_labels[i].c_str());
+    h_cf_quality->Write();
+
+    std::vector<std::string> cutflow_final_labels = {"All events", "DT segments > 2", "Has quality muon", "Quality + eta + pT", "L1SingleMuCosmics"};
+    auto* h_cf_final = h_cutflow_final.GetPtr();
+    for (size_t i = 0; i < cutflow_final_labels.size(); ++i)
+        h_cf_final->GetXaxis()->SetBinLabel(i+1, cutflow_final_labels[i].c_str());
+    h_cf_final->Write();
+
     // Write 2D trigger efficiency histograms
     // pre-trigger histograms show trigger efficiency vs leading object kinematics
     // before any quality cuts, eta, pT, or segment requirements
     for (auto& h : trigeff_pretrig) h->Write();
+    // subleading pre-trigger histograms
+    for (auto& h : trigeff_subleading_pretrig) h->Write();
+    // bothlegs pre-trigger histograms (OR of leading and subleading)
+    for (auto& h : trigeff_bothlegs_pretrig) h->Write();
     // quality pre-trigger histograms show trigger efficiency for leading object that 
     // passes quality cuts, but before any eta, pT, or segment requirements
     for (auto& h : trigeff_quality_pretrig) h->Write();
+    // subleading quality pre-trigger histograms
+    for (auto& h : trigeff_quality_subleading_pretrig) h->Write();
+    // bothlegs quality pre-trigger histograms
+    for (auto& h : trigeff_quality_bothlegs_pretrig) h->Write();
     // final is defined after all cuts except trigger, so directly measures trigger efficiency of final selection
     // (i.e. At least one object exists nHits > 7, chi2/ndof < 35, ptErr/pT² < 1e-3, |eta| < 0.9
     //      pT cut (>200 for SR, <200 for VR), >2 valid DT segments )
     for (auto& h : trigeff_final) h->Write();
+    // subleading final histograms
+    for (auto& h : trigeff_subleading_final) h->Write();
+    // bothlegs final histograms (OR of leading and subleading)
+    for (auto& h : trigeff_bothlegs_final) h->Write();
 
     f->Close();
     delete f;
