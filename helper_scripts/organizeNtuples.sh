@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Destination base directory
-BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/
+#BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/
+BASE=/home/users/tvami/EarthAsDM/v2/
 
 # ------------------------------------------------------------------
 # 1) Create full directory tree

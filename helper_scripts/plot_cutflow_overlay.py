@@ -3,6 +3,7 @@ import ROOT
 import os
 import glob
 import re
+from tqdm import tqdm
 
 # CMS Style settings
 def setCMSStyle():
@@ -141,15 +142,57 @@ def format_group_label(group_key):
     parts = []
     if depth is not None:
         parts.append(f"D={depth} mm")
-    if min_theta is not None:
-        parts.append(f"#theta_{{min}}={min_theta}#circ")
-    if max_theta is not None:
-        parts.append(f"#theta_{{max}}={max_theta}#circ")
+    if min_theta is not None and max_theta is not None:
+        parts.append(f"{min_theta} < #theta < {max_theta}")
+    elif min_theta is not None:
+        parts.append(f"#theta > {min_theta}")
+    elif max_theta is not None:
+        parts.append(f"#theta < {max_theta}")
     
     if not parts:
         return "Default parameters"
     
     return ", ".join(parts)
+
+def format_file_label(root_file):
+    """Create a readable legend label from a ROOT filename."""
+    filename = os.path.basename(root_file)
+    label = filename.replace("skimmed_", "").replace(".root", "")
+
+    label = label.replace("CosmicToMu_Par-", "")
+    label = label.replace("CosmicTP-", "")
+    label = label.replace("Ntuplizer", "")
+    label = label.replace("_CosmicToMu_", " ")
+    label = label.replace("matched_muon", "")
+    label = label.replace("-PromptReco-v", "-PRv")
+    label = label.replace("-CosmicTP", "")
+    label = label.replace("_cosmuogen", "")
+    label = label.replace("cosmuogen", "")
+    def _format_momentum_range(m):
+        minp = int(m.group(1))
+        maxp = m.group(2)
+        if maxp is not None:
+            maxp = int(maxp)
+            return f'{minp}#minus{maxp} GeV, '
+        if minp >= 1000:
+            tev = minp / 500
+            tev_str = f'{tev:.1f}'.rstrip('0').rstrip('.')
+            return f'{tev_str} TeV, '
+        return f'{minp} GeV, '
+    label = re.sub(r'MinP-(\d+)(?:-MaxP-(\d+))?', _format_momentum_range, label)
+    label = re.sub(r'-?MinTheta-(\d+)-MaxTheta-(\d+)',
+                   r'\1 < #theta < \2', label)
+    label = label.replace("-SurfaceDepth-", ", D=")
+    label = label.replace("SurfaceDepth-", "D=")
+    label = label.replace("vr_", "")
+    label = label.replace("sr_", "")
+    label = label.replace("tuneP_", "")
+    label = label.replace("track_", "")
+    label = label.replace("muon_", "")
+    label = label.replace("matched_", "")
+    label = label.replace("_", " ")
+    return label.strip()
+
 
 def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", output_name="cutflow_overlay.png"):
     """
@@ -183,12 +226,41 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             return int(match.group(1))
         return 0  # Default value if MinP not found
     
-    def apply_minp_linestyle(obj, minp):
-        if minp is None:
-            return
-        obj.SetLineStyle(2 if minp > 9999 else 1)
+    def apply_style_by_category(obj, root_file):
+        """Set marker & line style by category:
+          e2 <=10TeV: solid line, full circle (20)
+          e2  >10TeV: dashed line, full square (21)
+          e6 <=10TeV: dotted line, full triangle-up (22)
+          e6  >10TeV: dash-dot line, full triangle-down (23)
+          Data: marker=20, line style by year
+        """
+        minp_match = re.search(r'MinP-(\d+)', root_file)
+        is_e6 = 'SurfaceDepth-e6' in root_file
+        minp_val = int(minp_match.group(1)) if minp_match else 0
+        if is_e6 and minp_val > 10000:
+            obj.SetLineStyle(4)
+            obj.SetMarkerStyle(23)
+        elif is_e6:
+            obj.SetLineStyle(3)
+            obj.SetMarkerStyle(22)
+        elif minp_match and minp_val > 10000:
+            obj.SetLineStyle(2)
+            obj.SetMarkerStyle(21)
+        elif minp_match:
+            obj.SetMarkerStyle(20)
+        elif 'Run2025' in root_file:
+            obj.SetLineStyle(4)
+            obj.SetMarkerStyle(20)
+        elif 'Run2024' in root_file:
+            obj.SetLineStyle(3)
+            obj.SetMarkerStyle(20)
+        elif 'Run2023' in root_file:
+            obj.SetLineStyle(2)
+            obj.SetMarkerStyle(20)
+        else:
+            obj.SetMarkerStyle(20)
 
-    
+
     root_files = sorted(root_files, key=extract_minp)
 
     print(f"Found {len(root_files)} ROOT files")
@@ -255,30 +327,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         hist_clone = hist.Clone(f"h_{i}")
         hist_clone.SetDirectory(0)
         
-        # Extract meaningful label from filename
-        filename = os.path.basename(root_file)
-        label = filename.replace("skimmed_", "").replace(".root", "")
-        
-        # Clean up label: remove CosmicToMu and format parameters
-        label = label.replace("CosmicToMu_Par-", "")
-        label = label.replace("CosmicTP-", "")  
-        label = label.replace("Ntuplizer", "")
-        label = label.replace("_CosmicToMu_", "_")
-        label = label.replace("matched_muon", "")
-        label = label.replace("MinP-", " p = ")
-        label = label.replace("MinTheta-", " #theta = ")
-        label = label.replace("MaxTheta-", "")        
-        label = label.replace("-SurfaceDepth-", " D = ")
-        label = label.replace("_cosmuogen", "")
-        label = label.replace("cosmuogen", "")
-        label = label.replace("_", " ")
-        label = label.replace("vr", "")
-        label = label.replace("sr", "")
-        label = label.replace("tuneP", "")
-        label = label.replace("track", "")
-        label = label.replace("muon", "")
-        label = label.replace("matched_", "")
-        label = label.replace("- ", ", ")
+        label = format_file_label(root_file)
         
         # Set style: color by minP, line style & marker by surfaceDepth
         params = file_params[i]
@@ -286,7 +335,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
         hist_clone.SetLineColor(color)
         hist_clone.SetLineWidth(2)
         hist_clone.SetMarkerColor(color)
-        apply_minp_linestyle(hist_clone, params.get('minp'))
+        apply_style_by_category(hist_clone, root_file)
         hist_clone.SetMarkerSize(0.8)
 
         histograms.append((hist_clone, tfile))
@@ -577,7 +626,8 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             
             # Create label
             label = format_group_label(group_key)
-            
+
+            legend_eff.AddEntry(graph, label, "lp")
             graphs.append(graph)
         
         if graphs:
@@ -931,25 +981,19 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Set style: color by minP, line style & marker by surfaceDepth
             params = file_params[i]
             color = minp_to_color.get(params.get('minp'), colors[i % len(colors)])
-            # # Dont append if skip_depth is True and depth is not None
-            # if skip_depth and params.get('depth') is not None:
-            #     tfile.Close()
-            #     continue
-
-            # Keep only SurfaceDepth-e2 (parsed as depth=100); skip all other depth-tagged files
-            if skip_depth and params.get('depth') != 100:
+            # Keep only SurfaceDepth-e2 and e6 for signal; allow Data/BkgMC through
+            if skip_depth and params.get('minp') is not None and params.get('depth') not in (100, 1000000):
                 tfile.Close()
                 continue
 
             hist_kin_clone.SetLineColor(color)
             hist_kin_clone.SetLineWidth(2)
             hist_kin_clone.SetMarkerColor(color)
-            apply_minp_linestyle(hist_kin_clone, params.get('minp'))
+            apply_style_by_category(hist_kin_clone, root_file)
             hist_kin_clone.SetMarkerSize(0.8)
             
-            # Use the same labels as before
             kin_histograms.append((hist_kin_clone, tfile))
-            kin_labels.append(histogram_labels[i] if i < len(histogram_labels) else "")
+            kin_labels.append(format_file_label(root_file))
         
         if not kin_histograms:
             print(f"  Warning: No valid histograms found for {hist_name_kin}")
@@ -985,13 +1029,17 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             # Set axis titles and range on first histogram
             if i == 0:
                 hist_kin_clone.GetXaxis().SetTitle(hist_config['title'])
-                hist_kin_clone.GetYaxis().SetTitle("Normalized Events")
+                hist_kin_clone.GetYaxis().SetTitle("Fraction of Events")
+                if 'pt' in hist_name_kin:
+                    # hist_kin_clone.GetXaxis().SetMaxDigits(3)
+                    hist_kin_clone.GetXaxis().SetNdivisions(510)
+                    hist_kin_clone.GetXaxis().SetLabelSize(0.03)
                 if hist_config['log_y']:
                     hist_kin_clone.SetMaximum(max_val * 100000)
                     hist_kin_clone.SetMinimum(max_val * 1e-4)
                 else:
                     hist_kin_clone.SetMaximum(max_val * 1.2)
-                
+
                 draw_option = "HIST"
             else:
                 draw_option = "HIST SAME"
@@ -1075,11 +1123,11 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             prof.SetLineColor(color)
             prof.SetLineWidth(2)
             prof.SetMarkerColor(color)
-            apply_minp_linestyle(prof, params.get('minp'))
+            apply_style_by_category(prof, root_file)
             prof.SetMarkerSize(0.8)
 
             prof_histograms.append(prof)
-            prof_labels.append(histogram_labels[i] if i < len(histogram_labels) else "")
+            prof_labels.append(format_file_label(root_file))
 
             tfile.Close()
 
@@ -1144,9 +1192,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/Signal/": "Signal",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.7/BkgMC/": "BkgMC",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/BkgMC/": "BkgMC",
         #"/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/ExpressData/": "ExpressData",
     }
 
@@ -1154,27 +1202,24 @@ if __name__ == "__main__":
     regions = ['sr', 'vr']
     object_types = ['matched_muon', 'muon', 'track', 'tuneP']
 
-    # Loop over all combinations
-    for base_dir, sample_label in base_dirs.items():
-        output_dir = f"figures/cutflow_plots"
-        os.makedirs(output_dir, exist_ok=True)
+    # Build list of valid combinations first
+    output_dir = "figures/cutflow_plots"
+    os.makedirs(output_dir, exist_ok=True)
 
+    combinations = []
+    for base_dir, sample_label in base_dirs.items():
         for region in regions:
             for obj_type in object_types:
                 input_dir = os.path.join(base_dir, region, obj_type)
+                if os.path.exists(input_dir):
+                    root_files = glob.glob(os.path.join(input_dir, "*.root"))
+                    if root_files:
+                        combinations.append((base_dir, sample_label, region, obj_type, input_dir))
 
-                # Check if directory exists
-                if not os.path.exists(input_dir):
-                    print(f"Warning: Directory {input_dir} does not exist, skipping...")
-                    continue
-
-                print(f"\n{'='*100}")
-                print(f"Processing: {sample_label}/{region}/{obj_type}")
-                print(f"{'='*100}\n")
-
-                # Run the plotting function (creates all three types of plots)
-                plot_all_cutflow_analysis(
-                    input_dir=input_dir,
-                    hist_name="h_cutflow",
-                    output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
-                )
+    # Loop over all valid combinations with progress bar
+    for base_dir, sample_label, region, obj_type, input_dir in tqdm(combinations, desc="Processing samples"):
+        plot_all_cutflow_analysis(
+            input_dir=input_dir,
+            hist_name="h_cutflow",
+            output_name=os.path.join(output_dir, f"{sample_label}_cutflow_overlay.png")
+        )
