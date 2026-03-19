@@ -1,4 +1,5 @@
 import os
+import re
 import ROOT, cmsstyle as CMS
 import mplhep as hep
 from tqdm import tqdm
@@ -7,7 +8,7 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.8'
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.0.9'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 collections = ['matched_muon', 'track', 'muon', 'tuneP']
 region = 'sr' # sr vr
@@ -30,8 +31,8 @@ base_var_dict = {
             "nseg": [4, 20, 0, 20, 'nseg_pretrigger', 'nseg_trigger', 'nseg_nminus1', 'nseg_final', 'n_{Seg}'],
             "nhits": [5, 80, 0, 80, 'nhits_pretrigger', 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
             "chi2ndof": [6, 100, 0, 100, 'chi2ndof_pretrigger', 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
-            "ptErrPerPt2": [7, 100, 0, 0.01, None, 'ptErrPerPt2', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2": [7, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', 'ptErrPerPt2_trigger', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            # "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
             # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
             # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
             # "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
@@ -53,12 +54,12 @@ base_var_dict = {
             # "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
             }
 
-track_var_dict={"track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
+track_var_dict={# "track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
                 # "track_validFraction": [9, 110, 0, 1.1, 'track_validFraction_trigger', 'track_validFraction_nminus1', 'track_validFraction_final', 'Track Valid Fraction'],
                 # "track_chi2": [10, 99, 1, 100, 'track_chi2', 'track_chi2_nminus1', 'track_chi2_final', '#chi^{2}/n_{DoF}'],
                 }
 
-muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_ndof_nminus1', 'muon_comb_ndof_final', 'Combined n_{DoF}'],
+muon_var_dict={# "muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_ndof_nminus1', 'muon_comb_ndof_final', 'Combined n_{DoF}'],
             #    "muon_trkIso": [12, 100, 0, 1, 'muon_trkIso', 'muon_trkIso_nminus1', 'muon_trkIso_final', 'Track Isolation [GeV]'],
             #    "muon_d0": [13, 200, -200, 200, 'muon_d0', 'muon_d0_nminus1', 'muon_d0_final', 'd_{0} [cm]'],
             #    "muon_dZ": [14, 200, -500, 500, 'muon_dZ', 'muon_dZ_nminus1', 'muon_dZ_final', 'd_{Z} [cm]'],
@@ -74,13 +75,13 @@ muon_var_dict={"muon_comb_ndof": [11, 100, 0, 100, 'muon_comb_ndof', 'muon_comb_
                }
 
 matched_muon_var_dict={
-               "muon_fromGenTrack_NumValidHits": [11, 77, 0, 77, 'muon_fromGenTrack_NumValidHits', 'muon_fromGenTrack_NumValidHits_nminus1', 'muon_fromGenTrack_NumValidHits_final', '# of Valid Hits'],
+               # "muon_fromGenTrack_NumValidHits": [11, 77, 0, 77, 'muon_fromGenTrack_NumValidHits', 'muon_fromGenTrack_NumValidHits_nminus1', 'muon_fromGenTrack_NumValidHits_final', '# of Valid Hits'],
             #    "muon_fromGenTrack_ValidFraction": [12, 110, 0, 1.1, 'muon_fromGenTrack_ValidFraction', 'muon_fromGenTrack_ValidFraction_nminus1', 'muon_fromGenTrack_ValidFraction_final', 'Valid Fraction'],
             #    "muon_fromGenTrack_Chi2": [13, 99, 1, 100, 'muon_fromGenTrack_Chi2', 'muon_fromGenTrack_Chi2_nminus1', 'muon_fromGenTrack_Chi2_final', '#chi^{2}/n_{DoF}'],
                }
 
 tuneP_var_dict={
-               "muon_tuneP_MuonBestTrackType": [11, 10, 0, 10, None, 'muon_tuneP_MuonBestTrackType', 'muon_tuneP_MuonBestTrackType_nminus1', 'muon_tuneP_MuonBestTrackType_final', 'Best Track Type'],
+            #    "muon_tuneP_MuonBestTrackType": [11, 10, 0, 10, None, 'muon_tuneP_MuonBestTrackType', 'muon_tuneP_MuonBestTrackType_nminus1', 'muon_tuneP_MuonBestTrackType_final', 'Best Track Type'],
                }
 
 presel_steps_arr = ["pretrigger", "trigger", "nminus1", "final"]
@@ -180,7 +181,7 @@ for collection in tqdm(collections, desc="Collections"):
     _profiles_done = False
     for main_var in tqdm(list(var_dict.keys()), desc=f"  {collection} vars", leave=False):
         # For variables that aren't current preselection variables, only run nmin1 step
-        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom') or main_var == 'sumPt':
+        if main_var[:5] == 'track' or main_var.startswith('muon_') or main_var == 'sumPt':
             for num in range(1, 2):
                 nbins = var_dict[main_var][1]
                 min = var_dict[main_var][2]
@@ -939,9 +940,8 @@ for collection in tqdm(collections, desc="Collections"):
         garbage_protect_list.clear()
 
     # -----------------------------------------------------------------
-    # Object count profile: <N_obj> at each cutflow step from h2_cutflow_nobj
+    # Object count profile: <N_obj> +/- std(N_obj) at each cutflow step
     # -----------------------------------------------------------------
-    # print("  Object count profile: <N_obj> at each cutflow step")
 
     c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
     c.SetLeftMargin(0.153)
@@ -949,7 +949,7 @@ for collection in tqdm(collections, desc="Collections"):
 
     hframe_nobj = ROOT.TH1F("hframe_nobj", "", 6, -0.5, 5.5)
     hframe_nobj.SetStats(False)
-    hframe_nobj.GetXaxis().SetTitle("Cutflow step")
+    hframe_nobj.GetXaxis().SetTitle("")
     hframe_nobj.GetYaxis().SetTitle("<N_{obj}>")
     hframe_nobj.GetYaxis().SetTitleOffset(1.2)
     hframe_nobj.GetXaxis().SetLabelSize(0.03)
@@ -979,8 +979,7 @@ for collection in tqdm(collections, desc="Collections"):
             f.Close()
             continue
 
-        prof = h2.ProfileX(f"prof_nobj_{sample}")
-        prof.SetDirectory(0)
+        h2.SetDirectory(0)
 
         # Copy bin labels from original h2 (only once)
         if not labels_set:
@@ -992,35 +991,35 @@ for collection in tqdm(collections, desc="Collections"):
 
         f.Close()
 
+        # Build TH1F with mean as content and std dev as error
+        nx = h2.GetNbinsX()
+        h_mean = ROOT.TH1F(f"h_mean_nobj_{sample}", "", nx, h2.GetXaxis().GetXmin(), h2.GetXaxis().GetXmax())
+        h_mean.SetDirectory(0)
+        for b in range(1, nx + 1):
+            proj = h2.ProjectionY(f"_py_{sample}_{b}", b, b)
+            h_mean.SetBinContent(b, proj.GetMean())
+            h_mean.SetBinError(b, proj.GetStdDev())
+            del proj
+
         # Get mean at last bin for legend
-        last_bin = prof.GetNbinsX()
-        mean_last = prof.GetBinContent(last_bin)
+        mean_last = h_mean.GetBinContent(nx)
 
         is_data = samples_dict[sample][0] == "Data"
         is_cosmic_bkg = sample == "Cosmic Bkg"
         col = ROOT.kBlack if is_data else color_numerator
 
-        prof.SetLineColor(col)
-        prof.SetLineWidth(2)
-        prof.SetMarkerColor(col)
+        h_mean.SetLineColor(col)
+        h_mean.SetLineWidth(2)
+        h_mean.SetMarkerColor(col)
+        h_mean.SetMarkerStyle(20)
+        h_mean.SetMarkerSize(0.6 if is_data else 1.0)
         if is_cosmic_bkg:
-            prof.SetFillColor(color_numerator)
-            prof.SetFillStyle(3004)
-        if is_data:
-            prof.SetMarkerStyle(20)
-            prof.SetMarkerSize(0.6)
-            prof.Draw("P SAME")
-            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "p")
-        elif is_cosmic_bkg:
-            prof.SetMarkerStyle(0)
-            prof.Draw("HIST SAME")
-            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "f")
-        else:
-            prof.SetMarkerStyle(0)
-            prof.Draw("HIST SAME")
-            leg_nobj.AddEntry(prof, f"{sample} ({mean_last:.2f})", "l")
+            h_mean.SetFillColor(color_numerator)
+            h_mean.SetFillStyle(3004)
+        h_mean.Draw("E1 SAME")
+        leg_nobj.AddEntry(h_mean, f"{sample} ({mean_last:.2f})", "lep")
 
-        garbage_protect_list.append(prof)
+        garbage_protect_list.append(h_mean)
 
     pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
     pave.SetFillColor(0)
@@ -1028,7 +1027,7 @@ for collection in tqdm(collections, desc="Collections"):
     pave.SetTextAlign(12)
     pave.SetTextSize(0.025)
     pave.AddText(f"collection = {collection}")
-    pave.AddText("last cutflow bin value in legend")
+    pave.AddText("error bars = std(N_{obj})")
     pave.Draw()
     leg_nobj.Draw()
 
@@ -1037,114 +1036,6 @@ for collection in tqdm(collections, desc="Collections"):
     c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_profile.pdf")
     del c
     del hframe_nobj
-    garbage_protect_list.clear()
-
-    # -----------------------------------------------------------------
-    # Object count std dev: std(N_obj) at each cutflow step from h2_cutflow_nobj
-    # -----------------------------------------------------------------
-    # print("  Object count std dev: std(N_obj) at each cutflow step")
-
-    c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-    c.SetLeftMargin(0.153)
-    c.SetRightMargin(0.1)
-
-    hframe_nobj_std = ROOT.TH1F("hframe_nobj_std", "", 6, -0.5, 5.5)
-    hframe_nobj_std.SetStats(False)
-    hframe_nobj_std.GetXaxis().SetTitle("Cutflow step")
-    hframe_nobj_std.GetYaxis().SetTitle("Std(N_{obj})")
-    hframe_nobj_std.GetYaxis().SetTitleOffset(1.2)
-    hframe_nobj_std.GetXaxis().SetLabelSize(0.03)
-    hframe_nobj_std.GetYaxis().SetLabelSize(0.04)
-    hframe_nobj_std.SetMinimum(0)
-    hframe_nobj_std.SetMaximum(10)
-    hframe_nobj_std.Draw()
-
-    leg_nobj_std = ROOT.TLegend(0.45, 0.65, 0.88, 0.9)
-    leg_nobj_std.SetBorderSize(0)
-    leg_nobj_std.SetFillStyle(0)
-    leg_nobj_std.SetTextFont(42)
-
-    labels_set = False
-    color_numerator = 7
-    for sample in list(samples_dict.keys()):
-        color_numerator -= 1
-        if color_numerator == 1:
-            color_numerator = 9
-        file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-        full_path = f"{file_path}_{samples_dict[sample][1]}"
-        if not os.path.exists(full_path):
-            continue
-        f = ROOT.TFile(full_path)
-        h2 = f.Get("h2_cutflow_nobj")
-        if not h2:
-            f.Close()
-            continue
-
-        h2.SetDirectory(0)
-
-        # Copy bin labels from original h2 (only once)
-        if not labels_set:
-            for b in range(1, h2.GetNbinsX() + 1):
-                label = h2.GetXaxis().GetBinLabel(b)
-                if label:
-                    hframe_nobj_std.GetXaxis().SetBinLabel(b, label)
-            labels_set = True
-
-        f.Close()
-
-        # Build a TH1F with std dev for each x-bin
-        nx = h2.GetNbinsX()
-        h_std = ROOT.TH1F(f"h_std_nobj_{sample}", "", nx, h2.GetXaxis().GetXmin(), h2.GetXaxis().GetXmax())
-        h_std.SetDirectory(0)
-        for b in range(1, nx + 1):
-            proj = h2.ProjectionY(f"_py_std_{sample}_{b}", b, b)
-            h_std.SetBinContent(b, proj.GetStdDev())
-            del proj
-
-        # Get std at last bin for legend
-        std_last = h_std.GetBinContent(nx)
-
-        is_data = samples_dict[sample][0] == "Data"
-        is_cosmic_bkg = sample == "Cosmic Bkg"
-        col = ROOT.kBlack if is_data else color_numerator
-
-        h_std.SetLineColor(col)
-        h_std.SetLineWidth(2)
-        h_std.SetMarkerColor(col)
-        if is_cosmic_bkg:
-            h_std.SetFillColor(color_numerator)
-            h_std.SetFillStyle(3004)
-        if is_data:
-            h_std.SetMarkerStyle(20)
-            h_std.SetMarkerSize(0.6)
-            h_std.Draw("P SAME")
-            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "p")
-        elif is_cosmic_bkg:
-            h_std.SetMarkerStyle(0)
-            h_std.Draw("HIST SAME")
-            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "f")
-        else:
-            h_std.SetMarkerStyle(0)
-            h_std.Draw("HIST SAME")
-            leg_nobj_std.AddEntry(h_std, f"{sample} ({std_last:.2f})", "l")
-
-        garbage_protect_list.append(h_std)
-
-    pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
-    pave.SetFillColor(0)
-    pave.SetBorderSize(0)
-    pave.SetTextAlign(12)
-    pave.SetTextSize(0.025)
-    pave.AddText(f"collection = {collection}")
-    pave.AddText("last cutflow bin value in legend")
-    pave.Draw()
-    leg_nobj_std.Draw()
-
-    CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_std.png")
-    c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_objcount_std.pdf")
-    del c
-    del hframe_nobj_std
     garbage_protect_list.clear()
 
     # -----------------------------------------------------------------
@@ -1262,5 +1153,231 @@ for collection in tqdm(collections, desc="Collections"):
         del c
         del hframe_nobj_dist
         garbage_protect_list.clear()
+
+    # -----------------------------------------------------------------
+    # Cutflow overlay plot (h_cutflow, drop "All events", normalise to Trigger)
+    # -----------------------------------------------------------------
+    c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+    c.SetLeftMargin(0.153)
+    c.SetRightMargin(0.08)
+    c.SetLogy(True)
+
+    # Read one file first to determine binning and labels (skip bin 1 = "All events")
+    cf_nbins_raw = 0
+    cf_bin_labels = []
+    for sample in list(samples_dict.keys()):
+        file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+        full_path = f"{file_path}_{samples_dict[sample][1]}"
+        if not os.path.exists(full_path):
+            continue
+        f = ROOT.TFile(full_path)
+        h_cf = f.Get("h_cutflow")
+        if h_cf:
+            cf_nbins_raw = h_cf.GetNbinsX()
+            for b in range(2, cf_nbins_raw + 1):  # start from bin 2
+                lbl = h_cf.GetXaxis().GetBinLabel(b)
+                cf_bin_labels.append(lbl if lbl else f"Cut {b}")
+        f.Close()
+        break
+
+    cf_nbins = cf_nbins_raw - 1  # number of bins after dropping "All events"
+
+    if cf_nbins > 0:
+        hframe_cf = ROOT.TH1F("hframe_cf", "", cf_nbins, 0.5, cf_nbins + 0.5)
+        hframe_cf.SetStats(False)
+        hframe_cf.GetXaxis().SetTitle("")
+        hframe_cf.GetYaxis().SetTitle("Efficiency")
+        hframe_cf.GetYaxis().SetTitleOffset(1.0)
+        hframe_cf.GetXaxis().SetLabelSize(0.03)
+        hframe_cf.GetYaxis().SetLabelSize(0.04)
+        hframe_cf.SetMinimum(1e-4)
+        hframe_cf.SetMaximum(1e4)
+        for b in range(1, cf_nbins + 1):
+            hframe_cf.GetXaxis().SetBinLabel(b, cf_bin_labels[b - 1])
+        hframe_cf.Draw()
+
+        leg_cf = ROOT.TLegend(0.55, 0.65, 0.88, 0.9)
+        leg_cf.SetBorderSize(0)
+        leg_cf.SetFillStyle(0)
+        leg_cf.SetTextFont(42)
+
+        color_numerator = 7
+        for sample in list(samples_dict.keys()):
+            color_numerator -= 1
+            if color_numerator == 1:
+                color_numerator = 9
+            file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+            full_path = f"{file_path}_{samples_dict[sample][1]}"
+            if not os.path.exists(full_path):
+                continue
+            f = ROOT.TFile(full_path)
+            h_cf_raw = f.Get("h_cutflow")
+            if not h_cf_raw:
+                f.Close()
+                continue
+
+            # Build a new histogram dropping bin 1, normalised to bin 2 (Trigger)
+            trigger_val = h_cf_raw.GetBinContent(2)
+            h_cf = ROOT.TH1F(f"h_cf_{sample}", "", cf_nbins, 0.5, cf_nbins + 0.5)
+            h_cf.SetDirectory(0)
+            for b in range(2, cf_nbins_raw + 1):
+                val = h_cf_raw.GetBinContent(b) / trigger_val if trigger_val > 0 else 0
+                h_cf.SetBinContent(b - 1, val)
+            f.Close()
+
+            is_data = samples_dict[sample][0] == "Data"
+            is_cosmic_bkg = sample == "Cosmic Bkg"
+            col = ROOT.kBlack if is_data else color_numerator
+
+            h_cf.SetLineColor(col)
+            h_cf.SetLineWidth(2)
+            h_cf.SetMarkerColor(col)
+            h_cf.SetMarkerStyle(20 if is_data else 8)
+            h_cf.SetMarkerSize(0.6 if is_data else 1.0)
+            if is_cosmic_bkg:
+                h_cf.SetFillColor(color_numerator)
+                h_cf.SetFillStyle(3004)
+            if is_data:
+                h_cf.Draw("P SAME")
+                leg_cf.AddEntry(h_cf, sample, "p")
+            elif is_cosmic_bkg:
+                h_cf.Draw("HIST SAME")
+                leg_cf.AddEntry(h_cf, sample, "f")
+            else:
+                h_cf.Draw("HIST SAME")
+                leg_cf.AddEntry(h_cf, sample, "l")
+            garbage_protect_list.append(h_cf)
+
+        pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
+        pave.SetFillColor(0)
+        pave.SetBorderSize(0)
+        pave.SetTextAlign(12)
+        pave.SetTextSize(0.025)
+        pave.AddText(f"collection = {collection}")
+        pave.Draw()
+        leg_cf.Draw()
+
+        CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_cutflow.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_cutflow.pdf")
+        del c
+        del hframe_cf
+        garbage_protect_list.clear()
+
+    # -----------------------------------------------------------------
+    # Cutflow LaTeX table (drop "All events", normalise to Trigger bin)
+    # -----------------------------------------------------------------
+    if cf_nbins > 0:
+        # Collect efficiencies per sample (bins 2..N, normalised to bin 2)
+        table_data = {}  # sample_name -> list of efficiencies
+        for sample in list(samples_dict.keys()):
+            file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+            full_path = f"{file_path}_{samples_dict[sample][1]}"
+            if not os.path.exists(full_path):
+                continue
+            f = ROOT.TFile(full_path)
+            h_cf = f.Get("h_cutflow")
+            if not h_cf:
+                f.Close()
+                continue
+            trigger_bin = h_cf.GetBinContent(2)  # Trigger bin
+            effs = []
+            for b in range(2, cf_nbins_raw + 1):  # skip bin 1 ("All events")
+                if trigger_bin > 0:
+                    effs.append(h_cf.GetBinContent(b) / trigger_bin * 100.0)
+                else:
+                    effs.append(0.0)
+            table_data[sample] = effs
+            f.Close()
+
+        # Build LaTeX table
+        n_samples = len(table_data)
+        sample_names = list(table_data.keys())
+
+        # Column spec: l for cuts, then one c per sample
+        col_spec = "l " + " ".join(["c"] * n_samples)
+
+        lines = []
+        lines.append(r"\begin{table}[h!]")
+        lines.append(r"  \centering")
+        lines.append(r"  \begin{tabular}{" + col_spec + "}")
+
+        # Escape underscores for plain-text LaTeX contexts
+        def latex_escape(s):
+            return s.replace("_", r"\_")
+
+        def root_label_to_latex(s):
+            """Convert a ROOT histogram bin label to LaTeX with math mode."""
+            # Replace ROOT Greek-letter notation: #chi -> \chi, #eta -> \eta, ...
+            s = re.sub(r'#([a-zA-Z]+)', r'\\\1', s)
+            # If the label contains math-like characters, wrap in $...$
+            if any(c in s for c in ['\\', '^', '_', '<', '>', '|']):
+                return f'${s}$'
+            return s
+
+        # Separate samples by category
+        signal_samples = [s for s in sample_names if samples_dict[s][0] == "Signal"]
+        bkg_samples = [s for s in sample_names if samples_dict[s][0] == "BkgMC"]
+        data_samples = [s for s in sample_names if samples_dict[s][0] == "Data"]
+        non_signal = bkg_samples + data_samples
+        n_signal = len(signal_samples)
+        n_other = len(non_signal)
+
+        # Extract short mass labels from signal sample names (e.g. "M_{DM} = 2 TeV" -> "2")
+        def extract_mass(sname):
+            m = re.search(r'=\s*(\d+)', sname)
+            return m.group(1) if m else sname
+
+        # Column spec: l for cuts, c for each signal, then l for bkg/data
+        col_spec = "l " + "c " * n_signal + "l " * n_other
+
+        # Two-row header with multicolumn for signal masses
+        header1 = "    "
+        if n_signal > 0:
+            header1 += rf"& \multicolumn{{{n_signal}}}{{c}}{{$M_{{\rm DM}}$ (TeV)}} "
+        for s in non_signal:
+            header1 += "& "
+        header1 += r"\\[-0.5ex]"
+        lines.append(header1)
+
+        header2 = "    Cuts"
+        for s in signal_samples:
+            header2 += f" & {extract_mass(s)}"
+        for s in non_signal:
+            header2 += f" & {s}"
+        header2 += r" \\"
+        lines.append(header2)
+        lines.append(r"    \hline")
+
+        # Ordered list for data rows
+        ordered_samples = signal_samples + non_signal
+
+        # Data rows
+        for b in range(cf_nbins):
+            label = cf_bin_labels[b]
+            row = f"    {root_label_to_latex(label)}"
+            for sname in ordered_samples:
+                eff = table_data[sname][b]
+                if eff >= 10:
+                    row += f" & {eff:.1f}\\%"
+                else:
+                    row += f" & {eff:.2f}\\%"
+            row += r" \\"
+            lines.append(row)
+
+        lines.append(r"    \hline")
+        lines.append(r"  \end{tabular}")
+        lines.append(f"  \\caption{{Cumulative cut efficiencies for the {latex_escape(collection)} collection "
+                     f"in the {'pre-SR' if region == 'sr' else region.upper()} region, normalised to the first cutflow bin.}}")
+        lines.append(f"  \\label{{tab:cut_efficiency_{collection}_{region}}}")
+        lines.append(r"\end{table}")
+
+        table_str = "\n".join(lines)
+
+        os.makedirs("figures/presel_ch_skimmedNtuples", exist_ok=True)
+        tex_path = f"figures/presel_ch_skimmedNtuples/cutflow_table_{collection}_{region}.tex"
+        with open(tex_path, "w") as tex_file:
+            tex_file.write(table_str + "\n")
+        tqdm.write(f"  Cutflow table written to {tex_path}")
 
 print("Done!")
