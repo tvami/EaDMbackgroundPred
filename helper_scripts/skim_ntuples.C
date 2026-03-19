@@ -13,6 +13,7 @@
 // v4.0.6: Move cutflow to be object level, so that it's more inclusive. Removed alternative cutflow and trigger studies. Add N-1 plot with object level
 // v4.0.7: Move pt boundary to 10000 GeV
 // v4.0.8: Add 2D histograms of leading object (and leading quality object) kinematics vs trigger
+// v4.0.9: Fix N-1 plots
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
 
     // Enable multi-threading (use all available cores)
@@ -430,26 +431,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     .Define("pt_final", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
         ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if (m[i] == 31) r.push_back(v[i]); return r;
     }, {pt_var.Data(), "obj_cut_mask"})
-    // _nminus1: objects passing all cuts except the plotted variable
-    .Define("nhits_nminus1", [](const ROOT::VecOps::RVec<int>& v, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<int> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 30) == 30) r.push_back(v[i]); return r;
-    }, {nhits_var.Data(), "obj_cut_mask"})
-    .Define("chi2ndof_nminus1", [](const ROOT::VecOps::RVec<float>& chi2, const ROOT::VecOps::RVec<float>& ndof, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < chi2.size(); ++i) if ((m[i] & 29) == 29) r.push_back(ndof[i] > 0 ? chi2[i]/ndof[i] : 999.f); return r;
-    }, {chi2_var.Data(), ndof_var.Data(), "obj_cut_mask"})
-    .Define("ptErrPerPt2_nminus1", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if ((m[i] & 27) == 27) r.push_back(pt[i] > 0 ? ptErr[i]/(pt[i]*pt[i]) : 999.f); return r;
-    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask"})
-    .Define("eta_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 23) == 23) r.push_back(v[i]); return r;
-    }, {eta_var.Data(), "obj_cut_mask"})
-    .Define("pt_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 15) == 15) r.push_back(v[i]); return r;
-    }, {pt_var.Data(), "obj_cut_mask"})
     .Define("phi_final", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
-        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if (m[i] == 31) r.push_back(v[i]); return r;
-    }, {phi_var.Data(), "obj_cut_mask"})
-    .Define("phi_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
         ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if (m[i] == 31) r.push_back(v[i]); return r;
     }, {phi_var.Data(), "obj_cut_mask"})
     // _highpt: properties of the highest-pT object passing all cuts (mask == 31)
@@ -470,6 +452,98 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     .Define("phi_highpt", [](const ROOT::VecOps::RVec<float>& v, int idx) { return v[idx]; }, {phi_var.Data(), "highpt_idx"})
     .Define("pt_highpt", [](const ROOT::VecOps::RVec<float>& v, int idx) { return v[idx]; }, {pt_var.Data(), "highpt_idx"});
 
+    // N-1 histograms with correct event-level filtering.
+    // Start from trigger + has objects + nSeg > 2 (NO cumulative object quality cuts).
+    // For each variable, require >= 1 object passing all OTHER cuts at event level.
+    // Bit 0: nhits, Bit 1: chi2, Bit 2: ptErr, Bit 3: eta, Bit 4: pT
+    auto df_nm1_base = df_cf_hasobjs
+    .Filter("muon_dtSeg_valid_n > 2")
+    .Define("obj_cut_mask_nm1", [region, pt_cut_value](
+            const ROOT::VecOps::RVec<int>& nhits,
+            const ROOT::VecOps::RVec<float>& chi2,
+            const ROOT::VecOps::RVec<float>& ndof,
+            const ROOT::VecOps::RVec<float>& pt,
+            const ROOT::VecOps::RVec<float>& ptErr,
+            const ROOT::VecOps::RVec<float>& eta) {
+        ROOT::VecOps::RVec<int> mask(nhits.size());
+        for (size_t i = 0; i < nhits.size(); ++i) {
+            int m = 0;
+            if (nhits[i] > 7) m |= 1;
+            if (ndof[i] > 0 && chi2[i]/ndof[i] < 35) m |= 2;
+            if (pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) m |= 4;
+            if (std::abs(eta[i]) < 0.9) m |= 8;
+            if ((region == "sr" && pt[i] > pt_cut_value) || (region == "vr" && pt[i] < pt_cut_value)) m |= 16;
+            mask[i] = m;
+        }
+        return mask;
+    }, {nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), pt_var.Data(), ptErr_var.Data(), eta_var.Data()});
+
+    // nhits N-1: all cuts except nhits (mask & 30 == 30)
+    auto df_nm1_nhits = df_nm1_base
+    .Define("nobj_nm1_nhits", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if ((v & 30) == 30) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_nhits > 0")
+    .Define("nhits_nminus1", [](const ROOT::VecOps::RVec<int>& v, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<int> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 30) == 30) r.push_back(v[i]); return r;
+    }, {nhits_var.Data(), "obj_cut_mask_nm1"});
+    auto h_nhits_nminus1 = df_nm1_nhits.Histo1D({"h_nhits_nminus1", "Valid hits (N-1);N_{valid hits};Objects", 80, 0, 80}, "nhits_nminus1");
+
+    // chi2/ndof N-1: all cuts except chi2 (mask & 29 == 29)
+    auto df_nm1_chi2 = df_nm1_base
+    .Define("nobj_nm1_chi2", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if ((v & 29) == 29) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_chi2 > 0")
+    .Define("chi2ndof_nminus1", [](const ROOT::VecOps::RVec<float>& chi2, const ROOT::VecOps::RVec<float>& ndof, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < chi2.size(); ++i) if ((m[i] & 29) == 29) r.push_back(ndof[i] > 0 ? chi2[i]/ndof[i] : 999.f); return r;
+    }, {chi2_var.Data(), ndof_var.Data(), "obj_cut_mask_nm1"});
+    auto h_chi2ndof_nminus1 = df_nm1_chi2.Histo1D({"h_chi2ndof_nminus1", "#chi^{2}/ndof (N-1);#chi^{2}/ndof;Objects", 100, 0, 100}, "chi2ndof_nminus1");
+
+    // ptErr/pT^2 N-1: all cuts except ptErr (mask & 27 == 27)
+    auto df_nm1_ptErr = df_nm1_base
+    .Define("nobj_nm1_ptErr", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if ((v & 27) == 27) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_ptErr > 0")
+    .Define("ptErrPerPt2_nminus1", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if ((m[i] & 27) == 27) r.push_back(pt[i] > 0 ? ptErr[i]/(pt[i]*pt[i]) : 999.f); return r;
+    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask_nm1"});
+    auto h_ptErrPerPt2_nminus1 = df_nm1_ptErr.Histo1D({"h_ptErrPerPt2_nminus1", "#sigma(p_{T})/p_{T}^{2} (N-1);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_nminus1");
+
+    // eta N-1: all cuts except eta (mask & 23 == 23)
+    auto df_nm1_eta = df_nm1_base
+    .Define("nobj_nm1_eta", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if ((v & 23) == 23) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_eta > 0")
+    .Define("eta_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 23) == 23) r.push_back(v[i]); return r;
+    }, {eta_var.Data(), "obj_cut_mask_nm1"});
+    auto h_eta_nminus1 = df_nm1_eta.Histo1D({"h_eta_nminus1", "#eta (N-1);#eta;Objects", 100, -3, 3}, "eta_nminus1");
+
+    // phi N-1: phi has no cut, so N-1 = all cuts (mask == 31)
+    auto df_nm1_phi = df_nm1_base
+    .Define("nobj_nm1_phi", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if (v == 31) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_phi > 0")
+    .Define("phi_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if (m[i] == 31) r.push_back(v[i]); return r;
+    }, {phi_var.Data(), "obj_cut_mask_nm1"});
+    auto h_phi_nminus1 = df_nm1_phi.Histo1D({"h_phi_nminus1", "#phi (N-1);#phi;Objects", 100, -3.15, 3.15}, "phi_nminus1");
+
+    // pT N-1: all cuts except pT (mask & 15 == 15)
+    auto df_nm1_pt = df_nm1_base
+    .Define("nobj_nm1_pt", [](const ROOT::VecOps::RVec<int>& m) {
+        int n = 0; for (auto v : m) if ((v & 15) == 15) n++; return n;
+    }, {"obj_cut_mask_nm1"})
+    .Filter("nobj_nm1_pt > 0")
+    .Define("pt_nminus1", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if ((m[i] & 15) == 15) r.push_back(v[i]); return r;
+    }, {pt_var.Data(), "obj_cut_mask_nm1"});
+    auto h_pt_nminus1 = df_nm1_pt.Histo1D({"h_pt_nminus1", "p_{T} (N-1);p_{T} [GeV];Objects", 500, 0, 10000}, "pt_nminus1");
+
     // Book final histograms
     auto h_nhits_final = df_seg_histos.Histo1D({"h_nhits_final", "Valid hits (final);N_{valid hits};Objects", 80, 0, 80}, "nhits_final");
     auto h_chi2ndof_final = df_seg_histos.Histo1D({"h_chi2ndof_final", "#chi^{2}/ndof (final);#chi^{2}/ndof;Objects", 100, 0, 100}, "chi2ndof_final");
@@ -487,13 +561,6 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_phi_highpt = df_seg_histos.Histo1D({"h_phi_highpt", "#phi (highest p_{T});#phi;Events", 100, -3.15, 3.15}, "phi_highpt");
     auto h_pt_highpt = df_seg_histos.Histo1D({"h_pt_highpt", "p_{T} (highest p_{T});p_{T} [GeV];Events", 500, 0, 10000}, "pt_highpt");
 
-    // Book N-1 histograms
-    auto h_nhits_nminus1 = df_seg_histos.Histo1D({"h_nhits_nminus1", "Valid hits (N-1);N_{valid hits};Objects", 80, 0, 80}, "nhits_nminus1");
-    auto h_chi2ndof_nminus1 = df_seg_histos.Histo1D({"h_chi2ndof_nminus1", "#chi^{2}/ndof (N-1);#chi^{2}/ndof;Objects", 100, 0, 100}, "chi2ndof_nminus1");
-    auto h_ptErrPerPt2_nminus1 = df_seg_histos.Histo1D({"h_ptErrPerPt2_nminus1", "#sigma(p_{T})/p_{T}^{2} (N-1);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_nminus1");
-    auto h_eta_nminus1 = df_seg_histos.Histo1D({"h_eta_nminus1", "#eta (N-1);#eta;Objects", 100, -3, 3}, "eta_nminus1");
-    auto h_phi_nminus1 = df_seg_histos.Histo1D({"h_phi_nminus1", "#phi (N-1);#phi;Objects", 100, -3.15, 3.15}, "phi_nminus1");
-    auto h_pt_nminus1 = df_seg_histos.Histo1D({"h_pt_nminus1", "p_{T} (N-1);p_{T} [GeV];Objects", 500, 0, 10000}, "pt_nminus1");
     // N-1 for nseg: events passing all object cuts, no nseg requirement (= df_cf_pt)
     auto h_nseg_nminus1 = df_cf_pt.Histo1D({"h_nseg_nminus1", "DT segments (N-1);N_{seg};Events", 20, 0, 20}, "muon_dtSeg_valid_n");
 

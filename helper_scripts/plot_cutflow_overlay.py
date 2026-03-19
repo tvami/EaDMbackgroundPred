@@ -448,7 +448,9 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     canvas2.Update()
     
     # ===== Create 2D histogram (cutflow vs samples) =====
-    canvas3 = ROOT.TCanvas(f"c3_{canvas_suffix}_{region}_{object_type}", f"c3_{canvas_suffix}_{region}_{object_type}", 1200, 800)
+    n_samples = len(histograms_norm)
+    canvas_height = max(800, n_samples * 30)
+    canvas3 = ROOT.TCanvas(f"c3_{canvas_suffix}_{region}_{object_type}", f"c3_{canvas_suffix}_{region}_{object_type}", 1200, canvas_height)
     canvas3.cd()
     canvas3.SetRightMargin(0.15)
     canvas3.SetLeftMargin(0.2)
@@ -484,6 +486,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     h2d.GetZaxis().SetTitle("Efficiency")
     
     # Set label size for readability
+    # h2d.GetYaxis().SetLabelSize(min(0.04, 1.2 / n_samples))
     h2d.GetYaxis().SetLabelSize(0.02)
     h2d.GetXaxis().SetLabelSize(0.04)
     
@@ -996,7 +999,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
             kin_labels.append(format_file_label(root_file))
         
         if not kin_histograms:
-            print(f"  Warning: No valid histograms found for {hist_name_kin}")
+            print(f"  Warning: No valid histograms found for {hist_name_kin} in samples: {[os.path.basename(f) for f in root_files]}")
             continue
         
         # Create canvas
@@ -1192,10 +1195,10 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
 if __name__ == "__main__":
     # Base directories and their labels
     base_dirs = {
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/Data/": "Data",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/Signal/": "Signal",
-        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.8/BkgMC/": "BkgMC",
-        #"/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/ExpressData/": "ExpressData",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.9/Data/": "Data",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.9/Signal/": "Signal",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.9/BkgMC/": "BkgMC",
+        "/home/users/tvami/EarthAsDM/Ntuples_v4.0.6/ExpressData/": "ExpressData",
     }
 
     # Define regions and object types to loop over
