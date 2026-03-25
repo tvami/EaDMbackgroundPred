@@ -15,13 +15,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--ntupleVersion", default="4.0.9")   # e.g. 4.0.7
 parser.add_argument("-s", "--sampleType",    default="Data")    # BkgMC, Data, ExpressData, Signal
 parser.add_argument("-r", "--region",        default="sr")      # sr, vr1, vr2
-parser.add_argument("-R", "--Run",           default="Run3")    # MC, 2023D, Run3
 parser.add_argument("-c", "--collection",    default="matched_muon")  # matched_muon, muon, track, tuneP
 parser.add_argument("-T", "--runType",       default="Both")    # Process, 2DAInput, Both
-# parser.add_argument('-F', '--inputFiles',metavar='FILE', type='string', action='store',
-#                 default   =   'test.txt',
-#                 dest      =   'inputFiles',
-#                 help      =   'Text file containing the desired files to make 2DA files from')
+parser.add_argument("-i", "--inputFile",     required=True, help="Input ROOT file to process")
 args = parser.parse_args()
 
 
@@ -30,8 +26,8 @@ args = parser.parse_args()
 # =========================
 
 if args.runType != '2DAInput':
-    # Path to trained RNN weights
-    checkpoint_path = '/home/users/smasanam/EarthAsDMProject/CMSSW_13_0_10/src/CosmicsAnalyzer/EarthAsDMAnalyzer/test/rnn_v5_188k_final_weights.ckpt'
+    # Path to trained RNN weights (transferred by condor to current directory)
+    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
 
     # Define model architecture (must match training architecture exactly)
     model = Sequential([
@@ -49,11 +45,8 @@ if args.runType != '2DAInput':
 # Build input/output paths
 # =========================
 
-file_dir_path = '/home/users/tvami/EarthAsDM'
-
 ntuple_v   = args.ntupleVersion
 sample_type = args.sampleType
-run = args.Run
 if args.region == 'vr1': region = 'sr'
 else: region = args.region
 collection  = args.collection
@@ -63,26 +56,20 @@ print("============ Running on ============")
 print("ntupleVersion:",ntuple_v)
 print("sampleType:",sample_type)
 print("region:",region[:2], f"({args.region})")
-print("run:",run)
 print("collection:",collection)
 print("Run Type:",runType)
 print("====================================")
 
-# Find all ROOT files matching pattern
-input_files = glob.glob(f'{file_dir_path}/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}/*.root')
-if sample_type == 'Data' and region[:2] == 'sr' and run != 'Run3':
-    _exclude = f"{file_dir_path}/Ntuples_v{ntuple_v}/Data/{region[:2]}/{collection}/skimmed_{collection}_{region[:2]}_Ntuplizer-Cosmics_All_v4.root"
-    if _exclude in input_files:
-        input_files.remove(_exclude)
+# Use input file from command line argument
+input_files = [args.inputFile]
 
 # Output directory for RNN-scored files
-# output_dir = f'/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}'
-output_dir = f'/home/users/tvami/EarthAsDM/Ntuples_v{ntuple_v}_wRNN/{sample_type}/{region[:2]}/{collection}'
-
+# Use local directory for condor jobs, will be transferred back via WhenToTransferOutput
+output_dir = f'./output/{sample_type}/{region[:2]}/{collection}'
 
 # Create output directory if missing
-if not os.path.exists(output_dir+"/2DA"):
-    os.makedirs(output_dir+"/2DA")
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(f"{output_dir}/2DA", exist_ok=True)
 
 
 # =========================
@@ -210,7 +197,8 @@ if args.runType == 'Process' or args.runType == 'Both':
             # Add new branches (syst are replaced w/ nominal branch)
             arrays["RNNScore"] = rnn_scores.flatten()
             arrays["RNNScore_bstrpMean"] = rnn_scores.flatten()
-            arrays["RNNScore_noiseSyst"] = rnn_scores.flatten()
+            arrays["RNNScore_t0syst_up"] = rnn_scores.flatten()
+            arrays["RNNScore_t0syst_down"] = rnn_scores.flatten()
             arrays["RNNScore_syst_up"] = rnn_scores.flatten()
             arrays["RNNScore_syst_down"] = rnn_scores.flatten()
 
@@ -223,52 +211,86 @@ if args.runType == 'Process' or args.runType == 'Both':
 
 
         # =========================
-        # Use old t0_noise method to derive systematic on RNN Score
+        # Use t0 noise method to derive systematic on RNN Score
+        # Generate noise once, then create up (+ |noise|) and down (- |noise|) variations
         # =========================
 
+        # Generate random noise
         rand_noise = ak.Array([
                 np.random.normal(0, 1, len(indivArr))
                 for indivArr in t0_arr
             ])
 
-        t0_arr_noiseSyst = t0_arr + rand_noise
+        # Take absolute value for symmetric systematics
+        abs_noise = np.abs(rand_noise)
+
+        # =========================
+        # t0 UP systematic: add |noise|
+        # =========================
+        t0_arr_t0_up = t0_arr + abs_noise
 
         # Sort each event by ascending t0
-        ind_noiseSyst = ak.argsort(t0_arr_noiseSyst, axis=-1, ascending=True)
+        ind_t0_up = ak.argsort(t0_arr_t0_up, axis=-1, ascending=True)
 
-        t0_arr_noiseSyst = t0_arr_noiseSyst[ind_noiseSyst]
-        x_arr_ind_noiseSyst  = x_arr[ind_noiseSyst]
-        y_arr_ind_noiseSyst  = y_arr[ind_noiseSyst]
-        z_arr_ind_noiseSyst  = z_arr[ind_noiseSyst]
+        t0_arr_t0_up_sorted = t0_arr_t0_up[ind_t0_up]
+        x_arr_t0_up  = x_arr[ind_t0_up]
+        y_arr_t0_up  = y_arr[ind_t0_up]
+        z_arr_t0_up  = z_arr[ind_t0_up]
 
-        # =========================
         # Pad sequences to fixed length
-        # =========================
+        t0_t0_up_pad = ak.fill_none(ak.pad_none(t0_arr_t0_up_sorted, nMax, axis=1), -9999.)
+        x_t0_up_pad  = ak.fill_none(ak.pad_none(x_arr_t0_up,  nMax, axis=1), -9999.)
+        y_t0_up_pad  = ak.fill_none(ak.pad_none(y_arr_t0_up,  nMax, axis=1), -9999.)
+        z_t0_up_pad  = ak.fill_none(ak.pad_none(z_arr_t0_up,  nMax, axis=1), -9999.)
 
-        # Pad each event to nMax with value -9999 (mask value)
-        t0_noiseSyst_pad = ak.fill_none(ak.pad_none(t0_arr_noiseSyst, nMax, axis=1), -9999.)
-        x_noiseSyst_pad  = ak.fill_none(ak.pad_none(x_arr_ind_noiseSyst,  nMax, axis=1), -9999.)
-        y_noiseSyst_pad  = ak.fill_none(ak.pad_none(y_arr_ind_noiseSyst,  nMax, axis=1), -9999.)
-        z_noiseSyst_pad  = ak.fill_none(ak.pad_none(z_arr_ind_noiseSyst,  nMax, axis=1), -9999.)
-
-
-        # =========================
-        # Build final RNN input tensor & run RNN inference
-        # =========================
-
-        rnn_data_noiseSyst = np.stack([
-            ak.to_numpy(t0_noiseSyst_pad),
-            ak.to_numpy(x_noiseSyst_pad),
-            ak.to_numpy(y_noiseSyst_pad),
-            ak.to_numpy(z_noiseSyst_pad)
+        # Build RNN input tensor & run inference
+        rnn_data_t0_up = np.stack([
+            ak.to_numpy(t0_t0_up_pad),
+            ak.to_numpy(x_t0_up_pad),
+            ak.to_numpy(y_t0_up_pad),
+            ak.to_numpy(z_t0_up_pad)
         ], axis=-1)
-        
-        print("Now calculating RNNScore (w/ t0 noise as syst)")
-        
-        if rnn_data_noiseSyst.shape[0] != 0:
-            rnn_scores_noiseSyst = model.predict(rnn_data_noiseSyst)
+
+        print("Now calculating RNNScore (t0 up: + |noise|)")
+
+        if rnn_data_t0_up.shape[0] != 0:
+            rnn_scores_t0_up = model.predict(rnn_data_t0_up)
         else:
-            rnn_scores_noiseSyst = np.empty((0, 1))
+            rnn_scores_t0_up = np.empty((0, 1))
+
+        # =========================
+        # t0 DOWN systematic: subtract |noise|
+        # =========================
+        t0_arr_t0_down = t0_arr - abs_noise
+
+        # Sort each event by ascending t0
+        ind_t0_down = ak.argsort(t0_arr_t0_down, axis=-1, ascending=True)
+
+        t0_arr_t0_down_sorted = t0_arr_t0_down[ind_t0_down]
+        x_arr_t0_down  = x_arr[ind_t0_down]
+        y_arr_t0_down  = y_arr[ind_t0_down]
+        z_arr_t0_down  = z_arr[ind_t0_down]
+
+        # Pad sequences to fixed length
+        t0_t0_down_pad = ak.fill_none(ak.pad_none(t0_arr_t0_down_sorted, nMax, axis=1), -9999.)
+        x_t0_down_pad  = ak.fill_none(ak.pad_none(x_arr_t0_down,  nMax, axis=1), -9999.)
+        y_t0_down_pad  = ak.fill_none(ak.pad_none(y_arr_t0_down,  nMax, axis=1), -9999.)
+        z_t0_down_pad  = ak.fill_none(ak.pad_none(z_arr_t0_down,  nMax, axis=1), -9999.)
+
+        # Build RNN input tensor & run inference
+        rnn_data_t0_down = np.stack([
+            ak.to_numpy(t0_t0_down_pad),
+            ak.to_numpy(x_t0_down_pad),
+            ak.to_numpy(y_t0_down_pad),
+            ak.to_numpy(z_t0_down_pad)
+        ], axis=-1)
+
+        print("Now calculating RNNScore (t0 down: - |noise|)")
+
+        if rnn_data_t0_down.shape[0] != 0:
+            rnn_scores_t0_down = model.predict(rnn_data_t0_down)
+        else:
+            rnn_scores_t0_down = np.empty((0, 1))
 
         # =========================
         # Use Bootstrap method to derive systematic on RNN Score
@@ -351,14 +373,16 @@ if args.runType == 'Process' or args.runType == 'Both':
         print("\n===================== Means =====================")
         print("RNNScore:", np.mean(rnn_scores[0].flatten()))
         print("RNNScore (bstrp mean):", np.mean(rnn_score_bstrp_mean_arr.flatten()))
-        print("RNNScore (t0 syst):", np.mean(rnn_scores_noiseSyst.flatten()))
+        print("RNNScore (t0 up syst):", np.mean(rnn_scores_t0_up.flatten()))
+        print("RNNScore (t0 down syst):", np.mean(rnn_scores_t0_down.flatten()))
         print("RNNScore (bstrp up syst):", np.mean(rnn_score_syst_up.flatten()))
         print("RNNScore (bstrp down syst):", np.mean(rnn_score_syst_down.flatten()))
 
         print("\n=============== Standard Deviations =============")
         print("RNNScore:", np.std(rnn_scores[0].flatten()))
         print("RNNScore (bstrp mean):", np.std(rnn_score_bstrp_mean_arr.flatten()))
-        print("RNNScore (t0 syst):", np.std(rnn_scores_noiseSyst.flatten()))
+        print("RNNScore (t0 up syst):", np.std(rnn_scores_t0_up.flatten()))
+        print("RNNScore (t0 down syst):", np.std(rnn_scores_t0_down.flatten()))
         print("RNNScore (bstrp up syst):", np.std(rnn_score_syst_up.flatten()))
         print("RNNScore (bstrp down syst):", np.std(rnn_score_syst_down.flatten()))
 
@@ -378,7 +402,8 @@ if args.runType == 'Process' or args.runType == 'Both':
         # Add new branches
         arrays["RNNScore"] = rnn_scores[0].flatten()
         arrays["RNNScore_bstrpMean"] = rnn_score_bstrp_mean_arr.flatten()
-        arrays["RNNScore_noiseSyst"] = rnn_scores_noiseSyst.flatten()
+        arrays["RNNScore_t0syst_up"] = rnn_scores_t0_up.flatten()
+        arrays["RNNScore_t0syst_down"] = rnn_scores_t0_down.flatten()
         arrays["RNNScore_syst_up"] = rnn_score_syst_up.flatten()
         arrays["RNNScore_syst_down"] = rnn_score_syst_down.flatten()
 
@@ -396,8 +421,6 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # Chain all processed ROOT files together for combined processing
         rootTChain = ROOT.TChain("tree")
         for file in glob.glob(f'{output_dir}/*.root'):
-            # If running on 2023D data, skip files not from that run period
-            if run == '2023D' and 'Run2023D' not in file: continue 
             print("running on:", Path(file).stem)
             rootTChain.Add(file)
         
@@ -455,23 +478,26 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         n_Seg_var = "n_Seg_clipped"
 
         # Define RNN score cut boundaries for pass/fail regions per analysis region
-        # bnd_nominal: nominal cut, bnd_up/down: RNN score syst variations, bnd_syst: t0 noise syst
+        # bnd_nominal: nominal cut, bnd_up/down: RNN score syst variations, bnd_t0_up/down: t0 noise syst (±|noise|)
         if args.region == 'sr':
             bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
             bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
             bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
-            bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
+            bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
+            bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
         if args.region == 'vr1':
             # VR1 uses a window cut: pass requires intermediate RNN scores (between ~signal-like and background-like)
             bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
             bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
             bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']
-            bnd_syst = ['RNNScore_noiseSyst >= 0.45 & RNNScore_noiseSyst < 0.9999', 'RNNScore_noiseSyst < 0.45']
+            bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
+            bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
         if args.region == 'vr2':
             bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
             bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
             bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
-            bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
+            bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
+            bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
         
         # Split events into pass/fail for each systematic variation:
         # Nominal RNN cut
@@ -488,12 +514,11 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         pT_down_pass_df = pT_down_df_tmp.Filter(bnd_nominal[0])
         pT_down_fail_df = pT_down_df_tmp.Filter(bnd_nominal[1])
         # t0 noise-shifted RNN score cut (t0 timing uncertainty)
-        # TODO: t0 down variation currently identical to up — needs a separate
-        #       bnd_syst_down (e.g. from a -1σ noise realization) to be meaningful.
-        rnn_t0_up_pass_df = df2.Filter(bnd_syst[0])
-        rnn_t0_up_fail_df = df2.Filter(bnd_syst[1])
-        rnn_t0_down_pass_df = df2.Filter(bnd_syst[0])
-        rnn_t0_down_fail_df = df2.Filter(bnd_syst[1])
+        # Up systematic uses RNN scores from t0 + |noise|, down uses t0 - |noise|
+        rnn_t0_up_pass_df = df2.Filter(bnd_t0_up[0])
+        rnn_t0_up_fail_df = df2.Filter(bnd_t0_up[1])
+        rnn_t0_down_pass_df = df2.Filter(bnd_t0_down[0])
+        rnn_t0_down_fail_df = df2.Filter(bnd_t0_down[1])
 
         # Book 2D histograms (pT vs n_Seg) for each pass/fail region and systematic variation
         # Axes: x = muon pT [0, 12500 GeV] in 12500 bins, y = # DT segments [0, 200] in 200 bins
@@ -548,9 +573,17 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     "RNNScore")
                 rnn_score_hist.Scale(1 / rnn_score_hist.Integral())
 
+        # Extract era info from input filename for output naming
+        # e.g., "skimmed_matched_muon_sr_Ntuplizer-Cosmics_All_v4.root" -> "All"
+        # e.g., "skimmed_matched_muon_sr_Ntuplizer-Cosmics_Run2022B-CosmicTP-PromptReco-v1_v4.root" -> "Run2022B"
+        input_basename = Path(args.inputFile).stem
+        era_match = re.search(r'Ntuplizer-Cosmics_(Run\d{4}[A-Z]|All)', input_basename)
+        era_suffix = f"_{era_match.group(1)}" if era_match else ""
+        
         # Write all histograms to output ROOT file for use as 2DAlphabet inputs
-        print("Saving to:", output_dir+f"/2DA/EaDM_{run}_Cosmics_Data_{args.region.upper()}.root")
-        root_file = ROOT.TFile(output_dir+f"/2DA/EaDM_{run}_Cosmics_Data_{args.region.upper()}.root", "RECREATE")
+        output_filename = f"EaDM_Run3_Cosmics_Data{era_suffix}_{args.region.upper()}.root"
+        print("Saving to:", output_dir+f"/2DA/{output_filename}")
+        root_file = ROOT.TFile(output_dir+f"/2DA/{output_filename}", "RECREATE")
         pass_hist.Write()
         fail_hist.Write()
         pass_pT_up_hist.Write()
@@ -649,22 +682,26 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
                     bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
                     bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
-                    bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
+                    bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
+                    bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
                 elif sample_type == 'BkgMC':
                     bnd_nominal = ['RNNScore >= 0.9', 'RNNScore < 0.9']
                     bnd_up = ['RNNScore >= 0.95', 'RNNScore < 0.95']
                     bnd_down = ['RNNScore >= 0.81', 'RNNScore < 0.81']
-                    bnd_syst = ['RNNScore_noiseSyst >= 0.9', 'RNNScore_noiseSyst < 0.9']
+                    bnd_t0_up = ['RNNScore_t0syst_up >= 0.9', 'RNNScore_t0syst_up < 0.9']
+                    bnd_t0_down = ['RNNScore_t0syst_down >= 0.9', 'RNNScore_t0syst_down < 0.9']
             if args.region == 'vr1':
                 bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
                 bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
                 bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']
-                bnd_syst = ['RNNScore_noiseSyst >= 0.45 & RNNScore_noiseSyst < 0.9999', 'RNNScore_noiseSyst < 0.45']
+                bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
+                bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
             if args.region == 'vr2':
                 bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
                 bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
                 bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
-                bnd_syst = ['RNNScore_noiseSyst >= 0.9999', 'RNNScore_noiseSyst < 0.9999']
+                bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
+                bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
 
             # Split MC events into pass/fail for all systematic variations (same logic as Data)
             pass_df = df2.Filter(bnd_nominal[0])
@@ -677,12 +714,12 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             pT_up_fail_df = pT_up_df_tmp.Filter(bnd_nominal[1])
             pT_down_pass_df = pT_down_df_tmp.Filter(bnd_nominal[0])
             pT_down_fail_df = pT_down_df_tmp.Filter(bnd_nominal[1])
-            # TODO: t0 down variation currently identical to up — needs a separate
-            #       bnd_syst_down (e.g. from a -1σ noise realization) to be meaningful.
-            rnn_t0_up_pass_df = df2.Filter(bnd_syst[0])
-            rnn_t0_up_fail_df = df2.Filter(bnd_syst[1])
-            rnn_t0_down_pass_df = df2.Filter(bnd_syst[0])
-            rnn_t0_down_fail_df = df2.Filter(bnd_syst[1])
+            # t0 noise-shifted RNN score cut (t0 timing uncertainty)
+            # Up systematic uses RNN scores from t0 + |noise|, down uses t0 - |noise|
+            rnn_t0_up_pass_df = df2.Filter(bnd_t0_up[0])
+            rnn_t0_up_fail_df = df2.Filter(bnd_t0_up[1])
+            rnn_t0_down_pass_df = df2.Filter(bnd_t0_down[0])
+            rnn_t0_down_fail_df = df2.Filter(bnd_t0_down[1])
 
             # Book 2D histograms — same binning as Data
             pass_hist = pass_df.Histo2D(("hpass", "hpass; p_{T} (GeV);# of Hits",
@@ -734,12 +771,13 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 rnn_score_hist.Scale(1 / rnn_score_hist.Integral())
 
             # Retrieve cutflow histogram from original (pre-RNN) ntuple to get total event count for normalization
-            f = ROOT.TFile.Open(f"{file_dir_path}/Ntuples_v{ntuple_v}/{sample_type}/{region[:2]}/{collection}/{Path(file).stem[:-5]}.root")
+            # The original input file contains the cutflow histogram
+            f = ROOT.TFile.Open(args.inputFile)
             cutflow_hist = f.Get("h_cutflow")
             cutflow_hist.SetDirectory(0)   # Detach from file so it survives after Close()
             f.Close()
 
-            print(f"Total # of events in sample {Path(file).stem[:-5]}:", cutflow_hist.GetBinContent(1))
+            print(f"Total # of events in sample {Path(args.inputFile).stem}:", cutflow_hist.GetBinContent(1))
 
             if sample_type == 'Signal':
                 # Normalize signal histograms to 100 events (arbitrary reference cross section)
