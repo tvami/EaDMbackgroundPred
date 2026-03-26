@@ -118,14 +118,15 @@ python3 run_single_signal_2DA.py "$workingArea" "$config_file" "$signal" "$tf_ty
 
 # Copy workspace back to initial directory for Condor to transfer
 echo -e "\n[4] Preparing output for transfer"
+
+# Create parent directory structure unconditionally (so Condor always has something to transfer)
+parent_dir="rpf2x0_Binningv6_Inputv21_SR_Blind"
+echo "Creating parent directory: $baseDir/$parent_dir"
+mkdir -p "$baseDir/$parent_dir"
+
 if [ -d "$workingArea" ]; then
     echo "Workspace created: $workingArea"
     echo "Workspace size: $(du -sh $workingArea | cut -f1)"
-
-    # Create parent directory structure for organized output
-    parent_dir="rpf2x0_Binningv6_Inputv21_SR_Blind"
-    echo "Creating parent directory: $baseDir/$parent_dir"
-    mkdir -p "$baseDir/$parent_dir"
 
     # Copy workspace to parent directory so Condor can transfer it back
     echo "Copying workspace to $baseDir/$parent_dir/$workingArea"
@@ -134,7 +135,8 @@ if [ -d "$workingArea" ]; then
     echo "Workspace copied successfully"
     echo "Condor will transfer this back on job completion."
 else
-    echo "WARNING: Workspace directory not found!"
+    echo "WARNING: Workspace directory not found! Job may have failed."
+    echo "Parent directory created anyway for Condor file transfer."
 fi
 
 echo -e "-------------------- END ---------------------\n"
