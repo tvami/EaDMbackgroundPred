@@ -30,7 +30,8 @@ def extract_signal_names(histogram_dir, signal_pattern="e6"):
     if signal_pattern:
         file_pattern = f"EaDM_Signal_M*GeV_{signal_pattern}_SR.root"
     else:
-        file_pattern = "EaDM_Signal_M*GeV_SR.root"
+        # Match all signals including those with depth suffixes (e5, e6, etc.)
+        file_pattern = "EaDM_Signal_M*GeV*_SR.root"
 
     files = sorted(Path(histogram_dir).glob(file_pattern))
 
@@ -78,7 +79,8 @@ if __name__ == "__main__":
     OUTPUT_FILE = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/input_2DA_SR.txt"
 
     # You can change these
-    SIGNAL_PATTERN = "e6"  # Set to None for all signals, or "e6", "e5", etc.
+    #SIGNAL_PATTERN = "e6"  # Set to None for all signals, or "e6", "e5", etc.
+    SIGNAL_PATTERN = None
     TF_TYPE = "2x0"
 
     print(f"Scanning {HISTOGRAM_DIR} for signals matching pattern: {SIGNAL_PATTERN}")
