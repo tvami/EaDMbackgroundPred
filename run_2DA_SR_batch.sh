@@ -42,11 +42,11 @@ echo -e "\n[4b] Moving scripts, config, and histogram files to CMSSW/src"
 mv run_single_signal_2DA.py $rel/src/
 mv config_Binningv6_InputTemplate_SR_Blind.json $rel/src/
 
-# Create histogram directory and move ROOT files
-mkdir -p $rel/src/histograms_for_2DAlphabet_v21
-mv EaDM_*.root $rel/src/histograms_for_2DAlphabet_v21/
-echo "Moved histogram files:"
-ls -lh $rel/src/histograms_for_2DAlphabet_v21/
+# Move histogram directory
+echo -e "\n[4c] Moving histogram directory to CMSSW/src"
+mv histograms_for_2DAlphabet_v21 $rel/src/
+echo "Histogram directory contents:"
+ls -lh $rel/src/histograms_for_2DAlphabet_v21/ | head -10
 
 # cd into CMSSW and do cmsenv
 echo -e "\n[5] cd $rel/src/"
@@ -122,11 +122,16 @@ if [ -d "$workingArea" ]; then
     echo "Workspace created: $workingArea"
     echo "Workspace size: $(du -sh $workingArea | cut -f1)"
 
-    # Copy workspace to initial working directory so Condor can transfer it back
-    echo "Copying workspace to base directory for Condor transfer..."
-    cp -r "$workingArea" "$baseDir/"
+    # Create parent directory structure for organized output
+    parent_dir="rpf2x0_Binningv6_Inputv21_SR_Blind"
+    echo "Creating parent directory: $baseDir/$parent_dir"
+    mkdir -p "$baseDir/$parent_dir"
 
-    echo "Workspace copied to $baseDir/$workingArea"
+    # Copy workspace to parent directory so Condor can transfer it back
+    echo "Copying workspace to $baseDir/$parent_dir/$workingArea"
+    cp -r "$workingArea" "$baseDir/$parent_dir/"
+
+    echo "Workspace copied successfully"
     echo "Condor will transfer this back on job completion."
 else
     echo "WARNING: Workspace directory not found!"

@@ -66,10 +66,6 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
     template_basename = os.path.basename(template_config)
 
     with open(output_file, 'w') as f:
-        # Write header (no spaces for proper Condor variable parsing)
-        f.write("template_config,signal,tf_type\n")
-
-        # Write one line per signal (no spaces)
         for signal in signal_names:
             f.write(f"{template_basename},{signal},{tf_type}\n")
 
