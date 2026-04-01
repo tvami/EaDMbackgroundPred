@@ -202,10 +202,21 @@ if args.runType == 'Process' or args.runType == 'Both':
             arrays["RNNScore_syst_up"] = rnn_scores.flatten()
             arrays["RNNScore_syst_down"] = rnn_scores.flatten()
 
-            # Write new file
+            # Write new file with tree and copy histograms
             with uproot.recreate(f"{output_dir}/{Path(file).stem}.root") as out_f:
                 print(f"Saving to: {output_dir}/{Path(file).stem}.root")
                 out_f["tree"] = arrays
+
+                # Copy all histograms from input file
+                with uproot.open(file) as in_f:
+                    for key in in_f.keys():
+                        obj_name = key.split(';')[0]  # Remove cycle number
+                        if obj_name != "tree":  # Skip the tree, we already wrote it
+                            try:
+                                hist = in_f[key]
+                                out_f[obj_name] = hist
+                            except:
+                                pass  # Skip objects that can't be copied
 
             continue
 
@@ -407,10 +418,21 @@ if args.runType == 'Process' or args.runType == 'Both':
         arrays["RNNScore_syst_up"] = rnn_score_syst_up.flatten()
         arrays["RNNScore_syst_down"] = rnn_score_syst_down.flatten()
 
-        # Write new file
+        # Write new file with tree and copy histograms
         with uproot.recreate(f"{output_dir}/{Path(file).stem}.root") as out_f:
             print(f"Saving to: {output_dir}/{Path(file).stem}.root")
             out_f["tree"] = arrays
+
+            # Copy all histograms from input file
+            with uproot.open(file) as in_f:
+                for key in in_f.keys():
+                    obj_name = key.split(';')[0]  # Remove cycle number
+                    if obj_name != "tree":  # Skip the tree, we already wrote it
+                        try:
+                            hist = in_f[key]
+                            out_f[obj_name] = hist
+                        except:
+                            pass  # Skip objects that can't be copied
 
 
 # =========================
@@ -485,7 +507,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
             bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
             bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
-        if args.region == 'vr1':
+        if args.region == 'vr' or args.region == 'vr1':
             # VR1 uses a window cut: pass requires intermediate RNN scores (between ~signal-like and background-like)
             bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
             bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
@@ -690,7 +712,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     bnd_down = ['RNNScore >= 0.81', 'RNNScore < 0.81']
                     bnd_t0_up = ['RNNScore_t0syst_up >= 0.9', 'RNNScore_t0syst_up < 0.9']
                     bnd_t0_down = ['RNNScore_t0syst_down >= 0.9', 'RNNScore_t0syst_down < 0.9']
-            if args.region == 'vr1':
+            if args.region == 'vr' or args.region == 'vr1':
                 bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
                 bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
                 bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']

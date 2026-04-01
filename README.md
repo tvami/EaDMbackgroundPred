@@ -87,7 +87,7 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
 ```
 
 This will make the inputs using the `generate_condor_inputs.py` file: 
- - `input_2DA_SR.txt`: contains binning / SR / blind specific template JSON, called `config_Binningv6_InputTemplate_SR_Blind.json`, the mass point and the TF
- - `condor_2DA_SR.cfg` quees from `input_2DA_SR.txt` to condor, note the directory name is hardcoded here, e.g. `rpf2x0_Binningv6_Inputv21_SR`
-- Condor then will run `run_2DA_SR_batch.sh`, note the directory name is hardcoded here too, e.g. `rpf2x0_Binningv6_Inputv21_SR` together wtih `histograms_for_2DAlphabet_v21`, this sets up the env in the condor node, and runs run_single_signal_2DA.py
+ - `input_2DA_SR.txt`: contains binning / SR / blind specific template JSON, called `config_Binningv7_InputTemplate_SR_Blind.json`, the mass point and the TF
+ - `condor_2DA_SR.cfg` quees from `input_2DA_SR.txt` to condor, note the directory name is hardcoded here, e.g. `rpf2x0_Binningv7_Inputv21_SR`
+- Condor then will run `run_2DA_SR_batch.sh`, note the directory name is hardcoded here too, e.g. `rpf2x0_Binningv7_Inputv21_SR` together wtih `histograms_for_2DAlphabet_v21`, this sets up the env in the condor node, and runs run_single_signal_2DA.py
 - `run_single_signal_2DA.py` is a templated single signal running version  

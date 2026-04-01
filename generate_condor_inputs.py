@@ -75,7 +75,7 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
 if __name__ == "__main__":
     # Configuration - EDIT THESE FOR YOUR ANALYSIS
     HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v21"
-    TEMPLATE_CONFIG = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/config_Binningv6_InputTemplate_SR_Blind.json"
+    TEMPLATE_CONFIG = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/config_Binningv7_InputTemplate_SR_Blind.json"
     OUTPUT_FILE = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/input_2DA_SR.txt"
 
     # You can change these
