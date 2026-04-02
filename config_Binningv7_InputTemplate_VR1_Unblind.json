@@ -6,7 +6,7 @@
         "HIST_UP": "h$region_$syst_up",
         "HIST_DOWN": "h$region_$syst_down",
         "path": "./histograms_for_2DAlphabet_v21",
-	    "SIGNAME": ["SIGNAME_PLACEHOLDER"]
+	"SIGNAME": ["SIGNAME_PLACEHOLDER"]
     },
     "REGIONS": {
         "pass": {
@@ -24,12 +24,11 @@
             "COLOR": "black",
             "SCALE": 1,
             "TYPE": "DATA",
-            "TITLE": "Run3_Cosmics_Data_SR",
-            "ALIAS": "Run3_Cosmics_Data_SR",
+            "TITLE": "Run3_Cosmics_Data_All_VR",
+            "ALIAS": "Run3_Cosmics_Data_All_VR",
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
-            "SYSTEMATICSvolt": ["lumi","pileup", "systOnF", "systOnG", "systOnTrigger", "systOnPt", "systOnMuReco", "systOnMuID", "systOnMuTrigger"],
             "SYSTEMATICS":["lumi","RNN","pT","t0"],
             "COLOR": "red",
             "SCALE": 1.0,
@@ -67,28 +66,26 @@
             "X": {
                 "NAME": "pT",
                 "TITLE": "p_{T}",
-		        "BINSv1":   [0,100,200,300,400,500,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
-		        "BINSv2":   [0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,1200,1400,1600,1900,2200,2600,3400,4200,5000],
                 "BINSv3":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
-                "BINS":     [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000],
-		        "SIGSTART": 800,
+                "BINS":   [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000],
+                "SIGSTART": 800,
                 "SIGEND": 1296,
-		        "NBINSna": 50,
-                "MINna": 500,
-                "MAXna": 5500
+		"NBINSna": 50,
+        "MINna": 500,
+        "MAXna": 5500
             },
             "Y": {
                 "NAME": "N",
                 "TITLE": "N",
                 "NBINS": 1,
                 "MIN": 1,
-                "MAX": 50
+                "MAX": 200
             }
         }
     },
     "OPTIONS": {
-        "blindedFit": ["pass"],
-        "blindedPlots": ["pass"],
+        "blindedFitNA": ["pass"],
+        "blindedPlotsNA": ["pass"],
         "plotTemplateComparisonsNA": true,
         "plotEvtsPerUnitVolt" : true
     }

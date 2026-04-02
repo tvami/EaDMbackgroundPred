@@ -75,22 +75,73 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
 if __name__ == "__main__":
     # Configuration - EDIT THESE FOR YOUR ANALYSIS
     HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v21"
-    TEMPLATE_CONFIG = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/config_Binningv7_InputTemplate_SR_Blind.json"
-    OUTPUT_FILE = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/input_2DA_SR.txt"
+    BASE_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src"
 
-    # You can change these
-    #SIGNAL_PATTERN = "e6"  # Set to None for all signals, or "e6", "e5", etc.
-    SIGNAL_PATTERN = None
+    # Configuration for each region
+    configs = [
+        {
+            "name": "SR",
+            "template": f"{BASE_DIR}/config_Binningv7_InputTemplate_SR_Blind.json",
+            "output": f"{BASE_DIR}/input_2DA_SR.txt",
+            "pattern": "_SR.root"
+        },
+        {
+            "name": "VR1",
+            "template": f"{BASE_DIR}/config_Binningv7_InputTemplate_VR1_Unblind.json",
+            "output": f"{BASE_DIR}/input_2DA_VR1.txt",
+            "pattern": "_VR.root"
+        },
+        {
+            "name": "VR2",
+            "template": f"{BASE_DIR}/config_Binningv7alt_InputTemplate_VR2_Unblind.json",
+            "output": f"{BASE_DIR}/input_2DA_VR2.txt",
+            "pattern": "_SR.root"  # VR2 uses SR signal files
+        }
+    ]
+
     TF_TYPE = "2x0"
 
-    print(f"Scanning {HISTOGRAM_DIR} for signals matching pattern: {SIGNAL_PATTERN}")
-    signal_names = extract_signal_names(HISTOGRAM_DIR, SIGNAL_PATTERN)
+    print("=" * 60)
+    print("  Generating Condor Input Files for 2DAlphabet")
+    print("=" * 60)
 
-    print(f"Found {len(signal_names)} signals:")
-    for sig in signal_names:
-        print(f"  - {sig}")
+    for config in configs:
+        region = config["name"]
+        print(f"\n[{region}] Processing {region} region...")
+        print(f"  Histogram directory: {HISTOGRAM_DIR}")
+        print(f"  Looking for files matching: *{config['pattern']}")
 
-    print(f"\nGenerating input file: {OUTPUT_FILE}")
-    generate_input_file(signal_names, TEMPLATE_CONFIG, OUTPUT_FILE, TF_TYPE)
+        # Find signal files for this region
+        files = sorted(Path(HISTOGRAM_DIR).glob(f"EaDM_Signal_M*GeV*{config['pattern']}"))
 
-    print("\nDone!")
+        signal_names = []
+        for f in files:
+            # Extract signal name from filename
+            # EaDM_Signal_M1500GeV_e6_SR.root -> Signal_M1500GeV_e6_SR
+            match = re.search(r'EaDM_(Signal_M\d+GeV.*?)\.root', f.name)
+            if match:
+                signal_name = match.group(1)
+                signal_names.append(signal_name)
+
+        # Sort by mass value
+        def get_mass(sig):
+            match = re.search(r'M(\d+)GeV', sig)
+            return int(match.group(1)) if match else 0
+
+        signal_names.sort(key=get_mass)
+
+        print(f"  Found {len(signal_names)} signals:")
+        for sig in signal_names[:3]:  # Show first 3
+            print(f"    - {sig}")
+        if len(signal_names) > 3:
+            print(f"    ... and {len(signal_names) - 3} more")
+
+        print(f"  Template config: {os.path.basename(config['template'])}")
+        print(f"  Output file: {os.path.basename(config['output'])}")
+
+        # Generate input file
+        generate_input_file(signal_names, config['template'], config['output'], TF_TYPE)
+
+    print("\n" + "=" * 60)
+    print("  All input files generated successfully!")
+    print("=" * 60)
