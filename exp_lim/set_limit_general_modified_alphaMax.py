@@ -16,10 +16,6 @@ gROOT.SetBatch(kTRUE)
 
 parser = OptionParser()
 
-# parser.add_option('-t', '--tag', metavar='FILE', type='string', action='store',
-#                 default   =   'dataBsOff',
-#                 dest      =   'tag',
-#                 help      =   'Tag ran over')
 parser.add_option('-L', '--lumiLabel',metavar='F', type='string', action='store',
                 default   =   '2023D Cosmics',
                 dest      =   'lumiLabel',
@@ -28,6 +24,14 @@ parser.add_option('-s', '--signals', metavar='FILE', type='string', action='stor
                 default   =   'bstar_signalsLH.txt',
                 dest      =   'signals',
                 help      =   'Text file containing the signal names and their corresponding cross sections')
+parser.add_option('-n', '--numRates', type='int',
+                default       =       0,
+                dest          =       'num_rate',
+                help          =       'Number of sets of rates')
+parser.add_option('--outdir', type='string', action='store',
+                default       =       './limit_test_dir',
+                dest          =       'outdir',
+                help          =       'Output directory')
 parser.add_option('-P', '--plotOnly', action="store_true",
                 default   =   False,
                 dest      =   'plotOnly',
@@ -64,26 +68,19 @@ parser.add_option('-d', '--debug', type='int',
                 default       =       0,
                 dest          =       'debug',
                 help          =       'Debug level')
-parser.add_option('-n', '--numRates', type='int',
-                default       =       1,
-                dest          =       'num_rate',
-                help          =       'Number of sets of rates')
-parser.add_option('--outdir', type='string', action='store',
-                default       =       './limit_test_dir',
-                dest          =       'outdir',
-                help          =       'Output directory')
 
 (options, args) = parser.parse_args()
 
 debug = options.debug
 
-num_rate = options.num_rate
 total_theory_xsec_list = []
 labels = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2.0e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.40e-08, 3.40e-08, 4.40e-08, 5.40e-08, 6.40e-08, 7.40e-08, 8.40e-08, 9.40e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07]
 exp_lim = []
 closed_exp_lim = []
 exp_lim_upper = []
 exp_lim_lower = []
+if options.num_rate == 0: num_rate = len(labels)
+else: num_rate = options.num_rate
 
 # Open signal file
 signal_file = open(options.signals,'r')
