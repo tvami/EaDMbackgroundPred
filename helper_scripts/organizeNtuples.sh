@@ -9,7 +9,7 @@ BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.0.9/
 # 1) Create full directory tree
 # ------------------------------------------------------------------
 for sample in Data Signal BkgMC ExpressData; do
-  for region in sr vr; do
+  for region in sr vr1 vr2; do
     for object in matched_muon muon track tuneP; do
       mkdir -p "$BASE/$sample/$region/$object"
     done
@@ -35,8 +35,10 @@ for f in ./skimmed_*.root ./trigger_study_*.root; do
   # Extract region
   if [[ "$fname" == *_sr_* ]]; then
     region=sr
-  elif [[ "$fname" == *_vr_* ]]; then
-    region=vr
+  elif [[ "$fname" == *_vr1_* ]]; then
+    region=vr1
+  elif [[ "$fname" == *_vr2_* ]]; then
+    region=vr2
   else
     echo "WARNING: cannot determine region for $fname — skipping"
     continue

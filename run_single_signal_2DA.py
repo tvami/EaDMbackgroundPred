@@ -202,8 +202,10 @@ def plot_fit(signal, tf):
     working_area = workingArea
     twoD = TwoDAlphabet(working_area, '{}/runConfig.json'.format(working_area), loadPrevious=True)
     subset = twoD.ledger.select(_select_signal, '{}'.format(signal), tf)
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
-    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=r'2023D Cosmics', pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
+    # Get the data title from the JSON config instead of hardcoding it
+    data_title = twoD.ledger.GetProcessTitle('data_obs')
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, lumiText=data_title, pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
+    twoD.StdPlots('{}-{}_area'.format(signal, tf), subset, True, lumiText=data_title, pf_slice_str={"fail":"RNNScore < 0.9999","pass":"RNNScore > 0.9999"})
     print(f"  ✓ Plots created successfully")
 
 

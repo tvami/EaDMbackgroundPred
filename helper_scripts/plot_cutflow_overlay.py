@@ -297,7 +297,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     path_parts = input_dir.rstrip('/').split('/')
     canvas_suffix = ""
     for part in reversed(path_parts):
-        if part in ['track', 'muon', 'matched_muon', 'tuneP', 'vr', 'sr',
+        if part in ['track', 'muon', 'matched_muon', 'tuneP', 'vr1', 'vr2', 'sr',
                      'Signal', 'Data', 'BkgMC', 'ExpressData']:
             canvas_suffix = part + "_" + canvas_suffix
     canvas_suffix = (canvas_suffix + hist_name).rstrip('_')
@@ -352,7 +352,7 @@ def plot_all_cutflow_analysis(input_dir="skimmed_volt2", hist_name="h_cutflow", 
     for part in reversed(path_parts):
         if part in ['track', 'muon', 'matched_muon', 'tuneP']:
             object_type = part
-        elif part in ['vr', 'sr']:
+        elif part in ['vr1', 'vr2', 'sr']:
             region = part
         if region and object_type:
             break
@@ -1202,7 +1202,7 @@ if __name__ == "__main__":
     }
 
     # Define regions and object types to loop over
-    regions = ['sr', 'vr']
+    regions = ['sr', 'vr1', 'vr2']
     object_types = ['matched_muon', 'muon', 'track', 'tuneP']
 
     # Build list of valid combinations first

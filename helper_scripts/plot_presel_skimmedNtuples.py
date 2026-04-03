@@ -12,7 +12,7 @@ base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.9_wRNN/'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 # collections = ['matched_muon', 'track', 'muon', 'tuneP']
 collections = ['matched_muon']
-region = 'sr' # sr vr
+region = 'sr' # sr, vr1, vr2
 
 samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
                 "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
@@ -146,7 +146,11 @@ def get_cutflow_df(df, collection, region='sr'):
         pt_br, ptErr_br, eta_br = 'muon_pt', 'muon_ptErr', 'muon_eta'
         chi2_br, ndof_br, nhits_br = 'muon_chi2', 'muon_comb_ndof', 'muon_numberOfValidHits'
 
-    pt_cond = f"{pt_br} > 200" if region == 'sr' else f"{pt_br} < 200"
+    # sr and vr1 use pT > 200, vr2 uses pT < 200
+    if region == 'sr' or region == 'vr1':
+        pt_cond = f"{pt_br} > 200"
+    else:  # vr2
+        pt_cond = f"{pt_br} < 200"
 
     return (df
         .Define("_cf_chi2ndof", f"ROOT::VecOps::Where({ndof_br} != 0, {chi2_br}/{ndof_br}, 999.)")
