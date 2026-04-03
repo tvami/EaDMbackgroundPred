@@ -1,0 +1,47 @@
+CascadeMinimizer.cc[188] : (in function: improveOnce) - Minimization configured with Type=Minuit2, Algo=Migrad, strategy=0, tolerance=0.1
+CascadeMinimizer.cc[215] : (in function: improveOnce) - Minimization finished with status=0
+CascadeMinimizer.cc[219] : (in function: improveOnce) - Minimization success! status=0
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_LOW_obsOnly: in 3 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_SIG_obsOnly: in 1 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_HIGH_obsOnly: in 5 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_LOW_obsOnly: in 3 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_SIG_obsOnly: in 1 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_HIGH_obsOnly: in 5 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+AsymptoticLimits.cc[415] : (in function: runLimitExpected) - [WARNING] Best fit of asimov dataset is at r = 8.566188 (0.428309 times rMax), while it should be at zero
+AsymptoticLimits.cc[428] : (in function: runLimitExpected) - Median for expected limits = 130.99, Sigma for expected limits = 66.8327
+AsymptoticLimits.cc[191] : (in function: runLimit) - NLL at global minimum of data = -677.573 (r=401.394)
+AsymptoticLimits.cc[211] : (in function: runLimit) - NLL at global minimum of asimov = -543.578 (r=9.7121)
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 425.478123:	q_mu = 0.00000	q_A  = 4.64175	Pmu = 0.50000	1-Pb  = 0.98440	CLs  = 0.50792
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 850.956247:	q_mu = 0.00000	q_A  = 2.75413	Pmu = 0.50000	1-Pb  = 0.95150	CLs  = 0.52549
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1701.912493:	q_mu = 2.66223	q_A  = 9.38976	Pmu = 0.05138	1-Pb  = 0.92402	CLs  = 0.05560
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 3403.824986:	q_mu = 17.58027	q_A  = 30.32303	Pmu = 0.00001	1-Pb  = 0.90554	CLs  = 0.00002
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1902.609721:	q_mu = 3.86196	q_A  = 11.25674	Pmu = 0.02470	1-Pb  = 0.91772	CLs  = 0.02691
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1152.002088:	q_mu = 0.48134	q_A  = 5.62462	Pmu = 0.24391	1-Pb  = 0.95331	CLs  = 0.25585
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1527.305904:	q_mu = 1.77507	q_A  = 6.06254	Pmu = 0.09138	1-Pb  = 0.87074	CLs  = 0.10494
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1690.872366:	q_mu = 2.60182	q_A  = 7.54187	Pmu = 0.05337	1-Pb  = 0.87144	CLs  = 0.06124
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1775.002001:	q_mu = 3.07850	q_A  = 8.36221	Pmu = 0.03967	1-Pb  = 0.87227	CLs  = 0.04548
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1736.731780:	q_mu = 2.86154	q_A  = 7.98437	Pmu = 0.04536	1-Pb  = 0.87161	CLs  = 0.05204
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1753.471226:	q_mu = 2.95323	q_A  = 8.14870	Pmu = 0.04285	1-Pb  = 0.87204	CLs  = 0.04914
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1746.077511:	q_mu = 2.91083	q_A  = 8.07596	Pmu = 0.04399	1-Pb  = 0.87196	CLs  = 0.05045
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1749.581678:	q_mu = 2.93106	q_A  = 8.22945	Pmu = 0.04345	1-Pb  = 0.87630	CLs  = 0.04958
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1747.523270:	q_mu = 2.91901	q_A  = 8.09060	Pmu = 0.04377	1-Pb  = 0.87200	CLs  = 0.05020
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.455195:	q_mu = 2.92441	q_A  = 8.09957	Pmu = 0.04362	1-Pb  = 0.87200	CLs  = 0.05003
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.737129:	q_mu = 2.92598	q_A  = 8.10256	Pmu = 0.04358	1-Pb  = 0.87201	CLs  = 0.04998
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.584790:	q_mu = 2.92668	q_A  = 8.10062	Pmu = 0.04356	1-Pb  = 0.87190	CLs  = 0.04996
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.526677:	q_mu = 2.92506	q_A  = 8.10004	Pmu = 0.04361	1-Pb  = 0.87198	CLs  = 0.05001
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.547996:	q_mu = 2.92515	q_A  = 8.10020	Pmu = 0.04360	1-Pb  = 0.87198	CLs  = 0.05001
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.559955:	q_mu = 2.92500	q_A  = 8.10035	Pmu = 0.04361	1-Pb  = 0.87199	CLs  = 0.05001
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.569391:	q_mu = 2.92501	q_A  = 8.10045	Pmu = 0.04361	1-Pb  = 0.87199	CLs  = 0.05001
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 1748.575107:	q_mu = 3.33421	q_A  = 8.10064	Pmu = 0.03393	1-Pb  = 0.84618	CLs  = 0.04009

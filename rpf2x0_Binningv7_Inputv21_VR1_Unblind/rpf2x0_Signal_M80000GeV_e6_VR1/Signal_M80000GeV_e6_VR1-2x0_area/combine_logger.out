@@ -1,0 +1,42 @@
+CascadeMinimizer.cc[188] : (in function: improveOnce) - Minimization configured with Type=Minuit2, Algo=Migrad, strategy=0, tolerance=0.1
+CascadeMinimizer.cc[215] : (in function: improveOnce) - Minimization finished with status=0
+CascadeMinimizer.cc[219] : (in function: improveOnce) - Minimization success! status=0
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_LOW_obsOnly: in 3 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_SIG_obsOnly: in 1 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binpass_HIGH_obsOnly: in 5 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_LOW_obsOnly: in 3 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_SIG_obsOnly: in 1 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+ToyMCSamplerOpt.cc[146] : (in function: generateAsimov) - Using internal logic for binned/unbinned Asimov dataset generation
+ToyMCSamplerOpt.cc[214] : (in function: generateWithHisto) - Generating asimov with histogram for pdf pdf_binfail_HIGH_obsOnly: in 5 x-bins
+ToyMCSamplerOpt.cc[215] : (in function: generateWithHisto) -  , in 1 y-bins
+AsymptoticLimits.cc[415] : (in function: runLimitExpected) - [WARNING] Best fit of asimov dataset is at r = 0.097805 (0.004890 times rMax), while it should be at zero
+AsymptoticLimits.cc[428] : (in function: runLimitExpected) - Median for expected limits = 23.0938, Sigma for expected limits = 11.7827
+AsymptoticLimits.cc[191] : (in function: runLimit) - NLL at global minimum of data = -17573.1 (r=0.00844988)
+AsymptoticLimits.cc[211] : (in function: runLimit) - NLL at global minimum of asimov = -17570.5 (r=0.00432299)
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 98.789626:	q_mu = 163.77199	q_A  = 162.43724	Pmu = 0.00000	1-Pb  = 0.47912	CLs  = 0.00000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 49.399038:	q_mu = 46.74235	q_A  = 45.86476	Pmu = 0.00000	1-Pb  = 0.47417	CLs  = 0.00000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 24.703744:	q_mu = 5.64746	q_A  = 4.95676	Pmu = 0.00862	1-Pb  = 0.43836	CLs  = 0.01967
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 12.356097:	q_mu = 1.35570	q_A  = 0.99303	Pmu = 0.11930	1-Pb  = 0.42780	CLs  = 0.27887
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 18.529920:	q_mu = 2.83027	q_A  = 2.27393	Pmu = 0.04528	1-Pb  = 0.42682	CLs  = 0.10609
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 21.969285:	q_mu = 3.92817	q_A  = 3.27391	Pmu = 0.02328	1-Pb  = 0.42826	CLs  = 0.05437
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.696454:	q_mu = 4.28320	q_A  = 3.61876	Pmu = 0.01890	1-Pb  = 0.43068	CLs  = 0.04389
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.342419:	q_mu = 4.10156	q_A  = 3.44094	Pmu = 0.02102	1-Pb  = 0.42934	CLs  = 0.04897
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.208341:	q_mu = 4.03835	q_A  = 3.37829	Pmu = 0.02182	1-Pb  = 0.42875	CLs  = 0.05089
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.284255:	q_mu = 4.07376	q_A  = 3.41331	Pmu = 0.02137	1-Pb  = 0.42907	CLs  = 0.04980
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.257976:	q_mu = 4.06139	q_A  = 3.40107	Pmu = 0.02152	1-Pb  = 0.42896	CLs  = 0.05018
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.273256:	q_mu = 4.06651	q_A  = 3.40817	Pmu = 0.02146	1-Pb  = 0.42924	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.275561:	q_mu = 4.06757	q_A  = 3.40924	Pmu = 0.02145	1-Pb  = 0.42925	CLs  = 0.04997
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.273853:	q_mu = 4.06675	q_A  = 3.40844	Pmu = 0.02146	1-Pb  = 0.42925	CLs  = 0.04999
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.273524:	q_mu = 4.06659	q_A  = 3.40829	Pmu = 0.02146	1-Pb  = 0.42925	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.273434:	q_mu = 4.06655	q_A  = 3.40824	Pmu = 0.02146	1-Pb  = 0.42925	CLs  = 0.05000
+AsymptoticLimits.cc[337] : (in function: getCLs) - At r = 22.273479:	q_mu = 4.06657	q_A  = 3.40826	Pmu = 0.02146	1-Pb  = 0.42925	CLs  = 0.05000

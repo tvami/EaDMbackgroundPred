@@ -1,0 +1,54 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 17 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 18 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 16 : -2.92782e-05
+ - 0.749825	CMS_EXO26004_Background_rpf_2x0_par3
+ - -0.52483	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.380004	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.131287	CMS_EXO26004_Background_rpf_2x0_par2
+ - 0.0259889	r
+Eigenvalue 17 : -0.00383478
+ - -0.720138	CMS_EXO26004_Background_rpf_2x0_par2
+ - 0.673109	r
+ - 0.103203	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.10143	CMS_EXO26004_Background_rpf_2x0_par0
+ - 0.0840489	CMS_EXO26004_Background_rpf_2x0_par3
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 16 : -0.000153093
+ - 0.752151	CMS_EXO26004_Background_rpf_2x0_par3
+ - -0.533249	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.356989	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.14985	r
+ - -0.00336903	CMS_EXO26004_Background_fail_HIGH_bin_5-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+     - CMS_EXO26004_Background_rpf_2x0_par3
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 0.000145553  -0.000145553/+49.9999  (68% CL)
+Done in 0.01 min (cpu), 0.01 min (real)
+23 log messages saved to combine_logger.out

@@ -1,0 +1,49 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 15 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 14 : -0.00147007
+ - 0.71637	CMS_EXO26004_Background_rpf_2x0_par3
+ - -0.580966	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.342917	CMS_EXO26004_Background_rpf_2x0_par0
+ - 0.178048	CMS_EXO26004_Background_rpf_2x0_par2
+ - -9.79632e-05	CMS_EXO26004_Background_fail_HIGH_bin_1-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par3
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 16 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 15 : -0.00029712
+ - -0.579198	CMS_EXO26004_Background_rpf_2x0_par2
+ - 0.510289	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.501894	CMS_EXO26004_Background_rpf_2x0_par3
+ - 0.305465	r
+ - 0.242734	CMS_EXO26004_Background_rpf_2x0_par0
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 19.6804  -19.6804/+30.3196  (68% CL)
+Done in 0.01 min (cpu), 0.01 min (real)
+23 log messages saved to combine_logger.out

@@ -1,0 +1,93 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 17 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 16 : -0.00417432
+ - -0.606677	CMS_EXO26004_Background_rpf_2x0_par2
+ - -0.561151	CMS_EXO26004_Background_rpf_2x0_par3
+ - 0.442379	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.348357	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.000509771	CMS_EXO26004_Background_fail_LOW_bin_2-1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 15 : -0.000494978
+ - -0.765367	CMS_EXO26004_Background_rpf_2x0_par3
+ - 0.602338	CMS_EXO26004_Background_rpf_2x0_par0
+ - 0.22672	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.000196584	CMS_EXO26004_Background_fail_LOW_bin_3-1
+ - 0.000114717	CMS_EXO26004_Background_fail_LOW_bin_1-1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+     - CMS_EXO26004_Background_rpf_2x0_par3
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 18 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 16 : -0.00113713
+ - -0.698605	r
+ - 0.638739	CMS_EXO26004_Background_fail_HIGH_bin_3-1
+ - 0.221339	CMS_EXO26004_Background_fail_HIGH_bin_2-1
+ - 0.213486	CMS_EXO26004_Background_fail_HIGH_bin_4-1
+ - 0.0587109	CMS_EXO26004_Background_fail_HIGH_bin_5-1
+Eigenvalue 17 : -0.0042491
+ - -0.593682	CMS_EXO26004_Background_rpf_2x0_par2
+ - -0.566469	CMS_EXO26004_Background_rpf_2x0_par3
+ - 0.446717	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.353597	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.0321055	r
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par2 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 15 : -0.000639337
+ - 0.740992	CMS_EXO26004_Background_rpf_2x0_par3
+ - -0.58398	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.203189	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.18323	r
+ - 0.167958	CMS_EXO26004_Background_fail_HIGH_bin_3-1
+Eigenvalue 16 : -0.00118679
+ - 0.674818	r
+ - -0.616833	CMS_EXO26004_Background_fail_HIGH_bin_3-1
+ - -0.213748	CMS_EXO26004_Background_fail_HIGH_bin_2-1
+ - -0.206165	CMS_EXO26004_Background_fail_HIGH_bin_4-1
+ - 0.191873	CMS_EXO26004_Background_rpf_2x0_par3
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_fail_HIGH_bin_3-1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+Eigenvalue 15 : -0.000677221
+ - 0.765377	CMS_EXO26004_Background_rpf_2x0_par3
+ - -0.60252	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.2262	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.00122427	r
+ - -0.000388813	CMS_EXO26004_Background_fail_HIGH_bin_2-1
+>> Attempt 2 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
+>> Verifying eigenvalues are all positive (iteration 3)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+     - CMS_EXO26004_Background_fail_HIGH_bin_3-1
+     - CMS_EXO26004_Background_rpf_2x0_par3
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 0.0370889  -0.0370889/+49.9629  (68% CL)
+Done in 0.01 min (cpu), 0.01 min (real)
+27 log messages saved to combine_logger.out
