@@ -91,3 +91,151 @@ This will make the inputs using the `generate_condor_inputs.py` file:
  - `condor_2DA_SR.cfg` quees from `input_2DA_SR.txt` to condor, note the directory name is hardcoded here, e.g. `rpf2x0_Binningv7_Inputv21_SR`
 - Condor then will run `run_2DA_SR_batch.sh`, note the directory name is hardcoded here too, e.g. `rpf2x0_Binningv7_Inputv21_SR` together wtih `histograms_for_2DAlphabet_v21`, this sets up the env in the condor node, and runs run_single_signal_2DA.py
 - `run_single_signal_2DA.py` is a templated single signal running version  
+
+
+## Region description
+- SR (Signal Region): pT > 200 GeV, RNNScore >= 0.9999
+- VR1 (Validation Region 1): pT > 200 GeV, 0.45 <= RNNScore < 0.9999
+- VR2 (Validation Region 2): pT < 200 GeV, RNNScore >= 0.9999
+
+## Complete Analysis Pipeline
+
+### 1. Generate Input Dataset List
+Create the input list of raw ntuple directories for skimming.
+
+```bash
+cd helper_scripts
+./make_input_list.sh matched_muon
+# Or for other collections:
+# ./make_input_list.sh muon
+# ./make_input_list.sh track
+# ./make_input_list.sh tuneP
+```
+
+**What it does:**
+- Scans base directories for raw ntuples:
+  - `/ceph/cms/store/user/tvami/EarthAsDM`
+  - `/ceph/cms/store/user/tvami/EarthAsDM/ExpressCosmics`
+  - `/ceph/cms/store/user/tvami/EarthAsDM/Cosmics`
+- Creates entries for each region (sr, vr1, vr2) and each dataset directory
+- Outputs: `input_cosmics_datasets_{collection}.txt`
+- Format: `object region directory_path`
+
+**Output example:**
+```
+matched_muon sr /ceph/cms/store/user/tvami/EarthAsDM/Dataset1
+matched_muon vr1 /ceph/cms/store/user/tvami/EarthAsDM/Dataset1
+matched_muon vr2 /ceph/cms/store/user/tvami/EarthAsDM/Dataset1
+...
+```
+
+### 2. Skim Raw Ntuples
+Creates skimmed ROOT files with preselection cuts applied.
+
+**For local testing:**
+```bash
+cd helper_scripts
+root -l -b -q 'skim_ntuples.C("matched_muon", "sr", "/path/to/raw/ntuples/")'
+root -l -b -q 'skim_ntuples.C("matched_muon", "vr1", "/path/to/raw/ntuples/")'
+root -l -b -q 'skim_ntuples.C("matched_muon", "vr2", "/path/to/raw/ntuples/")'
+```
+
+**For batch/condor submission:**
+- Uses `run_skim_batch.sh` as the wrapper script
+- Submit via condor with parameters: `object`, `region`, `base_dir`
+```bash
+condor_submit condor_skim.cfg
+```
+
+**Output:** `skimmed_{collection}_{region}_{dataset}.root` files
+
+### 4. Organize Skimmed Files (optional)
+```bash
+cd helper_scripts
+./organizeNtuples.sh
+```
+This moves files from current directory into the proper directory structure:
+```
+/home/users/tvami/EarthAsDM/Ntuples_v4.0.9/
+├── Data/
+│   ├── sr/matched_muon/
+│   ├── vr1/matched_muon/
+│   └── vr2/matched_muon/
+├── Signal/
+│   ├── sr/matched_muon/
+│   ├── vr1/matched_muon/
+│   └── vr2/matched_muon/
+└── BkgMC/...
+```
+
+### 5. Generate Input List for Processing
+```bash
+cd helper_scripts
+python3 generate_input_ntuple_list.py \
+    -d /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.9 \
+    -o input_ntuples_v4.0.9.txt \
+    -c matched_muon \
+    -T Both
+```
+
+**What it does:**
+- Scans directory structure for ROOT files
+- Creates entries for each region (sr, vr1, vr2)
+- Output format: `file_path, version, sample_type, region, collection, run_type`
+
+### 6. Process Skimmed Ntuples
+Add RNN scores and create 2DAlphabet input histograms.
+
+**For local testing:**
+```bash
+cd helper_scripts
+python3 skimmed_ntuple_processing_script.py \
+    -i /path/to/skimmed_file.root \
+    -n 4.0.9 \
+    -s Data \
+    -r sr \
+    -c matched_muon \
+    -T Both
+```
+
+**For batch/condor submission:**
+- Uses `run_ntuple_processing_batch.sh` as wrapper
+- Input list: `input_ntuples_v4.0.9.txt`
+- Submit jobs for each region (sr, vr1, vr2)
+```bash
+condor_submit condor_ntuple_processing.cfg
+```
+
+**Output:**
+- RNN-scored files: `./output/{sample_type}/{region}/{collection}/*.root`
+- 2DAlphabet inputs: `./output/{sample_type}/{region}/{collection}/2DA/EaDM_*_{REGION}.root`
+
+### 7. Run 2DAlphabet (statistical analysis)
+
+```bash
+cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src
+cmsenv
+source twoD-env/bin/activate
+
+# Submit for each region:
+./submit_2DA_SR.sh
+./submit_2DA_VR1.sh
+./submit_2DA_VR2.sh
+```
+
+## Region-Specific Details
+
+| Region | pT Cut | RNN Score Cut | Use Case |
+|--------|--------|---------------|----------|
+| **SR** | > 200 GeV | ≥ 0.9999 | Signal region for limit setting |
+| **VR1** | > 200 GeV | 0.45 - 0.9999 | Validation region (intermediate scores) |
+| **VR2** | < 200 GeV | ≥ 0.9999 | Validation region (low pT, signal-like) |
+
+## Output Files Produced
+
+1. **Skimmed ntuples:** `skimmed_matched_muon_{region}_*.root`
+2. **RNN-scored ntuples:** Same filename structure with RNN branches added
+3. **2DAlphabet inputs:**
+   - Data: `EaDM_Run3_Cosmics_Data_All_{SR/VR1/VR2}.root`
+   - Signal: `EaDM_Signal_M{mass}GeV_{SR/VR1/VR2}.root`
+   - BkgMC: `EaDM_CosmicMC_Data_{SR/VR1/VR2}.root`, `EaDM_NeutrinoMC_Data_{SR/VR1/VR2}.root`

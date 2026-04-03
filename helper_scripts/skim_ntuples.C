@@ -1,6 +1,8 @@
 /// Skim ntuples using RDataFrame, applying cuts sequentially and saving a cutflow histogram
 /// Usage:
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/")'
+///       root -l -b -q 'skim_ntuples.C("track", "vr1", "/path/to/files/")'
+///       root -l -b -q 'skim_ntuples.C("track", "vr2", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", true)'  // with file validation
 
 // Version: v4.0.6a
@@ -134,12 +136,12 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // Apply region-specific pT cut
     TString pt_cut_label;
     float pt_cut_value = 200.f;
-    if (region == "sr") {
+    if (region == "sr" || region == "vr1") {
         pt_cut_label = "pT > 200 GeV";
-    } else if (region == "vr") {
+    } else if (region == "vr2") {
         pt_cut_label = "pT < 200 GeV";
     } else {
-        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr' or 'vr'.\n";
+        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr', 'vr1', or 'vr2'.\n";
         return;
     }
 
@@ -331,8 +333,8 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
                 ptErr[i]/(pt[i]*pt[i]) < 1e-3 &&
                 std::abs(eta[i]) < 0.9;
             if (!pass_quality) continue;
-            if (region == "sr" && pt[i] > pt_cut_value) n++;
-            if (region == "vr" && pt[i] < pt_cut_value) n++;
+            if ((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) n++;
+            if (region == "vr2" && pt[i] < pt_cut_value) n++;
         }
         return n;
     }, {nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), pt_var.Data(), ptErr_var.Data(), eta_var.Data()})
@@ -410,7 +412,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
             if (ndof[i] > 0 && chi2[i]/ndof[i] < 35) m |= 2;
             if (pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) m |= 4;
             if (std::abs(eta[i]) < 0.9) m |= 8;
-            if ((region == "sr" && pt[i] > pt_cut_value) || (region == "vr" && pt[i] < pt_cut_value)) m |= 16;
+            if (((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) || (region == "vr2" && pt[i] < pt_cut_value)) m |= 16;
             mask[i] = m;
         }
         return mask;
@@ -472,7 +474,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
             if (ndof[i] > 0 && chi2[i]/ndof[i] < 35) m |= 2;
             if (pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3) m |= 4;
             if (std::abs(eta[i]) < 0.9) m |= 8;
-            if ((region == "sr" && pt[i] > pt_cut_value) || (region == "vr" && pt[i] < pt_cut_value)) m |= 16;
+            if (((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) || (region == "vr2" && pt[i] < pt_cut_value)) m |= 16;
             mask[i] = m;
         }
         return mask;

@@ -6,7 +6,7 @@
         "HIST_UP": "h$region_$syst_up",
         "HIST_DOWN": "h$region_$syst_down",
         "path": "./histograms_for_2DAlphabet_v21",
-	"SIGNAME": ["SIGNAME_PLACEHOLDER"]
+        "SIGNAME": ["Signal_M3000GeV_e4_SR"]
     },
     "REGIONS": {
         "pass": {
@@ -24,8 +24,8 @@
             "COLOR": "black",
             "SCALE": 1,
             "TYPE": "DATA",
-            "TITLE": "Run-3 Cosmics VR",
-            "ALIAS": "Run3_Cosmics_Data_All_VR",
+            "TITLE": "Run-3 Cosmics",
+            "ALIAS": "Run3_Cosmics_Data_All_SR",
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
@@ -59,20 +59,20 @@
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
-	}
+        }
+
     },
     "BINNING": {
         "default": {
             "X": {
                 "NAME": "pT",
                 "TITLE": "p_{T}",
-                "BINSv3":   [0,50,140,270,440,650,900,1190,1520,1890,2300,2750,3240,3770,4340,5000],
-                "BINS":   [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000],
-                "SIGSTART": 800,
-                "SIGEND": 1296,
-		"NBINSna": 50,
-        "MINna": 500,
-        "MAXna": 5500
+                "BINS":   [10, 19, 34, 55, 82, 115, 155, 200],
+                "SIGSTART": 115,
+                "SIGEND": 155,
+		"NBINStest": 50,
+		"MINtest": 500,
+		"MAXtest": 5500
             },
             "Y": {
                 "NAME": "N",

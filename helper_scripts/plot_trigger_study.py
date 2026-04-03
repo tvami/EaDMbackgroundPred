@@ -226,7 +226,7 @@ def create_label_from_filename(filename, include_object=True, include_region=Tru
         label_parts.append(obj_map.get(info['object'], info['object']))
 
     if include_region and 'region' in info:
-        region_map = {'sr': 'SR', 'vr': 'VR'}
+        region_map = {'sr': 'SR', 'vr1': 'VR1', 'vr2': 'VR2'}
         label_parts.append(region_map.get(info['region'], info['region'].upper()))
 
     if 'dataset' in info:
@@ -997,7 +997,7 @@ def plot_all_trigger_studies(input_pattern, output_dir="figures/trigger_study", 
     Args:
         input_pattern: Glob pattern or directory containing trigger_study ROOT files
         output_dir: Directory to save output figures
-        region: Region label (sr, vr) for legend header
+        region: Region label (sr, vr1, vr2) for legend header
         obj_type: Object type label for legend header
         sample_label: Sample type (Data, Signal, BkgMC) for filtering
     """
@@ -1095,7 +1095,7 @@ if __name__ == "__main__":
     }
 
     # Define regions and object types to loop over
-    regions = ['sr', 'vr']
+    regions = ['sr', 'vr1', 'vr2']
     object_types = ['matched_muon', 'muon', 'track', 'tuneP']
 
     # Build list of valid combinations first

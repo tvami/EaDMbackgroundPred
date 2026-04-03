@@ -85,10 +85,8 @@ def generate_input_list(base_dir, output_file, run_type="Both", pattern="**/*.ro
                 skipped.append((root_file, f"Invalid sample_type: {sample_type}"))
                 continue
 
-            # Validate region and map path regions to output regions
-            # /vr/ path -> vr2 region
-            # /sr/ path -> both sr AND vr1 regions
-            valid_path_regions = ['sr', 'vr']
+            # Validate region
+            valid_path_regions = ['sr', 'vr1', 'vr2']
             if region not in valid_path_regions:
                 skipped.append((root_file, f"Invalid region: {region}"))
                 continue
@@ -104,17 +102,9 @@ def generate_input_list(base_dir, output_file, run_type="Both", pattern="**/*.ro
                 skipped.append((root_file, f"Filtered out: collection '{collection}' != '{collection_filter}'"))
                 continue
 
-            # Create entries based on path region
-            if region == 'vr':
-                # /vr/ path maps to vr2 region
-                entry = f"{root_file}, {ntuple_version}, {sample_type}, vr2, {collection}, {run_type}"
-                entries.append(entry)
-            elif region == 'sr':
-                # /sr/ path creates entries for both sr AND vr1
-                entry_sr = f"{root_file}, {ntuple_version}, {sample_type}, sr, {collection}, {run_type}"
-                entry_vr1 = f"{root_file}, {ntuple_version}, {sample_type}, vr1, {collection}, {run_type}"
-                entries.append(entry_sr)
-                entries.append(entry_vr1)
+            # Create entry for the region
+            entry = f"{root_file}, {ntuple_version}, {sample_type}, {region}, {collection}, {run_type}"
+            entries.append(entry)
         else:
             skipped.append((root_file, "Path structure does not match expected format"))
 

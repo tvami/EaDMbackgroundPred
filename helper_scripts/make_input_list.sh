@@ -32,8 +32,15 @@ for BASE in "${BASES[@]}"; do
         done
         $skip && continue
 
+        # skip "Ntuples" directories (organized/processed ntuples, not raw inputs)
+        dirname=$(basename "$dir")
+        if [[ "$dirname" == "Ntuples" || "$dirname" == Ntuples_v* ]]; then
+            continue
+        fi
+
         echo "$OBJ sr $dir" >> "$OUTFILE"
-        echo "$OBJ vr $dir" >> "$OUTFILE"
+        echo "$OBJ vr1 $dir" >> "$OUTFILE"
+        echo "$OBJ vr2 $dir" >> "$OUTFILE"
     done
 done
 

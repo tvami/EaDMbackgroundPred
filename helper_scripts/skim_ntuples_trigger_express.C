@@ -1,7 +1,8 @@
 /// Trigger efficiency study: filter on HLT_Random and measure HLT_L1SingleMuCosmics efficiency
 /// Usage:
 ///       root -l -b -q 'skim_ntuples_trigger.C("track", "sr", "/path/to/files/")'
-///       root -l -b -q 'skim_ntuples_trigger.C("muon", "vr", "/path/to/files/", true)'  // with file validation
+///       root -l -b -q 'skim_ntuples_trigger.C("muon", "vr1", "/path/to/files/")'
+///       root -l -b -q 'skim_ntuples_trigger.C("muon", "vr2", "/path/to/files/", true)'  // with file validation
 
 void skim_ntuples_trigger(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
 
@@ -19,12 +20,12 @@ void skim_ntuples_trigger(TString object = "track", TString region = "sr", TStri
     // Apply region-specific pT cut
     TString pt_cut_label;
     float pt_cut_value = 200.f;
-    if (region == "sr") {
+    if (region == "sr" || region == "vr1") {
         pt_cut_label = "pT > 200 GeV";
-    } else if (region == "vr") {
+    } else if (region == "vr2") {
         pt_cut_label = "pT < 200 GeV";
     } else {
-        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr' or 'vr'.\n";
+        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr', 'vr1', or 'vr2'.\n";
         return;
     }
 
@@ -136,7 +137,7 @@ void skim_ntuples_trigger(TString object = "track", TString region = "sr", TStri
     .Define("obj_pt_flat", [region, pt_cut_value](const ROOT::VecOps::RVec<float>& pt) {
         ROOT::VecOps::RVec<float> r;
         for (auto p : pt) {
-            if ((region == "sr" && p > pt_cut_value) || (region == "vr" && p < pt_cut_value)) r.push_back(p);
+            if (((region == "sr" || region == "vr1") && p > pt_cut_value) || (region == "vr2" && p < pt_cut_value)) r.push_back(p);
         }
         return r;
     }, {pt_var.Data()})
@@ -160,7 +161,7 @@ void skim_ntuples_trigger(TString object = "track", TString region = "sr", TStri
                                                           const ROOT::VecOps::RVec<float>& pt) {
             ROOT::VecOps::RVec<float> r;
             for (size_t i = 0; i < pt.size(); ++i) {
-                if ((region == "sr" && pt[i] > pt_cut_value) || (region == "vr" && pt[i] < pt_cut_value))
+                if (((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) || (region == "vr2" && pt[i] < pt_cut_value))
                     r.push_back(energy[i]);
             }
             return r;
@@ -181,7 +182,7 @@ void skim_ntuples_trigger(TString object = "track", TString region = "sr", TStri
                                       const ROOT::VecOps::RVec<float>& eta) {
             ROOT::VecOps::RVec<float> energy;
             for (size_t i = 0; i < pt.size(); ++i) {
-                if ((region == "sr" && pt[i] > pt_cut_value) || (region == "vr" && pt[i] < pt_cut_value))
+                if (((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) || (region == "vr2" && pt[i] < pt_cut_value))
                     energy.push_back(pt[i] * std::cosh(eta[i]));
             }
             return energy;

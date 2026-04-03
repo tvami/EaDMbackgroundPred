@@ -117,8 +117,8 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
 
     // Region-specific pT cut
     float pt_cut_value = 200.f;
-    if (region != "sr" && region != "vr") {
-        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr' or 'vr'.\n";
+    if (region != "sr" && region != "vr1" && region != "vr2") {
+        std::cerr << "Error: Unknown region '" << region << "'. Use 'sr', 'vr1', or 'vr2'.\n";
         return;
     }
 
@@ -531,8 +531,8 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
                     ptErr[i]/(pt[i]*pt[i]) < 1e-3 &&
                     std::abs(eta[i]) < 0.9;
                 if (!pass_quality) continue;
-                if (region == "sr" && pt[i] > pt_cut_value) n++;
-                if (region == "vr" && pt[i] < pt_cut_value) n++;
+                if ((region == "sr" || region == "vr1") && pt[i] > pt_cut_value) n++;
+                if (region == "vr2" && pt[i] < pt_cut_value) n++;
             }
             return n;
         }, {nhits_var.Data(), chi2_var.Data(), ndof_var.Data(), pt_var.Data(), ptErr_var.Data(), eta_var.Data()})
@@ -556,8 +556,8 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
                 bool pass = nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
                     pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3 && std::abs(eta[i]) < 0.9;
                 if (!pass) continue;
-                if (region == "sr" && pt[i] <= pt_cut_value) continue;
-                if (region == "vr" && pt[i] >= pt_cut_value) continue;
+                if ((region == "sr" || region == "vr1") && pt[i] <= pt_cut_value) continue;
+                if (region == "vr2" && pt[i] >= pt_cut_value) continue;
                 if (pt[i] > best_pt) { best = i; best_pt = pt[i]; }
             }
             return best;
@@ -610,8 +610,8 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
                 bool pass = nhits[i] > 7 && ndof[i] > 0 && chi2[i]/ndof[i] < 35 &&
                     pt[i] > 0 && ptErr[i]/(pt[i]*pt[i]) < 1e-3 && std::abs(eta[i]) < 0.9;
                 if (!pass) continue;
-                if (region == "sr" && pt[i] <= pt_cut_value) continue;
-                if (region == "vr" && pt[i] >= pt_cut_value) continue;
+                if ((region == "sr" || region == "vr1") && pt[i] <= pt_cut_value) continue;
+                if (region == "vr2" && pt[i] >= pt_cut_value) continue;
                 if (pt[i] > best_pt) {
                     second = best; second_pt = best_pt;
                     best = i; best_pt = pt[i];
