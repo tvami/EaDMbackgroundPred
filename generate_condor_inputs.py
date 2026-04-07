@@ -89,13 +89,13 @@ if __name__ == "__main__":
             "name": "VR1",
             "template": f"{BASE_DIR}/config_Binningv7_InputTemplate_VR1_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR1.txt",
-            "pattern": "_VR.root"
+            "pattern": "_VR1.root"
         },
         {
             "name": "VR2",
             "template": f"{BASE_DIR}/config_Binningv7alt_InputTemplate_VR2_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR2.txt",
-            "pattern": "_SR.root"  # VR2 uses SR signal files
+            "pattern": "_VR2.root"
         }
     ]
 

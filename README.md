@@ -96,7 +96,7 @@ This will make the inputs using the `generate_condor_inputs.py` file:
 ## Region description
 - SR (Signal Region): pT > 200 GeV, RNNScore >= 0.9999
 - VR1 (Validation Region 1): pT > 200 GeV, 0.45 <= RNNScore < 0.9999
-- VR2 (Validation Region 2): pT < 200 GeV, RNNScore >= 0.9999
+- VR2 (Validation Region 2): pT < 200 GeV, RNNScore >= 0.9999 --> with "alt" binning
 
 ## Complete Analysis Pipeline
 

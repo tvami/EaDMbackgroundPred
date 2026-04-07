@@ -10,7 +10,7 @@ from optparse import OptionParser
 parser = OptionParser(usage="Usage: python %prog workingArea config.json")
 
 workingArea = sys.argv[1]
-configJSON = sys.argv[2]
+configJSON = "config_Binningv7alt_Inputv21_VR2_M3000GeV_e4.json" # sys.argv[2]
 
 # Helper function to get region names
 def _get_other_region_names(pass_reg_name):
