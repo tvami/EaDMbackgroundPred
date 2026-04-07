@@ -20,6 +20,11 @@ parser.add_argument("-T", "--runType",       default="Both")    # Process, 2DAIn
 parser.add_argument("-i", "--inputFile",     required=True, help="Input ROOT file to process")
 args = parser.parse_args()
 
+# =========================
+# Configuration constants
+# =========================
+PT_MAX_CLIP = 13000.0  # Maximum pT value for clipping (GeV)
+N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 # =========================
 # Load pretrained RNN model if not 2DAInput only
@@ -454,8 +459,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")  # ptErr/pT^2
             .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")  # Select good-quality muon tracks
             .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
-            .Define("pT_max_clipped", "std::min(pT_max, 5599.0)")                            # Clip pT to stay within histogram range
-            .Define("n_Seg_clipped", "std::min(n_Seg, 199)")                                  # Clip segment count to stay within histogram range
+            .Define("pT_max_clipped", f"std::min(pT_max, {PT_MAX_CLIP})")                     # Clip pT to stay within histogram range
+            .Define("n_Seg_clipped", f"std::min(n_Seg, {N_SEG_CLIP})")                        # Clip segment count to stay within histogram range
         )
 
         # Define pT-shifted dataframe for pT scale systematic (upward variation)
@@ -471,8 +476,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
-            .Define("pT_max_up_clipped", "std::min(pT_max_up, 5599.0)")
-            .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
+            .Define("pT_max_up_clipped", f"std::min(pT_max_up, {PT_MAX_CLIP})")
+            .Define("n_Seg_clipped",  f"std::min(n_Seg,  {N_SEG_CLIP})")
         )
 
         # Define pT-shifted dataframe for pT scale systematic (downward variation)
@@ -488,8 +493,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
-            .Define("pT_max_down_clipped", "std::min(pT_max_down, 5599.0)")
-            .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
+            .Define("pT_max_down_clipped", f"std::min(pT_max_down, {PT_MAX_CLIP})")
+            .Define("n_Seg_clipped",  f"std::min(n_Seg,  {N_SEG_CLIP})")
         )
 
         # Shorthand variable names for histogram filling axes
@@ -653,8 +658,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")  # ptErr/pT^2
                 .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")  # Select good-quality muon tracks
                 .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
-                .Define("pT_max_clipped", "std::min(pT_max, 5599.0)")                            # Clip pT to stay within histogram range
-                .Define("n_Seg_clipped", "std::min(n_Seg, 199)")                                  # Clip segment count to stay within histogram range
+                .Define("pT_max_clipped", f"std::min(pT_max, {PT_MAX_CLIP})")                     # Clip pT to stay within histogram range
+                .Define("n_Seg_clipped", f"std::min(n_Seg, {N_SEG_CLIP})")                        # Clip segment count to stay within histogram range
             )
 
             # Define pT-shifted dataframe for pT scale systematic (upward variation)
@@ -670,8 +675,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max_up_clipped", "std::min(pT_max_up, 5599.0)")
-                .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
+                .Define("pT_max_up_clipped", f"std::min(pT_max_up, {PT_MAX_CLIP})")
+                .Define("n_Seg_clipped",  f"std::min(n_Seg,  {N_SEG_CLIP})")
             )
 
             # Define pT-shifted dataframe for pT scale systematic (downward variation)
@@ -687,8 +692,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max_down_clipped", "std::min(pT_max_down, 13000.0)")
-                .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
+                .Define("pT_max_down_clipped", f"std::min(pT_max_down, {PT_MAX_CLIP})")
+                .Define("n_Seg_clipped",  f"std::min(n_Seg,  {N_SEG_CLIP})")
             )
 
             pT_var = "pT_max_clipped"
