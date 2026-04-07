@@ -47,15 +47,14 @@ if args.runType != '2DAInput':
 
 ntuple_v   = args.ntupleVersion
 sample_type = args.sampleType
-if args.region == 'vr1': region = 'sr'
-else: region = args.region
+region = args.region
 collection  = args.collection
 runType = args.runType
 
 print("============ Running on ============")
 print("ntupleVersion:",ntuple_v)
 print("sampleType:",sample_type)
-print("region:",region[:2], f"({args.region})")
+print("region:",region)
 print("collection:",collection)
 print("Run Type:",runType)
 print("====================================")
@@ -65,7 +64,7 @@ input_files = [args.inputFile]
 
 # Output directory for RNN-scored files
 # Use local directory for condor jobs, will be transferred back via WhenToTransferOutput
-output_dir = f'./output/{sample_type}/{region[:2]}/{collection}'
+output_dir = f'./output/{sample_type}/{region}/{collection}'
 
 # Create output directory if missing
 os.makedirs(output_dir, exist_ok=True)
@@ -634,8 +633,8 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 number = match.group(1)
                 new_filename = f"EaDM_Signal_M{number}GeV_{args.region.upper()}.root"
                 # Override filename for special MC samples (neutrino and cosmic background)
-                if Path(file).stem == f"skimmed_matched_muon_{region[:2]}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
-                elif Path(file).stem == f"skimmed_matched_muon_{region[:2]}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
+                if Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
+                elif Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
             elif match and "SurfaceDepth" in Path(file).stem:
                 depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
                 number = match.group(1)
@@ -688,7 +687,7 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
-                .Define("pT_max_down_clipped", "std::min(pT_max_down, 5599.0)")
+                .Define("pT_max_down_clipped", "std::min(pT_max_down, 13000.0)")
                 .Define("n_Seg_clipped",  "std::min(n_Seg,  199)")
             )
 
