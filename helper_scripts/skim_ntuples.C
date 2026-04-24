@@ -4,6 +4,9 @@
 ///       root -l -b -q 'skim_ntuples.C("track", "vr1", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "vr2", "/path/to/files/")'
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", true)'  // with file validation
+///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", false, false)'  // histograms only (no snapshot)
+///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", false, true, 0, 100)'  // first 100 files
+///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", false, true, 2, 100)'  // files 200-299
 
 // Version: v4.0.6a
 // Version history:
@@ -16,7 +19,8 @@
 // v4.0.7: Move pt boundary to 10000 GeV
 // v4.0.8: Add 2D histograms of leading object (and leading quality object) kinematics vs trigger
 // v4.0.9: Fix N-1 plots
-void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
+// v4.1.0: Add N-1 plots for sigma pT
+void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false, bool save_snapshot = true, int job_index = 0, int files_per_job = 0) {
 
     // Enable multi-threading (use all available cores)
     ROOT::EnableImplicitMT();
@@ -28,6 +32,8 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
     if (dataset_name.EndsWith(".root")) dataset_name.Remove(dataset_name.Length()-5);
+    if (files_per_job > 0)
+        dataset_name += TString::Format("_job%d", job_index);
     TString output_file = TString::Format("skimmed_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
 
     // Set variable names based on object
@@ -76,8 +82,8 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // Create TChain to handle directory structure
     TChain chain("muonPhiAnalyzer/tree");
 
-    // Use find to get all .root files
-    TString find_cmd = TString::Format("find %s -name '*.root' 2>/dev/null", base_dir.Data());
+    // Use find to get all .root files and sort for deterministic ordering
+    TString find_cmd = TString::Format("find %s -name '*.root' 2>/dev/null | sort", base_dir.Data());
     FILE* pipe = popen(find_cmd.Data(), "r");
     if (!pipe) {
         std::cerr << "Error: cannot run find command\n";
@@ -86,49 +92,60 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     std::cout << "Reading filenames from pipe\n";
 
+    // Collect all filenames first
+    std::vector<std::string> all_files;
     char buffer[2048];
-    int nfiles = 0;
-    int nzombie = 0;
     while (fgets(buffer, sizeof(buffer), pipe) != NULL) {
         TString filename = buffer;
         filename.ReplaceAll("\n", "");
-        if (filename.Length() > 0) {
-            if (validate) {
-                // Check if file is valid and not a zombie
-                TFile* test_file = TFile::Open(filename.Data(), "READ");
-                if (test_file && !test_file->IsZombie() && test_file->GetNkeys() > 0) {
-                    test_file->Close();
-                    delete test_file;
-                    chain.Add(filename.Data());
-                    if (nfiles % 10 == 0) std::cout << "Added " << nfiles << " files...\r" << std::flush;
-                    nfiles++;
-                } else {
-                    std::cerr << "Warning: Skipping corrupted or zombie file: " << filename << "\n";
-                    nzombie++;
-                    if (test_file) {
-                        delete test_file;
-                    }
-                }
-            } else {
-                chain.Add(filename.Data());
-                nfiles++;
-                if (nfiles % 10 == 0) std::cout << "Added " << nfiles << " files...\r" << std::flush;
-            }
-        }
+        if (filename.Length() > 0) all_files.push_back(filename.Data());
     }
     pclose(pipe);
 
-    if (nzombie > 0) {
-        std::cerr << "Skipped " << nzombie << " corrupted/zombie files\n";
+    std::cout << "Found " << all_files.size() << " total files in directory\n";
+
+    // Select file slice for this job
+    size_t start = 0, end = all_files.size();
+    if (files_per_job > 0) {
+        start = job_index * files_per_job;
+        end = std::min(start + (size_t)files_per_job, all_files.size());
+        if (start >= all_files.size()) {
+            std::cerr << "Error: job_index " << job_index << " out of range (only "
+                      << all_files.size() << " files, " << files_per_job << " per job).\n";
+            return;
+        }
+        std::cout << "Processing files " << start << " to " << end - 1
+                  << " (job " << job_index << ", " << files_per_job << " per job)\n";
     }
 
-    // Check if any files were found
+    int nfiles = 0, nzombie = 0;
+    for (size_t i = start; i < end; ++i) {
+        TString filename = all_files[i].c_str();
+        if (validate) {
+            TFile* test_file = TFile::Open(filename.Data(), "READ");
+            if (test_file && !test_file->IsZombie() && test_file->GetNkeys() > 0) {
+                test_file->Close();
+                delete test_file;
+                chain.Add(filename.Data());
+                nfiles++;
+            } else {
+                std::cerr << "Warning: Skipping zombie: " << filename << "\n";
+                nzombie++;
+                if (test_file) delete test_file;
+            }
+        } else {
+            chain.Add(filename.Data());
+            nfiles++;
+        }
+        if (nfiles % 10 == 0) std::cout << "Added " << nfiles << " files...\r" << std::flush;
+    }
+
+    if (nzombie > 0) std::cerr << "Skipped " << nzombie << " corrupted files\n";
     if (nfiles == 0) {
-        std::cerr << "Error: No ROOT files found in the specified directory.\n";
+        std::cerr << "Error: No ROOT files found.\n";
         return;
     }
-
-    std::cout << "Found " << nfiles << " files\n";
+    std::cout << "Processing " << nfiles << " files\n";
 
     // Create RDataFrame from TChain
     ROOT::RDataFrame df(chain);
@@ -171,11 +188,20 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         for (size_t i = 0; i < pt.size(); ++i)
             r[i] = pt[i] > 0 ? ptErr[i]/(pt[i]*pt[i]) : 999.f;
         return r;
+    }, {pt_var.Data(), ptErr_var.Data()})
+    .Define("obj_ptErrPerPt_pretrig", [](const ROOT::VecOps::RVec<float>& pt,
+                                         const ROOT::VecOps::RVec<float>& ptErr) {
+        ROOT::VecOps::RVec<float> r(pt.size());
+        for (size_t i = 0; i < pt.size(); ++i)
+            r[i] = pt[i] > 0 ? ptErr[i]/pt[i] : 999.f;
+        return r;
     }, {pt_var.Data(), ptErr_var.Data()});
 
     auto h_nhits_pretrigger = df_pretrig_histos.Histo1D({"h_nhits_pretrigger", "Valid hits (pretrigger);N_{valid hits};Objects", 80, 0, 80}, nhits_var.Data());
     auto h_chi2ndof_pretrigger = df_pretrig_histos.Histo1D({"h_chi2ndof_pretrigger", "#chi^{2}/ndof (pretrigger);#chi^{2}/ndof;Objects", 100, 0, 100}, "obj_chi2ndof_pretrig");
     auto h_ptErrPerPt2_pretrigger = df_pretrig_histos.Histo1D({"h_ptErrPerPt2_pretrigger", "#sigma(p_{T})/p_{T}^{2} (pretrigger);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "obj_ptErrPerPt2_pretrig");
+    auto h_ptErrPerPt2_zoom_pretrigger = df_pretrig_histos.Histo1D({"h_ptErrPerPt2_zoom_pretrigger", "#sigma(p_{T})/p_{T}^{2} (pretrigger, zoom);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.002}, "obj_ptErrPerPt2_pretrig");
+    auto h_ptErrPerPt_pretrigger = df_pretrig_histos.Histo1D({"h_ptErrPerPt_pretrigger", "#sigma(p_{T})/p_{T} (pretrigger);#sigma(p_{T})/p_{T};Objects", 100, 0, 1}, "obj_ptErrPerPt_pretrig");
     auto h_eta_pretrigger = df_pretrig_histos.Histo1D({"h_eta_pretrigger", "#eta (pretrigger);#eta;Objects", 100, -3, 3}, eta_var.Data());
     auto h_phi_pretrigger = df_pretrig_histos.Histo1D({"h_phi_pretrigger", "#phi (pretrigger);#phi;Objects", 100, -3.15, 3.15}, phi_var.Data());
     auto h_pt_pretrigger = df_pretrig_histos.Histo1D({"h_pt_pretrigger", "p_{T} (pretrigger);p_{T} [GeV];Objects", 500, 0, 10000}, pt_var.Data());
@@ -382,11 +408,21 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         for (size_t i = 0; i < pt.size(); ++i)
             r[i] = pt[i] > 0 ? ptErr[i]/(pt[i]*pt[i]) : 999.f;
         return r;
+    }, {pt_var.Data(), ptErr_var.Data()})
+    .Define("obj_ptErrPerPt_trig", [](const ROOT::VecOps::RVec<float>& pt,
+                                       const ROOT::VecOps::RVec<float>& ptErr) {
+        ROOT::VecOps::RVec<float> r(pt.size());
+        for (size_t i = 0; i < pt.size(); ++i)
+            r[i] = pt[i] > 0 ? ptErr[i]/pt[i] : 999.f;
+        return r;
     }, {pt_var.Data(), ptErr_var.Data()});
 
     auto h_nhits_trigger = df_trig_histos.Histo1D({"h_nhits_trigger", "Valid hits (trigger);N_{valid hits};Objects", 80, 0, 80}, nhits_var.Data());
     auto h_chi2ndof_trigger = df_trig_histos.Histo1D({"h_chi2ndof_trigger", "#chi^{2}/ndof (trigger);#chi^{2}/ndof;Objects", 100, 0, 100}, "obj_chi2ndof_trig");
     auto h_ptErrPerPt2_trigger = df_trig_histos.Histo1D({"h_ptErrPerPt2_trigger", "#sigma(p_{T})/p_{T}^{2} (trigger);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "obj_ptErrPerPt2_trig");
+    auto h_ptErrPerPt2_zoom_trigger = df_trig_histos.Histo1D({"h_ptErrPerPt2_zoom_trigger", "#sigma(p_{T})/p_{T}^{2} (trigger, zoom);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.002}, "obj_ptErrPerPt2_trig");
+    auto h_ptErrPerPt_trigger = df_trig_histos.Histo1D({"h_ptErrPerPt_trigger", "#sigma(p_{T})/p_{T} (trigger);#sigma(p_{T})/p_{T};Objects", 100, 0, 1}, "obj_ptErrPerPt_trig");
+    auto h_ptErrPerPt_zoom_trigger = df_trig_histos.Histo1D({"h_ptErrPerPt_zoom_trigger", "#sigma(p_{T})/p_{T} (trigger, zoom);#sigma(p_{T})/p_{T};Objects", 100, 0, 0.1}, "obj_ptErrPerPt_trig");
     auto h_eta_trigger = df_trig_histos.Histo1D({"h_eta_trigger", "#eta (trigger);#eta;Objects", 100, -3, 3}, eta_var.Data());
     auto h_phi_trigger = df_trig_histos.Histo1D({"h_phi_trigger", "#phi (trigger);#phi;Objects", 100, -3.15, 3.15}, phi_var.Data());
     auto h_pt_trigger = df_trig_histos.Histo1D({"h_pt_trigger", "p_{T} (trigger);p_{T} [GeV];Objects", 500, 0, 10000}, pt_var.Data());
@@ -426,6 +462,9 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     }, {chi2_var.Data(), ndof_var.Data(), "obj_cut_mask"})
     .Define("ptErrPerPt2_final", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
         ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if (m[i] == 31) r.push_back(ptErr[i]/(pt[i]*pt[i])); return r;
+    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask"})
+    .Define("ptErrPerPt_final", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if (m[i] == 31) r.push_back(ptErr[i]/pt[i]); return r;
     }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask"})
     .Define("eta_final", [](const ROOT::VecOps::RVec<float>& v, const ROOT::VecOps::RVec<int>& m) {
         ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < v.size(); ++i) if (m[i] == 31) r.push_back(v[i]); return r;
@@ -510,8 +549,24 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     .Filter("nobj_nm1_ptErr > 0")
     .Define("ptErrPerPt2_nminus1", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
         ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if ((m[i] & 27) == 27) r.push_back(pt[i] > 0 ? ptErr[i]/(pt[i]*pt[i]) : 999.f); return r;
-    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask_nm1"});
+    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask_nm1"})
+    .Define("ptErrPerPt_nminus1", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if ((m[i] & 27) == 27) r.push_back(pt[i] > 0 ? ptErr[i]/pt[i] : 999.f); return r;
+    }, {pt_var.Data(), ptErr_var.Data(), "obj_cut_mask_nm1"})
+    .Define("ptErr_nminus1", [](const ROOT::VecOps::RVec<float>& ptErr, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < ptErr.size(); ++i) if ((m[i] & 27) == 27) r.push_back(ptErr[i]); return r;
+    }, {ptErr_var.Data(), "obj_cut_mask_nm1"})
+    .Define("pt_for_nm1_ptErr", [](const ROOT::VecOps::RVec<float>& pt, const ROOT::VecOps::RVec<int>& m) {
+        ROOT::VecOps::RVec<float> r; for (size_t i = 0; i < pt.size(); ++i) if ((m[i] & 27) == 27) r.push_back(pt[i]); return r;
+    }, {pt_var.Data(), "obj_cut_mask_nm1"});
     auto h_ptErrPerPt2_nminus1 = df_nm1_ptErr.Histo1D({"h_ptErrPerPt2_nminus1", "#sigma(p_{T})/p_{T}^{2} (N-1);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_nminus1");
+    auto h_ptErrPerPt2_zoom_nminus1 = df_nm1_ptErr.Histo1D({"h_ptErrPerPt2_zoom_nminus1", "#sigma(p_{T})/p_{T}^{2} (N-1, zoom);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.002}, "ptErrPerPt2_nminus1");
+    auto h_ptErrPerPt_nminus1 = df_nm1_ptErr.Histo1D({"h_ptErrPerPt_nminus1", "#sigma(p_{T})/p_{T} (N-1);#sigma(p_{T})/p_{T};Objects", 100, 0, 1}, "ptErrPerPt_nminus1");
+    auto h_ptErrPerPt_zoom_nminus1 = df_nm1_ptErr.Histo1D({"h_ptErrPerPt_zoom_nminus1", "#sigma(p_{T})/p_{T} (N-1, zoom);#sigma(p_{T})/p_{T};Objects", 100, 0, 0.1}, "ptErrPerPt_nminus1");
+    // 2D histograms for N-1 ptErr plots
+    auto h2_ptErr_vs_pt_nminus1 = df_nm1_ptErr.Histo2D({"h2_ptErr_vs_pt_nminus1", "#sigma(p_{T}) vs p_{T} (N-1);p_{T} [GeV];#sigma(p_{T}) [GeV]", 500, 0, 10000, 100, 0, 100}, "pt_for_nm1_ptErr", "ptErr_nminus1");
+    auto h2_ptErrPerPt_vs_pt_nminus1 = df_nm1_ptErr.Histo2D({"h2_ptErrPerPt_vs_pt_nminus1", "#sigma(p_{T})/p_{T} vs p_{T} (N-1);p_{T} [GeV];#sigma(p_{T})/p_{T}", 500, 0, 10000, 100, 0, 1}, "pt_for_nm1_ptErr", "ptErrPerPt_nminus1");
+    auto h2_ptErrPerPt2_vs_pt_nminus1 = df_nm1_ptErr.Histo2D({"h2_ptErrPerPt2_vs_pt_nminus1", "#sigma(p_{T})/p_{T}^{2} vs p_{T} (N-1);p_{T} [GeV];#sigma(p_{T})/p_{T}^{2} [GeV^{-1}]", 500, 0, 10000, 100, 0, 0.01}, "pt_for_nm1_ptErr", "ptErrPerPt2_nminus1");
 
     // eta N-1: all cuts except eta (mask & 23 == 23)
     auto df_nm1_eta = df_nm1_base
@@ -550,6 +605,9 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_nhits_final = df_seg_histos.Histo1D({"h_nhits_final", "Valid hits (final);N_{valid hits};Objects", 80, 0, 80}, "nhits_final");
     auto h_chi2ndof_final = df_seg_histos.Histo1D({"h_chi2ndof_final", "#chi^{2}/ndof (final);#chi^{2}/ndof;Objects", 100, 0, 100}, "chi2ndof_final");
     auto h_ptErrPerPt2_final = df_seg_histos.Histo1D({"h_ptErrPerPt2_final", "#sigma(p_{T})/p_{T}^{2} (final);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.01}, "ptErrPerPt2_final");
+    auto h_ptErrPerPt2_zoom_final = df_seg_histos.Histo1D({"h_ptErrPerPt2_zoom_final", "#sigma(p_{T})/p_{T}^{2} (final, zoom);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Objects", 100, 0, 0.002}, "ptErrPerPt2_final");
+    auto h_ptErrPerPt_final = df_seg_histos.Histo1D({"h_ptErrPerPt_final", "#sigma(p_{T})/p_{T} (final);#sigma(p_{T})/p_{T};Objects", 100, 0, 1}, "ptErrPerPt_final");
+    auto h_ptErrPerPt_zoom_final = df_seg_histos.Histo1D({"h_ptErrPerPt_zoom_final", "#sigma(p_{T})/p_{T} (final, zoom);#sigma(p_{T})/p_{T};Objects", 100, 0, 0.1}, "ptErrPerPt_final");
     auto h_eta_final = df_seg_histos.Histo1D({"h_eta_final", "#eta (final);#eta;Objects", 100, -3, 3}, "eta_final");
     auto h_phi_final = df_seg_histos.Histo1D({"h_phi_final", "#phi (final);#phi;Objects", 100, -3.15, 3.15}, "phi_final");
     auto h_pt_final = df_seg_histos.Histo1D({"h_pt_final", "p_{T} (final);p_{T} [GeV];Objects", 500, 0, 10000}, "pt_final");
@@ -559,6 +617,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     auto h_nhits_highpt = df_seg_histos.Histo1D({"h_nhits_highpt", "Valid hits (highest p_{T});N_{valid hits};Events", 80, 0, 80}, "nhits_highpt");
     auto h_chi2ndof_highpt = df_seg_histos.Histo1D({"h_chi2ndof_highpt", "#chi^{2}/ndof (highest p_{T});#chi^{2}/ndof;Events", 100, 0, 100}, "chi2ndof_highpt");
     auto h_ptErrPerPt2_highpt = df_seg_histos.Histo1D({"h_ptErrPerPt2_highpt", "#sigma(p_{T})/p_{T}^{2} (highest p_{T});#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.01}, "ptErrPerPt2_highpt");
+    auto h_ptErrPerPt2_zoom_highpt = df_seg_histos.Histo1D({"h_ptErrPerPt2_zoom_highpt", "#sigma(p_{T})/p_{T}^{2} (highest p_{T}, zoom);#sigma(p_{T})/p_{T}^{2} [GeV^{-1}];Events", 100, 0, 0.002}, "ptErrPerPt2_highpt");
     auto h_eta_highpt = df_seg_histos.Histo1D({"h_eta_highpt", "#eta (highest p_{T});#eta;Events", 100, -3, 3}, "eta_highpt");
     auto h_phi_highpt = df_seg_histos.Histo1D({"h_phi_highpt", "#phi (highest p_{T});#phi;Events", 100, -3.15, 3.15}, "phi_highpt");
     auto h_pt_highpt = df_seg_histos.Histo1D({"h_pt_highpt", "p_{T} (highest p_{T});p_{T} [GeV];Events", 500, 0, 10000}, "pt_highpt");
@@ -635,13 +694,18 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     } // end of branch selection
 
     // Write output (Snapshot triggers the event loop for all actions)
-    df_cf_seg.Snapshot("tree", output_file.Data(), branches_to_keep);
+    if (save_snapshot) {
+        df_cf_seg.Snapshot("tree", output_file.Data(), branches_to_keep);
+    } else {
+        // Trigger event loop for histograms without snapshot
+        *count_cf_seg;  // Dereference to force evaluation
+    }
 
     auto report = df_cf_seg.Report();
     report->Print();
 
     // Create and save cutflow histogram using the already-computed counts
-    TFile* f = TFile::Open(output_file.Data(), "UPDATE");
+    TFile* f = TFile::Open(output_file.Data(), save_snapshot ? "UPDATE" : "RECREATE");
     TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 9, 0, 9);
     h_cutflow->GetXaxis()->SetBinLabel(1, "All events");
     h_cutflow->GetXaxis()->SetBinLabel(2, "Trigger");
@@ -680,15 +744,15 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     // Write distribution histograms (trigger, N-1, final)
     std::vector<ROOT::RDF::RResultPtr<TH1D>> histograms_1d = {
-        h_nhits_pretrigger, h_chi2ndof_pretrigger, h_ptErrPerPt2_pretrigger,
+        h_nhits_pretrigger, h_chi2ndof_pretrigger, h_ptErrPerPt2_pretrigger, h_ptErrPerPt2_zoom_pretrigger, h_ptErrPerPt_pretrigger,
         h_eta_pretrigger, h_phi_pretrigger, h_pt_pretrigger, h_nseg_pretrigger,
-        h_nhits_trigger, h_chi2ndof_trigger, h_ptErrPerPt2_trigger,
+        h_nhits_trigger, h_chi2ndof_trigger, h_ptErrPerPt2_trigger, h_ptErrPerPt2_zoom_trigger, h_ptErrPerPt_trigger, h_ptErrPerPt_zoom_trigger,
         h_eta_trigger, h_phi_trigger, h_pt_trigger, h_nseg_trigger,
-        h_nhits_nminus1, h_chi2ndof_nminus1, h_ptErrPerPt2_nminus1,
+        h_nhits_nminus1, h_chi2ndof_nminus1, h_ptErrPerPt2_nminus1, h_ptErrPerPt2_zoom_nminus1, h_ptErrPerPt_nminus1, h_ptErrPerPt_zoom_nminus1,
         h_eta_nminus1, h_phi_nminus1, h_pt_nminus1, h_nseg_nminus1,
-        h_nhits_final, h_chi2ndof_final, h_ptErrPerPt2_final,
+        h_nhits_final, h_chi2ndof_final, h_ptErrPerPt2_final, h_ptErrPerPt2_zoom_final, h_ptErrPerPt_final, h_ptErrPerPt_zoom_final,
         h_eta_final, h_phi_final, h_pt_final, h_nseg_final,
-        h_nhits_highpt, h_chi2ndof_highpt, h_ptErrPerPt2_highpt,
+        h_nhits_highpt, h_chi2ndof_highpt, h_ptErrPerPt2_highpt, h_ptErrPerPt2_zoom_highpt,
         h_eta_highpt, h_phi_highpt, h_pt_highpt
     };
     for (auto& h : histograms_1d) h->Write();
@@ -696,7 +760,8 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     std::vector<ROOT::RDF::RResultPtr<TH2D>> histograms_2d = {
         h_eta_vs_trigger, h_phi_vs_trigger, h_pt_vs_trigger, h_energy_vs_trigger,
         h_eta_vs_trigger_with_quality_obj, h_phi_vs_trigger_with_quality_obj,
-        h_pt_vs_trigger_with_quality_obj, h_energy_vs_trigger_with_quality_obj
+        h_pt_vs_trigger_with_quality_obj, h_energy_vs_trigger_with_quality_obj,
+        h2_ptErr_vs_pt_nminus1, h2_ptErrPerPt_vs_pt_nminus1, h2_ptErrPerPt2_vs_pt_nminus1
     };
     for (auto& h : histograms_2d) h->Write();
 
@@ -705,6 +770,11 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     std::cout << "\n" << std::string(60, '=') << "\n";
     std::cout << "Output written to: " << output_file << "\n";
+    if (save_snapshot) {
+        std::cout << "  - Event tree (snapshot) saved\n";
+    } else {
+        std::cout << "  - Histograms only (no event tree)\n";
+    }
     std::cout << std::string(60, '=') << "\n";
 }
 

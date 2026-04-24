@@ -8,19 +8,22 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
-base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.9_wRNN/'
+#base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.0_wRNN/'
+base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
-# collections = ['matched_muon', 'track', 'muon', 'tuneP']
-collections = ['matched_muon']
+collections = ['matched_muon', 'track', 'muon', 'tuneP']
+#collections = ['matched_muon']
 region = 'sr' # sr, vr1, vr2
 
-samples_dict = {"Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
+samples_dict = {
+                "Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
+                # "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
                 "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
                 "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
                 "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
                 "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
                 "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-                #"2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
+                # "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
                 "Run-3 Cosmics": ["Data", "Ntuplizer-Cosmics_All_v4.root"]
                 }
 
@@ -33,7 +36,9 @@ base_var_dict = {
             "nhits": [5, 80, 0, 80, 'nhits_pretrigger', 'nhits_trigger', 'nhits_nminus1', 'nhits_final', 'n_{Hits}'],
             "chi2ndof": [6, 100, 0, 100, 'chi2ndof_pretrigger', 'chi2ndof_trigger', 'chi2ndof_nminus1', 'chi2ndof_final', '#chi^{2}/n_{DoF}'],
             "ptErrPerPt2": [7, 100, 0, 0.01, 'ptErrPerPt2_pretrigger', 'ptErrPerPt2_trigger', 'ptErrPerPt2_nminus1', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
-            # "ptErrPerPt2_zoom": [8, 100, 0, 0.002, None, 'ptErrPerPt2_zoom', 'ptErrPerPt2_nminus1_zoom', 'ptErrPerPt2_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt2_zoom": [8, 100, 0, 0.002, 'ptErrPerPt2_zoom_pretrigger', 'ptErrPerPt2_zoom_trigger', 'ptErrPerPt2_zoom_nminus1', 'ptErrPerPt2_zoom_final', 'p_{T} Error / p_{T}^{2} [GeV^{-1}]'],
+            "ptErrPerPt": [9, 100, 0, 1, 'ptErrPerPt_pretrigger', 'ptErrPerPt_trigger', 'ptErrPerPt_nminus1', 'ptErrPerPt_final', 'p_{T} Error / p_{T}'],
+            "ptErrPerPt_zoom": [10, 100, 0, 0.1, None, 'ptErrPerPt_zoom_trigger', 'ptErrPerPt_zoom_nminus1', 'ptErrPerPt_zoom_final', 'p_{T} Error / p_{T}'],
             # "pTErrPerPtVsPt": [9, 50, 0, 10, None, 'pTErrPerPtVsPt', 'pTErrPerPtVsPt_nminus1', 'pTErrPerPtVsPt_final', '#sigma_{p_{T}} / p_{T}'],
             # "ptErrPerPt2VsPt": [10, 50, 0, 10, None, 'ptErrPerPt2VsPt', 'ptErrPerPt2VsPt_nminus1', 'ptErrPerPt2VsPt_final', '#sigma_{p_{T}} / p_{T}^{2} [GeV^{-1}]'],
             # "ptErrPerPt2_quality": [13, 100, 0, 0.01, None, None, 'ptErrPerPt2_quality_nminus1', None, 'p_{T} Error / p_{T}^{2} [GeV^{-1}] (quality cuts)'],
@@ -49,6 +54,7 @@ base_var_dict = {
             "nhits_highpt": [23, 80, 0, 80, None, None, None, 'nhits_highpt', 'N_{valid hits} (highest p_{T})'],
             "chi2ndof_highpt": [24, 100, 0, 100, None, None, None, 'chi2ndof_highpt', '#chi^{2}/n_{DoF} (highest p_{T})'],
             "ptErrPerPt2_highpt": [25, 100, 0, 0.01, None, None, None, 'ptErrPerPt2_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T})'],
+            "ptErrPerPt2_zoom_highpt": [29, 100, 0, 0.002, None, None, None, 'ptErrPerPt2_zoom_highpt', '#sigma(p_{T})/p_{T}^{2} [GeV^{-1}] (highest p_{T}, zoom)'],
             "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
             "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
             "pt_highpt": [28, 500, 0, 10000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
@@ -174,7 +180,6 @@ def get_cutflow_df(df, collection, region='sr'):
 
 os.makedirs("figures/presel_ch_skimmedNtuples", exist_ok=True)
 for collection in tqdm(collections, desc="Collections"):
-    os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
     tqdm.write(f"Collection: {collection}")
 
     var_dict = dict(base_var_dict)
@@ -280,6 +285,32 @@ for collection in tqdm(collections, desc="Collections"):
                                 (f"h_sum_pT_{sample}", "", nbins, min, max),
                                 "sum_pT"
                             )
+                    elif main_var in ('ptErrPerPt', 'ptErrPerPt_zoom'):
+                        if collection == 'matched_muon':
+                            coll_tmp = 'muon_fromGenTrack'
+                            pt_var_tmp = 'Pt'
+                            ptErr_var_tmp = 'PtErr'
+                        elif collection == 'tuneP':
+                            coll_tmp = 'muon_tuneP'
+                            pt_var_tmp = 'Pt'
+                            ptErr_var_tmp = 'PtErr'
+                        elif collection == 'muon':
+                            coll_tmp = collection
+                            pt_var_tmp = 'pt'
+                            ptErr_var_tmp = 'ptErr'
+                        elif collection == 'track':
+                            coll_tmp = collection
+                            pt_var_tmp = 'pt'
+                            ptErr_var_tmp = 'ptErr'
+                        else:
+                            coll_tmp = collection
+                            pt_var_tmp = 'pt'
+                            ptErr_var_tmp = 'ptErr'
+                        df2 = df.Define( "ratio", f"{coll_tmp}_{ptErr_var_tmp}/{coll_tmp}_{pt_var_tmp}" )
+                        h = df2.Histo1D(
+                            (f"h_ratio_{sample}", "", nbins, min, max),
+                            "ratio"
+                        )
                     elif main_var in ('ptErrPerPt2', 'ptErrPerPt2_zoom'):
                         if collection == 'matched_muon':
                             coll_tmp = 'muon_fromGenTrack'
@@ -771,118 +802,32 @@ for collection in tqdm(collections, desc="Collections"):
         _profiles_done = True
 
         # -----------------------------------------------------------------
-        # Profile plot: mean sigma(pT)/pT  vs  pT  (full cutflow)
+        # Mean +/- RMS plot: sigma(pT)/pT  vs  pT  (full cutflow)
         # -----------------------------------------------------------------
-        # print("  Profile: mean sigma(pT)/pT vs pT")
-        pt_lo, pt_hi, pt_nbins = 200, 12500, 123
+        pt_lo, pt_hi, pt_nbins = 200, 10000, 98
 
         c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
         c.SetLeftMargin(0.153)
         c.SetRightMargin(0.1)
         c.SetLogy(True)
 
-        hframe_prof = ROOT.TH1F("hframe_prof", "", pt_nbins, pt_lo, pt_hi)
-        hframe_prof.SetStats(False)
-        hframe_prof.GetXaxis().SetTitle("Leading muon p_{T} [GeV]")
-        hframe_prof.GetYaxis().SetTitle("Mean #sigma(p_{T}) / p_{T}")
-        hframe_prof.GetXaxis().SetLabelSize(0.04)
-        hframe_prof.GetYaxis().SetLabelSize(0.04)
-        hframe_prof.GetXaxis().SetMaxDigits(3)
-        hframe_prof.GetXaxis().SetNdivisions(510)
-        hframe_prof.SetMinimum(1e-2)
-        hframe_prof.SetMaximum(1e1)
-        hframe_prof.Draw()
+        hframe = ROOT.TH1F("hframe_ptErrRatio", "", pt_nbins, pt_lo, pt_hi)
+        hframe.SetStats(False)
+        hframe.GetXaxis().SetTitle("Leading muon p_{T} [GeV]")
+        hframe.GetYaxis().SetTitle("Avg #pm RMS #sigma(p_{T}) / p_{T}")
+        hframe.GetYaxis().SetTitleOffset(1.2)
+        hframe.GetXaxis().SetLabelSize(0.04)
+        hframe.GetYaxis().SetLabelSize(0.04)
+        hframe.GetXaxis().SetMaxDigits(3)
+        hframe.GetXaxis().SetNdivisions(510)
+        hframe.SetMinimum(1e-3)
+        hframe.SetMaximum(1e1)
+        hframe.Draw()
 
-        leg_prof = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
-        leg_prof.SetBorderSize(0)
-        leg_prof.SetFillStyle(0)
-        leg_prof.SetTextFont(42)
-
-        color_numerator = 7
-        for sample in list(samples_dict.keys()):
-            color_numerator -= 1
-            if color_numerator == 1:  # skip kBlack (reserved for data)
-                color_numerator = 9
-            file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-            full_path = f"{file_path}_{samples_dict[sample][1]}"
-            if not os.path.exists(full_path):
-                continue
-            df = ROOT.RDataFrame("tree", full_path)
-
-            df_cut = get_cutflow_df(df, collection, region)
-
-            prof = df_cut.Profile1D((f"prof_ptErr_{sample}", "", pt_nbins, pt_lo, pt_hi), "highpt_pt", "highpt_ptErrPerPt")
-            garbage_protect_list.append(prof)
-
-            is_data = samples_dict[sample][0] == 'Data'
-            is_cosmic_bkg = sample == "Cosmic Bkg"
-            col = ROOT.kBlack if is_data else color_numerator
-
-            p = prof.GetValue()
-            p.SetDirectory(0)
-            fold_overflow(p)
-            p.SetLineColor(col)
-            p.SetLineWidth(2)
-            p.SetMarkerColor(col)
-            if is_cosmic_bkg:
-                p.SetFillColor(color_numerator)
-                p.SetFillStyle(3004)
-            if is_data:
-                p.SetMarkerStyle(20)
-                p.SetMarkerSize(0.6)
-                p.Draw("P SAME")
-                leg_prof.AddEntry(p, sample, "p")
-            elif is_cosmic_bkg:
-                p.SetMarkerStyle(0)
-                p.Draw("HIST SAME")
-                leg_prof.AddEntry(p, sample, "f")
-            else:
-                p.SetMarkerStyle(0)
-                p.Draw("HIST SAME")
-                leg_prof.AddEntry(p, sample, "l")
-
-        pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
-        pave.SetFillColor(0)
-        pave.SetBorderSize(0)
-        pave.SetTextAlign(12)
-        pave.SetTextSize(0.025)
-        pave.AddText(f"collection = {collection}")
-        pave.Draw()
-        leg_prof.Draw()
-
-        CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrRatio_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrRatio_vs_pT.pdf")
-        del c
-        del hframe_prof
-
-        # -----------------------------------------------------------------
-        # Profile plot: mean sigma(pT)/pT^2  vs  pT  (full cutflow)
-        # -----------------------------------------------------------------
-        # print("  Profile: mean sigma(pT)/pT^2 vs pT")
-        pt_lo2, pt_hi2, pt_nbins2 = 200, 12500, 123
-
-        c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-        c.SetLeftMargin(0.153)
-        c.SetRightMargin(0.1)
-        c.SetLogy(True)
-
-        hframe_prof2 = ROOT.TH1F("hframe_prof2", "", pt_nbins2, pt_lo2, pt_hi2)
-        hframe_prof2.SetStats(False)
-        hframe_prof2.GetXaxis().SetTitle("Leading muon p_{T} [GeV]")
-        hframe_prof2.GetYaxis().SetTitle("Mean #sigma(p_{T}) / p_{T}^{2} [GeV^{-1}]")
-        hframe_prof2.GetXaxis().SetLabelSize(0.04)
-        hframe_prof2.GetYaxis().SetLabelSize(0.04)
-        hframe_prof2.GetXaxis().SetMaxDigits(3)
-        hframe_prof2.GetXaxis().SetNdivisions(510)
-        hframe_prof2.SetMinimum(1e-6)
-        hframe_prof2.SetMaximum(1e-1)
-        hframe_prof2.Draw()
-
-        leg_prof2 = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
-        leg_prof2.SetBorderSize(0)
-        leg_prof2.SetFillStyle(0)
-        leg_prof2.SetTextFont(42)
+        leg = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
+        leg.SetBorderSize(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(42)
 
         color_numerator = 7
         for sample in list(samples_dict.keys()):
@@ -897,35 +842,88 @@ for collection in tqdm(collections, desc="Collections"):
 
             df_cut = get_cutflow_df(df, collection, region)
 
-            prof = df_cut.Profile1D((f"prof_ptErrPerPt2_{sample}", "", pt_nbins2, pt_lo2, pt_hi2), "highpt_pt", "highpt_ptErrPerPt2")
-            garbage_protect_list.append(prof)
+            # Create 2D histogram to get both mean and RMS
+            h2 = df_cut.Histo2D((f"h2_ptErrRatio_{sample}", "", pt_nbins, pt_lo, pt_hi, 100, 0, 1),
+                                "highpt_pt", "highpt_ptErrPerPt")
+            h2_val = h2.GetValue()
+            h2_val.SetDirectory(0)
+
+            # Rebin the 2D histogram for smoother results
+            h2_val.Rebin2D(5, 5)
+
+            garbage_protect_list.append(h2_val)
+
+            # Extract mean and RMS for each bin (including overflow)
+            x_vals = []
+            y_vals = []
+            ex_vals = []
+            ey_vals = []
+
+            for ibin in range(1, h2_val.GetNbinsX() + 2):
+                py = h2_val.ProjectionY(f"_py_{ibin}_{sample}_ptErrRatio", ibin, ibin)
+                if py.GetEntries() > 0:
+                    # Calculate mean and RMS excluding outliers
+                    sum_w = 0.0
+                    sum_wx = 0.0
+                    sum_wx2 = 0.0
+
+                    for jbin in range(1, py.GetNbinsX() + 1):
+                        bin_center = py.GetBinCenter(jbin)
+                        if bin_center <= 1.0:  # Exclude outliers
+                            weight = py.GetBinContent(jbin)
+                            sum_w += weight
+                            sum_wx += weight * bin_center
+                            sum_wx2 += weight * bin_center * bin_center
+
+                    if sum_w > 0:
+                        mean = sum_wx / sum_w
+                        variance = (sum_wx2 / sum_w) - (mean * mean)
+                        rms = variance**0.5 if variance > 0 else 0.0
+
+                        # Combine RMS with statistical uncertainty on the mean
+                        stat_unc = rms / (sum_w**0.5) if sum_w > 0 else 0.0
+                        total_error = (rms**2 + stat_unc**2)**0.5
+
+                        x_vals.append(h2_val.GetXaxis().GetBinCenter(ibin))
+                        y_vals.append(mean)
+                        ex_vals.append(0)
+                        ey_vals.append(total_error)
+                py.Delete()
+
+            if len(x_vals) == 0:
+                continue
+
+            import array
+            graph = ROOT.TGraphErrors(len(x_vals),
+                                     array.array('d', x_vals),
+                                     array.array('d', y_vals),
+                                     array.array('d', ex_vals),
+                                     array.array('d', ey_vals))
+            garbage_protect_list.append(graph)
 
             is_data = samples_dict[sample][0] == 'Data'
             is_cosmic_bkg = sample == "Cosmic Bkg"
             col = ROOT.kBlack if is_data else color_numerator
 
-            p = prof.GetValue()
-            p.SetDirectory(0)
-            fold_overflow(p)
-            p.SetLineColor(col)
-            p.SetLineWidth(2)
-            p.SetMarkerColor(col)
-            if is_cosmic_bkg:
-                p.SetFillColor(color_numerator)
-                p.SetFillStyle(3004)
+            graph.SetLineColor(col)
+            graph.SetLineWidth(2)
+            graph.SetMarkerColor(col)
+            graph.SetFillColor(col)
+
             if is_data:
-                p.SetMarkerStyle(20)
-                p.SetMarkerSize(0.6)
-                p.Draw("P SAME")
-                leg_prof2.AddEntry(p, sample, "p")
+                graph.SetMarkerStyle(20)
+                graph.SetMarkerSize(0.6)
+                graph.Draw("P SAME")
+                leg.AddEntry(graph, sample, "pe")
             elif is_cosmic_bkg:
-                p.SetMarkerStyle(0)
-                p.Draw("HIST SAME")
-                leg_prof2.AddEntry(p, sample, "f")
+                graph.SetMarkerStyle(0)
+                graph.SetFillStyle(3004)
+                graph.Draw("E3 SAME")
+                leg.AddEntry(graph, sample, "f")
             else:
-                p.SetMarkerStyle(0)
-                p.Draw("HIST SAME")
-                leg_prof2.AddEntry(p, sample, "l")
+                graph.SetMarkerStyle(0)
+                graph.Draw("E3 SAME")
+                leg.AddEntry(graph, sample, "l")
 
         pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
         pave.SetFillColor(0)
@@ -934,13 +932,337 @@ for collection in tqdm(collections, desc="Collections"):
         pave.SetTextSize(0.025)
         pave.AddText(f"collection = {collection}")
         pave.Draw()
-        leg_prof2.Draw()
+        leg.Draw()
 
         CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrPerPt2_vs_pT.png")
-        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_profile_ptErrPerPt2_vs_pT.pdf")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_ptErrRatio_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_ptErrRatio_vs_pT.pdf")
         del c
-        del hframe_prof2
+        del hframe
+
+        # -----------------------------------------------------------------
+        # Mean +/- RMS plot: sigma(pT)/pT^2  vs  pT  (full cutflow)
+        # -----------------------------------------------------------------
+        pt_lo2, pt_hi2, pt_nbins2 = 200, 10000, 98
+
+        c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+        c.SetLeftMargin(0.153)
+        c.SetRightMargin(0.1)
+        c.SetLogy(True)
+
+        hframe2 = ROOT.TH1F("hframe_ptErrPerPt2", "", pt_nbins2, pt_lo2, pt_hi2)
+        hframe2.SetStats(False)
+        hframe2.GetXaxis().SetTitle("Leading muon p_{T} [GeV]")
+        hframe2.GetYaxis().SetTitle("Avg #pm RMS #sigma(p_{T}) / p_{T}^{2} [GeV^{-1}]")
+        hframe2.GetYaxis().SetTitleOffset(1.2)
+        hframe2.GetXaxis().SetLabelSize(0.04)
+        hframe2.GetYaxis().SetLabelSize(0.04)
+        hframe2.GetXaxis().SetMaxDigits(3)
+        hframe2.GetXaxis().SetNdivisions(510)
+        hframe2.SetMinimum(1e-6)
+        hframe2.SetMaximum(1e-1)
+        hframe2.Draw()
+
+        leg2 = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
+        leg2.SetBorderSize(0)
+        leg2.SetFillStyle(0)
+        leg2.SetTextFont(42)
+
+        color_numerator = 7
+        for sample in list(samples_dict.keys()):
+            color_numerator -= 1
+            if color_numerator == 1:
+                color_numerator = 9
+            file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+            full_path = f"{file_path}_{samples_dict[sample][1]}"
+            if not os.path.exists(full_path):
+                continue
+            df = ROOT.RDataFrame("tree", full_path)
+
+            df_cut = get_cutflow_df(df, collection, region)
+
+            # Create 2D histogram to get both mean and RMS
+            h2 = df_cut.Histo2D((f"h2_ptErrPerPt2_{sample}", "", pt_nbins2, pt_lo2, pt_hi2, 100, 0, 0.01),
+                                "highpt_pt", "highpt_ptErrPerPt2")
+            h2_val = h2.GetValue()
+            h2_val.SetDirectory(0)
+
+            # Rebin the 2D histogram for smoother results
+            h2_val.Rebin2D(5, 5)
+
+            garbage_protect_list.append(h2_val)
+
+            # Extract mean and RMS for each bin (including overflow)
+            x_vals = []
+            y_vals = []
+            ex_vals = []
+            ey_vals = []
+
+            for ibin in range(1, h2_val.GetNbinsX() + 2):
+                py = h2_val.ProjectionY(f"_py_{ibin}_{sample}_ptErrPerPt2", ibin, ibin)
+                if py.GetEntries() > 0:
+                    # Calculate mean and RMS excluding outliers
+                    sum_w = 0.0
+                    sum_wx = 0.0
+                    sum_wx2 = 0.0
+
+                    for jbin in range(1, py.GetNbinsX() + 1):
+                        bin_center = py.GetBinCenter(jbin)
+                        if bin_center <= 0.01:  # Exclude outliers
+                            weight = py.GetBinContent(jbin)
+                            sum_w += weight
+                            sum_wx += weight * bin_center
+                            sum_wx2 += weight * bin_center * bin_center
+
+                    if sum_w > 0:
+                        mean = sum_wx / sum_w
+                        variance = (sum_wx2 / sum_w) - (mean * mean)
+                        rms = variance**0.5 if variance > 0 else 0.0
+
+                        # Combine RMS with statistical uncertainty on the mean
+                        stat_unc = rms / (sum_w**0.5) if sum_w > 0 else 0.0
+                        total_error = (rms**2 + stat_unc**2)**0.5
+
+                        x_vals.append(h2_val.GetXaxis().GetBinCenter(ibin))
+                        y_vals.append(mean)
+                        ex_vals.append(0)
+                        ey_vals.append(total_error)
+                py.Delete()
+
+            if len(x_vals) == 0:
+                continue
+
+            import array
+            graph = ROOT.TGraphErrors(len(x_vals),
+                                     array.array('d', x_vals),
+                                     array.array('d', y_vals),
+                                     array.array('d', ex_vals),
+                                     array.array('d', ey_vals))
+            garbage_protect_list.append(graph)
+
+            is_data = samples_dict[sample][0] == 'Data'
+            is_cosmic_bkg = sample == "Cosmic Bkg"
+            col = ROOT.kBlack if is_data else color_numerator
+
+            graph.SetLineColor(col)
+            graph.SetLineWidth(2)
+            graph.SetMarkerColor(col)
+            graph.SetFillColor(col)
+
+            if is_data:
+                graph.SetMarkerStyle(20)
+                graph.SetMarkerSize(0.6)
+                graph.Draw("P SAME")
+                leg2.AddEntry(graph, sample, "pe")
+            elif is_cosmic_bkg:
+                graph.SetMarkerStyle(0)
+                graph.SetFillStyle(3004)
+                graph.Draw("E3 SAME")
+                leg2.AddEntry(graph, sample, "f")
+            else:
+                graph.SetMarkerStyle(0)
+                graph.Draw("E3 SAME")
+                leg2.AddEntry(graph, sample, "l")
+
+        pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
+        pave.SetFillColor(0)
+        pave.SetBorderSize(0)
+        pave.SetTextAlign(12)
+        pave.SetTextSize(0.025)
+        pave.AddText(f"collection = {collection}")
+        pave.Draw()
+        leg2.Draw()
+
+        CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_ptErrPerPt2_vs_pT.png")
+        c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_ptErrPerPt2_vs_pT.pdf")
+        del c
+        del hframe2
+
+        # -----------------------------------------------------------------
+        # Profile and RMS plots from 2D histograms (N-1 level)
+        # -----------------------------------------------------------------
+
+        # Define the 2D histograms and their properties
+        h2d_configs = [
+            {
+                "name": "h2_ptErr_vs_pt_nminus1",
+                "ytitle_profile": "Avg #pm RMS #sigma(p_{T}) [GeV]",
+                "ytitle_rms": "RMS #sigma(p_{T}) [GeV]",
+                "ymin_profile": 0.1,
+                "ymax_profile": 100,
+                "ymin_rms": 0.01,
+                "ymax_rms": 30,
+                "output_base": "ptErr_vs_pT_nminus1"
+            },
+            {
+                "name": "h2_ptErrPerPt_vs_pt_nminus1",
+                "ytitle_profile": "Avg #pm RMS #sigma(p_{T})/p_{T}",
+                "ytitle_rms": "RMS #sigma(p_{T})/p_{T}",
+                "ymin_profile": 1e-3,
+                "ymax_profile": 1e1,
+                "ymin_rms": 1e-4,
+                "ymax_rms": 1,
+                "output_base": "ptErrPerPt_vs_pT_nminus1"
+            },
+            {
+                "name": "h2_ptErrPerPt2_vs_pt_nminus1",
+                "ytitle_profile": "Avg #pm RMS #sigma(p_{T})/p_{T}^{2} [GeV^{-1}]",
+                "ytitle_rms": "RMS #sigma(p_{T})/p_{T}^{2} [GeV^{-1}]",
+                "ymin_profile": 1e-6,
+                "ymax_profile": 1e-1,
+                "ymin_rms": 1e-7,
+                "ymax_rms": 1e-2,
+                "output_base": "ptErrPerPt2_vs_pT_nminus1"
+            }
+        ]
+
+        for config in h2d_configs:
+            # Combined plot: mean as points, RMS as error bars
+            c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+            c.SetLeftMargin(0.153)
+            c.SetRightMargin(0.1)
+            c.SetLogy(True)
+
+            # Use the profile y-title directly (already includes "Avg ± RMS")
+            ytitle = config['ytitle_profile']
+
+            hframe = ROOT.TH1F(f"hframe_{config['output_base']}", "",
+                              98, 200, 10000)
+            hframe.SetStats(False)
+            hframe.GetXaxis().SetTitle("p_{T} [GeV]")
+            hframe.GetYaxis().SetTitle(ytitle)
+            hframe.GetYaxis().SetTitleOffset(1.2)
+            hframe.GetXaxis().SetLabelSize(0.04)
+            hframe.GetYaxis().SetLabelSize(0.04)
+            hframe.GetXaxis().SetMaxDigits(3)
+            hframe.GetXaxis().SetNdivisions(510)
+            hframe.SetMinimum(config['ymin_profile'])
+            hframe.SetMaximum(config['ymax_profile'])
+            hframe.Draw()
+
+            leg = ROOT.TLegend(0.55, 0.72, 0.88, 0.9)
+            leg.SetBorderSize(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+
+            color_numerator = 7
+            for sample in list(samples_dict.keys()):
+                color_numerator -= 1
+                if color_numerator == 1:
+                    color_numerator = 9
+                file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+                full_path = f"{file_path}_{samples_dict[sample][1]}"
+                if not os.path.exists(full_path):
+                    continue
+
+                f = ROOT.TFile(full_path)
+                h2 = f.Get(config['name'])
+                if not h2 or not h2.InheritsFrom("TH2"):
+                    f.Close()
+                    continue
+
+                h2.SetDirectory(0)
+                f.Close()
+
+                # Rebin the 2D histogram for smoother results
+                h2.Rebin2D(5, 5)
+
+                # Create TGraphErrors with mean as y-value and RMS as y-error
+                nbins = h2.GetNbinsX()
+
+                # Lists to store graph points
+                x_vals = []
+                y_vals = []
+                ex_vals = []
+                ey_vals = []
+
+                # Get y-axis range to exclude outliers (like 999.f sentinel values)
+                ymax_hist = h2.GetYaxis().GetXmax()
+
+                # Loop over bins including overflow (bin nbins+1)
+                for ibin in range(1, nbins + 2):
+                    # Project this x-bin to get y-distribution
+                    py = h2.ProjectionY(f"_py_{ibin}_{sample}_{config['name']}", ibin, ibin)
+                    if py.GetEntries() > 0:
+                        # Manually calculate mean and RMS excluding outliers
+                        # Exclude values > ymax_hist (these are sentinel values like 999.f)
+                        sum_w = 0.0
+                        sum_wx = 0.0
+                        sum_wx2 = 0.0
+
+                        for jbin in range(1, py.GetNbinsX() + 1):
+                            bin_center = py.GetBinCenter(jbin)
+                            if bin_center <= ymax_hist:  # Exclude outliers
+                                weight = py.GetBinContent(jbin)
+                                sum_w += weight
+                                sum_wx += weight * bin_center
+                                sum_wx2 += weight * bin_center * bin_center
+
+                        if sum_w > 0:
+                            mean = sum_wx / sum_w
+                            variance = (sum_wx2 / sum_w) - (mean * mean)
+                            rms = variance**0.5 if variance > 0 else 0.0
+
+                            # Combine RMS with statistical uncertainty on the mean
+                            stat_unc = rms / (sum_w**0.5) if sum_w > 0 else 0.0
+                            total_error = (rms**2 + stat_unc**2)**0.5
+
+                            x_vals.append(h2.GetXaxis().GetBinCenter(ibin))
+                            y_vals.append(mean)
+                            ex_vals.append(0)  # No x-error
+                            ey_vals.append(total_error)
+                    py.Delete()
+
+                if len(x_vals) == 0:
+                    continue
+
+                import array
+                graph = ROOT.TGraphErrors(len(x_vals),
+                                         array.array('d', x_vals),
+                                         array.array('d', y_vals),
+                                         array.array('d', ex_vals),
+                                         array.array('d', ey_vals))
+                garbage_protect_list.append(graph)
+
+                is_data = samples_dict[sample][0] == 'Data'
+                is_cosmic_bkg = sample == "Cosmic Bkg"
+                col = ROOT.kBlack if is_data else color_numerator
+
+                graph.SetLineColor(col)
+                graph.SetLineWidth(2)
+                graph.SetMarkerColor(col)
+                graph.SetFillColor(col)
+
+                if is_data:
+                    graph.SetMarkerStyle(20)
+                    graph.SetMarkerSize(0.6)
+                    graph.Draw("P SAME")
+                    leg.AddEntry(graph, sample, "pe")
+                elif is_cosmic_bkg:
+                    graph.SetMarkerStyle(0)
+                    graph.SetFillStyle(3004)
+                    graph.Draw("E3 SAME")
+                    leg.AddEntry(graph, sample, "f")
+                else:
+                    graph.SetMarkerStyle(0)
+                    graph.Draw("E3 SAME")
+                    leg.AddEntry(graph, sample, "l")
+
+            pave = ROOT.TPaveText(0.18, 0.82, 0.42, 0.90, "NDC")
+            pave.SetFillColor(0)
+            pave.SetBorderSize(0)
+            pave.SetTextAlign(12)
+            pave.SetTextSize(0.025)
+            pave.AddText(f"collection = {collection}")
+            pave.Draw()
+            leg.Draw()
+
+            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{config['output_base']}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/presoverlay_{collection}_{config['output_base']}.pdf")
+            del c
+            del hframe
 
         garbage_protect_list.clear()
 
