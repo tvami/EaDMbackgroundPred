@@ -3,6 +3,10 @@ echo "Run script starting"
 echo "Object type: $1"
 echo "Region: $2"
 echo "Base directory: $3"
+echo "Validate: ${4:-false}"
+echo "Save snapshot: ${5:-true}"
+echo "Job index: ${6:-0}"
+echo "Files per job: ${7:-0}"
 
 arch=el9_amd64_gcc12
 rel=CMSSW_14_1_0_pre4
@@ -48,10 +52,14 @@ echo -e "\n------------------ Skim Ntuples ------------------"
 object=$1
 region=$2
 base_dir=$3
+validate=${4:-false}
+save_snapshot=${5:-true}
+job_index=${6:-0}
+files_per_job=${7:-0}
 
-# run skim_ntuples.C with object, region, and base_dir parameters
-echo "\n[1] root -l -b -q 'skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")'"
-root -b -l -q "skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\")"
+# run skim_ntuples.C with object, region, base_dir, validate, save_snapshot, and optional chunking parameters
+echo "\n[1] root -l -b -q 'skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\", $validate, $save_snapshot, $job_index, $files_per_job)'"
+root -b -l -q "skim_ntuples.C(\"$object\", \"$region\", \"$base_dir\", $validate, $save_snapshot, $job_index, $files_per_job)"
 
 # echo "base directory has:"
 # /bin/ls -altr .

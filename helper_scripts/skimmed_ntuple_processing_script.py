@@ -32,7 +32,8 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 if args.runType != '2DAInput':
     # Path to trained RNN weights (transferred by condor to current directory)
-    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
+    # checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
+    checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
 
     # Define model architecture (must match training architecture exactly)
     model = Sequential([
