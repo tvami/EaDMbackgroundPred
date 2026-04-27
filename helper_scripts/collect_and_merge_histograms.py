@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script to collect, merge, and organize 2DAlphabet histograms
-Usage: python collect_and_merge_histograms.py --version v22
+Usage: python collect_and_merge_histograms.py --version v23
 """
 
 import os
@@ -23,7 +23,7 @@ def run_command(cmd, description=""):
 def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description='Collect and merge 2DAlphabet histograms')
-    parser.add_argument('-v', '--version', required=True, help='Version string (e.g., v22)')
+    parser.add_argument('-v', '--version', required=True, help='Version string (e.g., v23)')
     args = parser.parse_args()
 
     version = args.version

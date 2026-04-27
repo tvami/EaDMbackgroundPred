@@ -23,7 +23,7 @@ args = parser.parse_args()
 # =========================
 # Configuration constants
 # =========================
-PT_MAX_CLIP = 13000.0  # Maximum pT value for clipping (GeV)
+PT_MAX_CLIP = 6000.0  # Maximum pT value for clipping (GeV)
 N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 # =========================
@@ -32,8 +32,8 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 if args.runType != '2DAInput':
     # Path to trained RNN weights (transferred by condor to current directory)
-    # checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
-    checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
+    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
+    # checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
 
     # Define model architecture (must match training architecture exactly)
     model = Sequential([
@@ -637,14 +637,14 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             match = re.search(r'MinP-(\d+)', Path(file).stem)
             if match and "SurfaceDepth" not in Path(file).stem:
                 number = match.group(1)
-                new_filename = f"EaDM_Signal_M{number}GeV_{args.region.upper()}.root"
+                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_{args.region.upper()}.root"
                 # Override filename for special MC samples (neutrino and cosmic background)
                 if Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
                 elif Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
             elif match and "SurfaceDepth" in Path(file).stem:
                 depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
                 number = match.group(1)
-                new_filename = f"EaDM_Signal_M{number}GeV_e{depth.group(1)}_{args.region.upper()}.root"
+                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_e{depth.group(1)}_{args.region.upper()}.root"
             else:
                 print("No matching number found")
                 continue

@@ -2,7 +2,8 @@
 set -euo pipefail
 
 # Destination base directory
-BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/
+# BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/
+BASE=/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.9/
 #BASE=/home/users/tvami/EarthAsDM/v2/
 
 # ------------------------------------------------------------------
