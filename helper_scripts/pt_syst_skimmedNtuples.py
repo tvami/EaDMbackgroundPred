@@ -519,7 +519,7 @@ for collection in tqdm(collections, desc="Collections"):
     c3a.SetLeftMargin(0.153)
     c3a.SetRightMargin(0.08)
 
-    hf3a = ROOT.TH1F("hframe_delta", "", 100, -0.4, 0.4)
+    hf3a = ROOT.TH1F("hframe_delta", "", 100, -1, 1)
     hf3a.SetStats(False)
     hf3a.GetXaxis().SetTitle("(p_{T}^{tag} #minus p_{T}^{probe}) / p_{T}^{avg}")
     hf3a.GetYaxis().SetTitle("Fraction of Events")
@@ -946,20 +946,11 @@ for collection in tqdm(collections, desc="Collections"):
         df_2 = (df_q
             .Filter("Sum(_pass) == 2")
             .Define("_pt_good",  f"{pt_br}[_pass]")
-            .Define("_phi_good", f"{phi_br}[_pass]")
             .Define("pt_tag",    "(double)std::max(_pt_good[0], _pt_good[1])")
             .Define("pt_probe",  "(double)std::min(_pt_good[0], _pt_good[1])")
             .Define("pt_avg",    "(pt_tag + pt_probe) / 2.0")
             .Define("delta_pt",  "(pt_tag - pt_probe) / pt_avg")
             .Filter("delta_pt > 1e-9")  # remove exact duplicates (same float)
-            .Define("phi_tag",   "(double)(_pt_good[0] >= _pt_good[1] ? _phi_good[0] : _phi_good[1])")
-            .Define("phi_probe", "(double)(_pt_good[0] >= _pt_good[1] ? _phi_good[1] : _phi_good[0])")
-            .Define("delta_phi_tp",
-                    "double dp = phi_tag - phi_probe;"
-                    "while (dp >  M_PI) dp -= 2*M_PI;"
-                    "while (dp < -M_PI) dp += 2*M_PI;"
-                    "return dp;")
-            .Filter("std::abs(delta_phi_tp) > M_PI/2")  # require back-to-back, remove duplicates
         )
         h2 = df_2.Histo2D(
             (f"h2_fit_{collection}_{idx}", "",
