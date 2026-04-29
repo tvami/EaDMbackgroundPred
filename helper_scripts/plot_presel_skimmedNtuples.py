@@ -8,8 +8,9 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
-#base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.0_wRNN/'
-base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/'
+base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1'
+# base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1_wRNN/'
+# base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 collections = ['matched_muon', 'track', 'muon', 'tuneP']
 #collections = ['matched_muon']
