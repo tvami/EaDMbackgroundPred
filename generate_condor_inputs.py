@@ -74,26 +74,26 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
 
 if __name__ == "__main__":
     # Configuration - EDIT THESE FOR YOUR ANALYSIS
-    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v21"
+    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v23"
     BASE_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src"
 
     # Configuration for each region
     configs = [
         {
             "name": "SR",
-            "template": f"{BASE_DIR}/config_Binningv7_InputTemplate_SR_Blind.json",
+            "template": f"{BASE_DIR}/config_Binningv8_InputTemplate_SR_Blind.json",
             "output": f"{BASE_DIR}/input_2DA_SR.txt",
             "pattern": "_SR.root"
         },
         {
             "name": "VR1",
-            "template": f"{BASE_DIR}/config_Binningv7_InputTemplate_VR1_Unblind.json",
+            "template": f"{BASE_DIR}/config_Binningv8_InputTemplate_VR1_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR1.txt",
             "pattern": "_VR1.root"
         },
         {
             "name": "VR2",
-            "template": f"{BASE_DIR}/config_Binningv7alt_InputTemplate_VR2_Unblind.json",
+            "template": f"{BASE_DIR}/config_Binningv8alt_InputTemplate_VR2_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR2.txt",
             "pattern": "_VR2.root"
         }
