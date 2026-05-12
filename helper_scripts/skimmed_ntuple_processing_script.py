@@ -233,7 +233,7 @@ if args.runType == 'Process' or args.runType == 'Both':
 
         # Generate random noise
         rand_noise = ak.Array([
-                np.random.normal(0, 1, len(indivArr))
+                np.random.normal(0, 4, len(indivArr))
                 for indivArr in t0_arr
             ])
 
