@@ -508,21 +508,21 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # bnd_nominal: nominal cut, bnd_up/down: RNN score syst variations, bnd_t0_up/down: t0 noise syst (±|noise|)
         if args.region == 'sr':
             bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-            bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
-            bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
+            bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
+            bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
             bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
             bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
         if args.region == 'vr1':
             # VR1 uses a window cut: pass requires intermediate RNN scores (between ~signal-like and background-like)
             bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
-            bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
-            bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']
+            bnd_up = ['RNNScore_syst_up >= 0.45 & RNNScore_syst_up < 0.9999', 'RNNScore_syst_up < 0.45']
+            bnd_down = ['RNNScore_syst_down >= 0.45 & RNNScore_syst_down < 0.9999', 'RNNScore_syst_down < 0.45']
             bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
             bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
         if args.region == 'vr2':
             bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-            bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
-            bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
+            bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
+            bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
             bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
             bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
         
@@ -707,26 +707,26 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             if args.region == 'sr':
                 if sample_type == 'Signal':
                     bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-                    bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
-                    bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
+                    bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
+                    bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
                     bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
                     bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
                 elif sample_type == 'BkgMC':
                     bnd_nominal = ['RNNScore >= 0.9', 'RNNScore < 0.9']
-                    bnd_up = ['RNNScore >= 0.95', 'RNNScore < 0.95']
-                    bnd_down = ['RNNScore >= 0.81', 'RNNScore < 0.81']
+                    bnd_up = ['RNNScore_syst_up >= 0.9', 'RNNScore_syst_up < 0.9']
+                    bnd_down = ['RNNScore_syst_down >= 0.9', 'RNNScore_syst_down < 0.9']
                     bnd_t0_up = ['RNNScore_t0syst_up >= 0.9', 'RNNScore_t0syst_up < 0.9']
                     bnd_t0_down = ['RNNScore_t0syst_down >= 0.9', 'RNNScore_t0syst_down < 0.9']
             if args.region == 'vr1':
                 bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
-                bnd_up = ['RNNScore >= 0.50 & RNNScore < 0.9999', 'RNNScore < 0.50']
-                bnd_down = ['RNNScore >= 0.40 & RNNScore < 0.9999', 'RNNScore < 0.40']
+                bnd_up = ['RNNScore_syst_up >= 0.45 & RNNScore_syst_up < 0.9999', 'RNNScore_syst_up < 0.45']
+                bnd_down = ['RNNScore_syst_down >= 0.45 & RNNScore_syst_down < 0.9999', 'RNNScore_syst_down < 0.45']
                 bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
                 bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
             if args.region == 'vr2':
                 bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-                bnd_up = ['RNNScore >= 0.99999', 'RNNScore < 0.99999']
-                bnd_down = ['RNNScore >= 0.999', 'RNNScore < 0.999']
+                bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
+                bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
                 bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
                 bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
 
