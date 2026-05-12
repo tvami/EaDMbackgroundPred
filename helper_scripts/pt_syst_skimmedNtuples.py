@@ -8,17 +8,17 @@ ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
 base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1'
-# collections = ['matched_muon', 'track', 'muon', 'tuneP']
-collections = ['matched_muon']
+collections = ['matched_muon', 'track', 'muon', 'tuneP']
+# collections = ['matched_muon']
 region = 'sr'  # sr, vr1, vr2
 
 samples_dict = {
     "Cosmic Bkg":    ["BkgMC",  "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
     "Neutrino Bkg":  ["BkgMC",  "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-    "M_{DM} = 2 TeV":   ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-    "M_{DM} = 10 TeV":  ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-    "M_{DM} = 20 TeV":  ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-    "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+    # "M_{DM} = 2 TeV":   ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+    # "M_{DM} = 10 TeV":  ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+    # "M_{DM} = 20 TeV":  ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
+    # "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
     "Run-3 Cosmics": ["Data",   "Ntuplizer-Cosmics_All_v4.root"],
 }
 
@@ -102,6 +102,24 @@ int count_unique_pt(const ROOT::RVec<float>& pt,
     auto pt_good = pt[pass];
     if (pt_good.size() == 0) return 0;
     // Sort then count how many distinct pT groups exist
+    ROOT::RVec<float> sorted = pt_good;
+    std::sort(sorted.begin(), sorted.end());
+    int n = 1;
+    for (size_t i = 1; i < sorted.size(); i++) {
+        if (std::abs(sorted[i] - sorted[i-1]) >= thr) n++;
+    }
+    return n;
+}
+
+// Count unique quality objects using a *relative* threshold:
+// two tracks are distinct if |pT_i - pT_j| >= rel_thr * pT_max
+int count_unique_pt_rel(const ROOT::RVec<float>& pt,
+                        const ROOT::RVec<bool>&  pass,
+                        float rel_thr = 0.24f) {
+    auto pt_good = pt[pass];
+    if (pt_good.size() == 0) return 0;
+    float pt_max = *std::max_element(pt_good.begin(), pt_good.end());
+    float thr = rel_thr * pt_max;
     ROOT::RVec<float> sorted = pt_good;
     std::sort(sorted.begin(), sorted.end());
     int n = 1;
@@ -434,6 +452,130 @@ for collection in tqdm(collections, desc="Collections"):
     c2b3.SaveAs(f"figures/pt_syst/nobj_unique100_{collection}.png")
     c2b3.SaveAs(f"figures/pt_syst/nobj_unique100_{collection}.pdf")
     del c2b3, hf2b3
+
+    # -------------------------------------------------------
+    # Plot 2b4 – Number of unique quality objects per event (|delta pT| > 1000 GeV)
+    # -------------------------------------------------------
+    c2b4 = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+    c2b4.SetLogy(True)
+    c2b4.SetLeftMargin(0.153)
+    c2b4.SetRightMargin(0.08)
+
+    hf2b4 = ROOT.TH1F("hframe_nuniq1000", "", 21, -0.5, 20.5)
+    hf2b4.SetStats(False)
+    hf2b4.GetXaxis().SetTitle("N unique quality objects")
+    hf2b4.GetYaxis().SetTitle("Fraction of Events")
+    hf2b4.SetMinimum(1e-5)
+    hf2b4.SetMaximum(99.9)
+    hf2b4.Draw()
+
+    leg2b4 = ROOT.TLegend(0.55, 0.70, 0.88, 0.90)
+    leg2b4.SetBorderSize(0)
+    leg2b4.SetFillStyle(0)
+    leg2b4.SetTextFont(42)
+
+    for idx, sample in enumerate(samples_dict):
+        file_path = (f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}'
+                     f'/skimmed_{collection}_{region}_{samples_dict[sample][1]}')
+        if not os.path.exists(file_path):
+            continue
+        df = ROOT.RDataFrame("tree", file_path)
+        df_q = make_quality_df(df, collection, region)
+        df_q = df_q.Define("n_unique_good_1000",
+                           f"count_unique_pt({pt_br}, _pass, 1000.f)")
+        h = df_q.Histo1D((f"h_nuniq1000_{collection}_{idx}", "", 21, -0.5, 20.5),
+                         "n_unique_good_1000")
+        garbage.append(h)
+        hv = h.GetValue()
+        hv.SetDirectory(0)
+        if hv.Integral() > 0:
+            hv.Scale(1.0 / hv.Integral())
+        is_data = samples_dict[sample][0] == "Data"
+        is_cosmic = sample == "Cosmic Bkg"
+        col = sample_color(idx, is_data)
+        hv.SetLineColor(col)
+        hv.SetMarkerColor(col)
+        hv.SetLineWidth(2)
+        hv.SetMarkerStyle(20 if is_data else 8)
+        hv.SetMarkerSize(0.6 if is_data else 1.0)
+        if is_cosmic:
+            hv.SetFillColor(col)
+            hv.SetFillStyle(3004)
+        draw_opt = "P SAME" if is_data else "HIST SAME"
+        leg_opt = "p" if is_data else ("f" if is_cosmic else "l")
+        hv.Draw(draw_opt)
+        leg2b4.AddEntry(hv, sample, leg_opt)
+        garbage.append(hv)
+
+    pave2b4 = draw_legend_and_pave(leg2b4, collection,
+                                   "Quality objects, |#Deltap_{T}| > 1000 GeV")
+    garbage.append(pave2b4)
+    CMS.CMS_lumi(c2b4, iPosX=0, scaleLumi=0)
+    c2b4.SaveAs(f"figures/pt_syst/nobj_unique1000_{collection}.png")
+    c2b4.SaveAs(f"figures/pt_syst/nobj_unique1000_{collection}.pdf")
+    del c2b4, hf2b4
+
+    # -------------------------------------------------------
+    # Plot 2b5 – Number of unique quality objects (|delta pT| > 24% of leading pT)
+    # -------------------------------------------------------
+    c2b5 = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+    c2b5.SetLogy(True)
+    c2b5.SetLeftMargin(0.153)
+    c2b5.SetRightMargin(0.08)
+
+    hf2b5 = ROOT.TH1F("hframe_nuniqrel24", "", 21, -0.5, 20.5)
+    hf2b5.SetStats(False)
+    hf2b5.GetXaxis().SetTitle("N unique quality objects")
+    hf2b5.GetYaxis().SetTitle("Fraction of Events")
+    hf2b5.SetMinimum(1e-5)
+    hf2b5.SetMaximum(99.9)
+    hf2b5.Draw()
+
+    leg2b5 = ROOT.TLegend(0.55, 0.70, 0.88, 0.90)
+    leg2b5.SetBorderSize(0)
+    leg2b5.SetFillStyle(0)
+    leg2b5.SetTextFont(42)
+
+    for idx, sample in enumerate(samples_dict):
+        file_path = (f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}'
+                     f'/skimmed_{collection}_{region}_{samples_dict[sample][1]}')
+        if not os.path.exists(file_path):
+            continue
+        df = ROOT.RDataFrame("tree", file_path)
+        df_q = make_quality_df(df, collection, region)
+        df_q = df_q.Define("n_unique_good_rel24",
+                           f"count_unique_pt_rel({pt_br}, _pass, 0.24f)")
+        h = df_q.Histo1D((f"h_nuniqrel24_{collection}_{idx}", "", 21, -0.5, 20.5),
+                         "n_unique_good_rel24")
+        garbage.append(h)
+        hv = h.GetValue()
+        hv.SetDirectory(0)
+        if hv.Integral() > 0:
+            hv.Scale(1.0 / hv.Integral())
+        is_data = samples_dict[sample][0] == "Data"
+        is_cosmic = sample == "Cosmic Bkg"
+        col = sample_color(idx, is_data)
+        hv.SetLineColor(col)
+        hv.SetMarkerColor(col)
+        hv.SetLineWidth(2)
+        hv.SetMarkerStyle(20 if is_data else 8)
+        hv.SetMarkerSize(0.6 if is_data else 1.0)
+        if is_cosmic:
+            hv.SetFillColor(col)
+            hv.SetFillStyle(3004)
+        draw_opt = "P SAME" if is_data else "HIST SAME"
+        leg_opt = "p" if is_data else ("f" if is_cosmic else "l")
+        hv.Draw(draw_opt)
+        leg2b5.AddEntry(hv, sample, leg_opt)
+        garbage.append(hv)
+
+    pave2b5 = draw_legend_and_pave(leg2b5, collection,
+                                   "Quality objects, |#Deltap_{T}| > 24% p_{T}^{max}")
+    garbage.append(pave2b5)
+    CMS.CMS_lumi(c2b5, iPosX=0, scaleLumi=0)
+    c2b5.SaveAs(f"figures/pt_syst/nobj_unique_rel24_{collection}.png")
+    c2b5.SaveAs(f"figures/pt_syst/nobj_unique_rel24_{collection}.pdf")
+    del c2b5, hf2b5
 
     # -------------------------------------------------------
     # Plot 2c – pT distribution for events with exactly 1, 2, or 3 unique quality objects
