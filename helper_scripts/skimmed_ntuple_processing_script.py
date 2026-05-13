@@ -32,7 +32,8 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 if args.runType != '2DAInput':
     # Path to trained RNN weights (transferred by condor to current directory)
-    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
+    checkpoint_path = './rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
+    # checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
     # checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
 
     # Define model architecture (must match training architecture exactly)
@@ -314,7 +315,7 @@ if args.runType == 'Process' or args.runType == 'Both':
 
         print("Now calculating RNNScore (using bootstrap as syst)")
 
-        N = 1 # Precision in RNNScore syst. is proportional to 1/sqrt(N) -> Set N+1 to 100 to get ~10% percision
+        N = 10 # Precision in RNNScore syst. is proportional to 1/sqrt(N) -> Set N+1 to 100 to get ~10% percision
         for i in range(N):
             # Generate N random indexes per N-dim subarray
             rand_idx = ak.Array([
@@ -465,16 +466,24 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         )
 
         # Define pT-shifted dataframe for pT scale systematic (upward variation)
-        # pT scale factor varies by regime: +0.3% below 200 GeV, +0.5% between 200-500 GeV, +1% above 500 GeV
+        # pT scale factor from Gaussian sigma of cosmic muon pT resolution per bin:
+        # <300: +6.22%, 300-400: +7.62%, 400-500: +8.54%, 500-700: +9.28%,
+        # 700-1000: +10.05%, 1000-1200: +10.46%, 1200-1500: +11.54%, >=1500: +16.64%
         pT_up_df_tmp = (
             df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
             .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")
             .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")
+            .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")
             .Define(
                 "pT_max_up",
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.003 : "
-                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.01 : "
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
+                "pT_max < 300 ? pT_max*1.0622 : "
+                "(pT_max < 400 ? pT_max*1.0762 : "
+                "(pT_max < 500 ? pT_max*1.0854 : "
+                "(pT_max < 700 ? pT_max*1.0928 : "
+                "(pT_max < 1000 ? pT_max*1.1005 : "
+                "(pT_max < 1200 ? pT_max*1.1046 : "
+                "(pT_max < 1500 ? pT_max*1.1154 : "
+                "pT_max*1.1664))))))"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
             .Define("pT_max_up_clipped", f"std::min(pT_max_up, {PT_MAX_CLIP})")
@@ -482,16 +491,24 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         )
 
         # Define pT-shifted dataframe for pT scale systematic (downward variation)
-        # pT scale factor varies by regime: -0.3% below 200 GeV, -0.5% between 200-500 GeV, -1% above 500 GeV
+        # pT scale factor from Gaussian sigma of cosmic muon pT resolution per bin:
+        # <300: -6.22%, 300-400: -7.62%, 400-500: -8.54%, 500-700: -9.28%,
+        # 700-1000: -10.05%, 1000-1200: -10.46%, 1200-1500: -11.54%, >=1500: -16.64%
         pT_down_df_tmp = (
             df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
             .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")
             .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")
+            .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")
             .Define(
                 "pT_max_down",
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.997 : "
-                "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.99 : "
-                "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
+                "pT_max < 300 ? pT_max*0.9378 : "
+                "(pT_max < 400 ? pT_max*0.9238 : "
+                "(pT_max < 500 ? pT_max*0.9146 : "
+                "(pT_max < 700 ? pT_max*0.9072 : "
+                "(pT_max < 1000 ? pT_max*0.8995 : "
+                "(pT_max < 1200 ? pT_max*0.8954 : "
+                "(pT_max < 1500 ? pT_max*0.8846 : "
+                "pT_max*0.8336))))))"
             )
             .Define("n_Seg", "nmuon_dtSeg_t0timing")
             .Define("pT_max_down_clipped", f"std::min(pT_max_down, {PT_MAX_CLIP})")
@@ -664,16 +681,24 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             )
 
             # Define pT-shifted dataframe for pT scale systematic (upward variation)
-            # pT scale factor varies by regime: +0.3% below 200 GeV, +0.5% between 200-500 GeV, +1% above 500 GeV
+            # pT scale factor from Gaussian sigma of cosmic muon pT resolution per bin:
+            # <300: +6.22%, 300-400: +7.62%, 400-500: +8.54%, 500-700: +9.28%,
+            # 700-1000: +10.05%, 1000-1200: +10.46%, 1200-1500: +11.54%, >=1500: +16.64%
             pT_up_df_tmp = (
                 df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
                 .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")
                 .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")
+                .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")
                 .Define(
                     "pT_max_up",
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.003 : "
-                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.01 : "
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*1.005)"
+                    "pT_max < 300 ? pT_max*1.0622 : "
+                    "(pT_max < 400 ? pT_max*1.0762 : "
+                    "(pT_max < 500 ? pT_max*1.0854 : "
+                    "(pT_max < 700 ? pT_max*1.0928 : "
+                    "(pT_max < 1000 ? pT_max*1.1005 : "
+                    "(pT_max < 1200 ? pT_max*1.1046 : "
+                    "(pT_max < 1500 ? pT_max*1.1154 : "
+                    "pT_max*1.1664))))))"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
                 .Define("pT_max_up_clipped", f"std::min(pT_max_up, {PT_MAX_CLIP})")
@@ -681,16 +706,24 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             )
 
             # Define pT-shifted dataframe for pT scale systematic (downward variation)
-            # pT scale factor varies by regime: -0.3% below 200 GeV, -0.5% between 200-500 GeV, -1% above 500 GeV
+            # pT scale factor from Gaussian sigma of cosmic muon pT resolution per bin:
+            # <300: -6.22%, 300-400: -7.62%, 400-500: -8.54%, 500-700: -9.28%,
+            # 700-1000: -10.05%, 1000-1200: -10.46%, 1200-1500: -11.54%, >=1500: -16.64%
             pT_down_df_tmp = (
                 df.Define("chi2ndof", "ROOT::VecOps::Where(muon_fromGenTrack_Ndof != 0, muon_fromGenTrack_Chi2/muon_fromGenTrack_Ndof, 999.)")
                 .Define("ptErrOverPt2", "ROOT::VecOps::Where(muon_fromGenTrack_Pt > 0, muon_fromGenTrack_PtErr / (muon_fromGenTrack_Pt * muon_fromGenTrack_Pt), 999.)")
                 .Define("quality_mask", "chi2ndof < 35. && muon_fromGenTrack_NumValidHits > 7 && ptErrOverPt2 < 1e-3 && abs(muon_fromGenTrack_Eta) < 0.9")
+                .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")
                 .Define(
                     "pT_max_down",
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) < 200 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.997 : "
-                    "(ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask]) > 500 ? ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.99 : "
-                    "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])*0.995)"
+                    "pT_max < 300 ? pT_max*0.9378 : "
+                    "(pT_max < 400 ? pT_max*0.9238 : "
+                    "(pT_max < 500 ? pT_max*0.9146 : "
+                    "(pT_max < 700 ? pT_max*0.9072 : "
+                    "(pT_max < 1000 ? pT_max*0.8995 : "
+                    "(pT_max < 1200 ? pT_max*0.8954 : "
+                    "(pT_max < 1500 ? pT_max*0.8846 : "
+                    "pT_max*0.8336))))))"
                 )
                 .Define("n_Seg", "nmuon_dtSeg_t0timing")
                 .Define("pT_max_down_clipped", f"std::min(pT_max_down, {PT_MAX_CLIP})")
