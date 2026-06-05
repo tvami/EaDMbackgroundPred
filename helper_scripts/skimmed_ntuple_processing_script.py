@@ -32,8 +32,8 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 if args.runType != '2DAInput':
     # Path to trained RNN weights (transferred by condor to current directory)
-    checkpoint_path = './rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
-    # checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
+    # checkpoint_path = './rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
+    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
     # checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
 
     # Define model architecture (must match training architecture exactly)
@@ -315,7 +315,7 @@ if args.runType == 'Process' or args.runType == 'Both':
 
         print("Now calculating RNNScore (using bootstrap as syst)")
 
-        N = 10 # Precision in RNNScore syst. is proportional to 1/sqrt(N) -> Set N+1 to 100 to get ~10% percision
+        N = 100 # Precision in RNNScore syst. is proportional to 1/sqrt(N) -> Set N+1 to 100 to get ~10% percision
         for i in range(N):
             # Generate N random indexes per N-dim subarray
             rand_idx = ak.Array([
@@ -360,9 +360,10 @@ if args.runType == 'Process' or args.runType == 'Both':
             else: rnn_scores = np.concatenate((rnn_scores, rnn_scores_syst[np.newaxis, :, :]), axis=0)
 
         # Calculate bootstrap estimates of RNN Score mean + std for each event
+        # 84th/16th percentile = ±1σ of a Gaussian (68% CI spans 16th to 84th)
         rnn_score_bstrp_mean_arr = np.mean(rnn_scores, axis=0)
-        rnn_score_syst_up = np.percentile(rnn_scores, 68, axis=0)
-        rnn_score_syst_down = np.percentile(rnn_scores, 32, axis=0)
+        rnn_score_syst_up = np.percentile(rnn_scores, 84, axis=0)
+        rnn_score_syst_down = np.percentile(rnn_scores, 16, axis=0)
 
 
         # =========================

@@ -82,6 +82,7 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
 - v21: Run-3 Cosmics w/ skimmed ntuples v4.0.9
 - v22: Run-3 Cosmics w/ skimmed ntuples v4.0.9 but extended range and new preselection applied correctly
 - v23: Run-3 Cosmics w/ skimmed ntuples v4.0.9 but reduced range and new preselection applied correctly
+- v24: Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic
 
 ## Binning Versions
 

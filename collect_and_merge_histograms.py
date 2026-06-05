@@ -69,8 +69,8 @@ def main():
             if file and os.path.exists(file):
                 basename = os.path.basename(file)
                 dest = os.path.join(output_dir, basename)
-                print(f"  Moving {file} -> {dest}")
-                shutil.move(file, dest)
+                print(f"  Copying {file} -> {dest}")
+                shutil.copy2(file, dest)
 
     # ================================
     # Step 2: Merge Data files with hadd
@@ -118,48 +118,10 @@ def main():
 
     os.chdir("..")
 
+# ================================
+    # Step 5: Move and rename BkgMC files
     # ================================
-    # Step 4: Clean up empty Data directories
-    # ================================
-    print("\n=== Step 4: Cleaning up Data directories ===")
-    data_dirs = [
-        f"{helper_scripts_dir}/Data/sr",
-        f"{helper_scripts_dir}/Data/vr1",
-        f"{helper_scripts_dir}/Data/vr2",
-        f"{helper_scripts_dir}/Data"
-    ]
-
-    for dir_path in data_dirs:
-        if os.path.exists(dir_path):
-            print(f"  Removing {dir_path}")
-            shutil.rmtree(dir_path)
-
-    # ================================
-    # Step 5: Move Signal files
-    # ================================
-    print("\n=== Step 5: Moving Signal files ===")
-    signal_paths = [
-        f"{helper_scripts_dir}/Signal/sr/matched_muon/2DA",
-        f"{helper_scripts_dir}/Signal/vr1/matched_muon/2DA",
-        f"{helper_scripts_dir}/Signal/vr2/matched_muon/2DA",
-    ]
-
-    for signal_path in signal_paths:
-        if os.path.exists(signal_path):
-            for file in Path(signal_path).glob("*.root"):
-                dest = os.path.join(output_dir, file.name)
-                print(f"  Moving {file} -> {dest}")
-                shutil.move(str(file), dest)
-
-    # Clean up Signal directory
-    if os.path.exists(f"{helper_scripts_dir}/Signal"):
-        print(f"  Removing {helper_scripts_dir}/Signal")
-        shutil.rmtree(f"{helper_scripts_dir}/Signal")
-
-    # ================================
-    # Step 6: Move and rename BkgMC files
-    # ================================
-    print("\n=== Step 6: Moving and renaming BkgMC files ===")
+    print("\n=== Step 5: Moving and renaming BkgMC files ===")
 
     # Move BkgMC files from sr, vr1, vr2
     bkgmc_paths = [
@@ -174,18 +136,14 @@ def main():
                 # Rename Signal to BkgMC in filename
                 new_name = file.name.replace("EaDM_Signal_", "EaDM_BkgMC_")
                 dest = os.path.join(output_dir, new_name)
-                print(f"  Moving {file} -> {dest}")
-                shutil.move(str(file), dest)
-
-    # Clean up BkgMC directory
-    if os.path.exists(f"{helper_scripts_dir}/BkgMC"):
-        print(f"  Removing {helper_scripts_dir}/BkgMC")
-        shutil.rmtree(f"{helper_scripts_dir}/BkgMC")
+                print(f"  Copying {file} -> {dest}")
+                shutil.copy2(str(file), dest)
 
     # ================================
-    # Step 7: Rename any remaining Signal files to BkgMC
+    # Step 6: Rename any remaining BkgMC files that still have Signal prefix
+    # (must run before Signal files are moved in, so only BkgMC files are present)
     # ================================
-    print("\n=== Step 7: Renaming remaining Signal files ===")
+    print("\n=== Step 6: Renaming remaining BkgMC files with Signal prefix ===")
     os.chdir(output_dir)
 
     for file in Path(".").glob("EaDM_Signal_*.root"):
@@ -194,6 +152,23 @@ def main():
         shutil.move(str(file), new_name)
 
     os.chdir("..")
+
+    # ================================
+    # Step 7: Move Signal files
+    # ================================
+    print("\n=== Step 7: Copying Signal files ===")
+    signal_paths = [
+        f"{helper_scripts_dir}/Signal/sr/matched_muon/2DA",
+        f"{helper_scripts_dir}/Signal/vr1/matched_muon/2DA",
+        f"{helper_scripts_dir}/Signal/vr2/matched_muon/2DA",
+    ]
+
+    for signal_path in signal_paths:
+        if os.path.exists(signal_path):
+            for file in Path(signal_path).glob("*.root"):
+                dest = os.path.join(output_dir, file.name)
+                print(f"  Copying {file} -> {dest}")
+                shutil.copy2(str(file), dest)
 
     # ================================
     # Summary

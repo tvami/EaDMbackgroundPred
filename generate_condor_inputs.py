@@ -74,7 +74,7 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
 
 if __name__ == "__main__":
     # Configuration - EDIT THESE FOR YOUR ANALYSIS
-    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v23"
+    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v25"
     BASE_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src"
 
     # Configuration for each region
