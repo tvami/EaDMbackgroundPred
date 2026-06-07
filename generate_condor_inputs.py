@@ -81,19 +81,19 @@ if __name__ == "__main__":
     configs = [
         {
             "name": "SR",
-            "template": f"{BASE_DIR}/config_Binningv8_InputTemplate_SR_Blind.json",
+            "template": f"{BASE_DIR}/config_Binningv9_InputTemplate_SR_Blind.json",
             "output": f"{BASE_DIR}/input_2DA_SR.txt",
             "pattern": "_SR.root"
         },
         {
             "name": "VR1",
-            "template": f"{BASE_DIR}/config_Binningv8_InputTemplate_VR1_Unblind.json",
+            "template": f"{BASE_DIR}/config_Binningv9_InputTemplate_VR1_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR1.txt",
             "pattern": "_VR1.root"
         },
         {
             "name": "VR2",
-            "template": f"{BASE_DIR}/config_Binningv8alt_InputTemplate_VR2_Unblind.json",
+            "template": f"{BASE_DIR}/config_Binningv9alt_InputTemplate_VR2_Unblind.json",
             "output": f"{BASE_DIR}/input_2DA_VR2.txt",
             "pattern": "_VR2.root"
         }

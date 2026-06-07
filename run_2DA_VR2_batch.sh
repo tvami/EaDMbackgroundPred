@@ -40,7 +40,7 @@ mv 2DAlphabet $rel/src/
 # Also move the scripts we'll need later
 echo -e "\n[4b] Moving scripts, config, and histogram files to CMSSW/src"
 mv run_single_signal_2DA.py $rel/src/
-mv config_Binningv8alt_InputTemplate_VR2_Unblind.json $rel/src/
+mv config_Binningv9alt_InputTemplate_VR2_Unblind.json $rel/src/
 
 # Move histogram directory
 echo -e "\n[4c] Moving histogram directory to CMSSW/src"
@@ -120,7 +120,7 @@ python3 run_single_signal_2DA.py "$workingArea" "$config_file" "$signal" "$tf_ty
 echo -e "\n[4] Preparing output for transfer"
 
 # Create parent directory structure unconditionally (so Condor always has something to transfer)
-parent_dir="rpf2x0_Binningv8alt_Inputv25_VR2_Unblind"
+parent_dir="rpf2x0_Binningv9alt_Inputv25_VR2_Unblind"
 echo "Creating parent directory: $baseDir/$parent_dir"
 mkdir -p "$baseDir/$parent_dir"
 
