@@ -270,7 +270,7 @@ class Plotter(object):
 
             make_can('{d}/{p}_{r}_2D'.format(d=self.dir,p=process,r=region), [out_file_name%('prefit')+'.png', out_file_name%('postfit')+'.png'])
 
-    def plot_projections(self, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Work in Progress', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
+    def plot_projections(self, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Internal', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
         '''Plot comparisons of data and the post-fit background model and signal
         using the 1D projections. Canvases are grouped based on projection axis.
         The canvas rows are separate selection regions while the columns
@@ -416,9 +416,6 @@ class Plotter(object):
                     make_can(out_can_name, these_axes)
 
 
-    def plot_transfer_funcs(self):
-        raise NotImplementedError()
-
 def _save_pad_generic(outname, pad, ROOTout, savePDF, savePNG):
     if isinstance(ROOTout, ROOT.TFile):
         ROOTout.WriteTObject(pad,outname.split('/')[-1])
@@ -439,7 +436,7 @@ def _make_pad_gen(name):
     return pad
 
 def make_pad_2D(outname, hist, style='lego', logzFlag=False, ROOTout=None,
-                savePDF=False, savePNG=False, year=1, extraText='Work in Progress'):
+                savePDF=False, savePNG=False, year=1, extraText='Internal'):
     '''Make a pad holding a 2D plot with standardized formatting conventions.
 
     Args:
@@ -485,7 +482,7 @@ def make_pad_2D(outname, hist, style='lego', logzFlag=False, ROOTout=None,
 def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='', slicetitle='',
             totalBkg=None, logyFlag=True, ROOTout=None, savePDF=False, savePNG=False,
             dataOff=False, datastyle='pe X0', year=1, addSignals=True, 
-            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Work in Progress', units='GeV', hspace=0.0):
+            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Internal', units='GeV', hspace=0.0):
     '''Create a matplotlib.axis.Axis object holding a 1D plot with standardized CMS formatting conventions
     Args:
         outname (str): Output file path + name.
@@ -692,7 +689,7 @@ def _get_start_stop(i,slice_idxs):
     stop  = slice_idxs[i+1]
     return start, stop
 
-def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Work in Progress', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
+def gen_projections(ledger, twoD, fittag, loadExisting=False, lumiText=r'138 $fb^{-1}$ (13 TeV)', extraText='Internal', pf_slice_str={}, subtitles={}, units='GeV', regionsToGroup=[]):
     plotter = Plotter(ledger, twoD, fittag, loadExisting)
     plotter.plot_2D_distributions()
     plotter.plot_projections(lumiText, extraText, pf_slice_str, subtitles, units, regionsToGroup)
@@ -980,64 +977,292 @@ def plot_gof(tag, subtag, seed=123456, condor=False):
         gof_limit_tree.GetEntry(0)
         gof_data = gof_limit_tree.limit
 
-        # Get toys
-        if (gof_data < 1) : print("THe observed limit is less than 1, something seems wrong")
-        toy_limit_tree.Draw('limit>>hlimit','limit<%s && limit != %s'%(gof_data*2.0,gof_data)) 
+        # Get toys. Bin ALL valid toys (TS>0) over a range that covers the toy distribution AND
+        # the observed, so the drawn histogram integrates to the full toy count. The old
+        # 'limit < 2*observed' cut hid most toys when the data fits very well (observed TS far
+        # below the toy bulk -> e.g. a high p-value), making the plot look sparse / under-filled.
         print(gof_data)
+        toy_max = toy_limit_tree.GetMaximum('limit')
+        xhi = 1.15*max(toy_max, gof_data, 1.0)
+        toy_limit_tree.Draw('limit>>hlimit(70,0,%f)'%xhi, 'limit>0')
         htoy_gof = ROOT.gDirectory.Get('hlimit')
-        time.sleep(1) # if you don't sleep the code moves too fast and won't perform the fit
-        htoy_gof.Fit("gaus")
-
-        # Fit toys and derive p-value
-        gaus = htoy_gof.GetFunction("gaus")
-        print(gaus)
-        pvalue = 1-(1/gaus.Integral(-float("inf"),float("inf")))*gaus.Integral(-float("inf"),gof_data)
+        # p-value = fraction of *valid* toys with TS >= observed. The saturated GoF statistic is
+        # chi2-like (skewed), so an empirical count beats a Gaussian fit. Toys whose fit failed
+        # are recorded with TS <= 0; they are excluded from the denominator so a failed toy
+        # doesn't bias the p-value low (the legend still reports the raw number thrown).
+        n_thrown = int(toy_limit_tree.GetEntries())
+        n_valid  = float(toy_limit_tree.GetEntries('limit>0'))
+        n_above  = float(toy_limit_tree.GetEntries('limit>=%s'%gof_data))
+        pvalue   = n_above/n_valid if n_valid > 0 else 0.0
 
         # Write out for reference
         with open('gof_results.txt','w') as out:
-            out.write('Test statistic in data = '+str(gof_data))
-            out.write('Mean from toys = '+str(gaus.GetParameter(1)))
-            out.write('Width from toys = '+str(gaus.GetParameter(2)))
-            out.write('p-value = '+str(pvalue))
+            out.write('Test statistic in data = %s\n'%gof_data)
+            out.write('Toys thrown = %d\n'%n_thrown)
+            out.write('Valid toys (TS>0) = %d\n'%int(n_valid))
+            out.write('Toys >= observed = %d\n'%int(n_above))
+            out.write('p-value = %s\n'%pvalue)
 
-        # Extend the axis if needed
-        if htoy_gof.GetXaxis().GetXmax() < gof_data:
-            print ('Axis limit greater than GOF p value')
-            binwidth = htoy_gof.GetXaxis().GetBinWidth(1)
-            xmin = htoy_gof.GetXaxis().GetXmin()
-            new_xmax = int(gof_data*1.1)
-            new_nbins = int((new_xmax-xmin)/binwidth)
-            toy_limit_tree.Draw('limit>>hlimitrebin('+str(new_nbins)+', '+str(xmin)+', '+str(new_xmax)+')','limit>0.001 && limit<1500') 
-            htoy_gof = ROOT.gDirectory.Get('hlimitrebin')
-            htoy_gof.Fit("gaus")
-            gaus = htoy_gof.GetFunction("gaus")
+
+        # Canvas (CMS style)
+        cout = ROOT.TCanvas('cout','cout',800,800)
+        cout.SetLeftMargin(0.13)
+        cout.SetRightMargin(0.05)
+        cout.SetTopMargin(0.08)
+        cout.SetBottomMargin(0.12)
+        cout.SetTickx(1)
+        cout.SetTicky(1)
+
+        # Style the toy histogram
+        htoy_gof.SetTitle('')
+        htoy_gof.SetMarkerStyle(20)
+        htoy_gof.SetMarkerSize(0.7)
+        htoy_gof.SetMarkerColor(ROOT.kBlack)
+        htoy_gof.SetLineColor(ROOT.kBlack)
+        htoy_gof.GetXaxis().SetTitle('Saturated goodness-of-fit test statistic')
+        htoy_gof.GetYaxis().SetTitle('Number of toys')
+        htoy_gof.GetXaxis().SetTitleSize(0.045)
+        htoy_gof.GetYaxis().SetTitleSize(0.045)
+        htoy_gof.GetXaxis().SetTitleOffset(1.1)
+        htoy_gof.GetYaxis().SetTitleOffset(1.35)
+        htoy_gof.GetXaxis().SetLabelSize(0.04)
+        htoy_gof.GetYaxis().SetLabelSize(0.04)
+        htoy_gof.SetMaximum(1.25*htoy_gof.GetMaximum())
+
+        # Gamma fit, overlaid for visualization. The saturated GoF statistic is chi2-like; a
+        # gamma (chi2 with a free scale) hugs the peaked toy distribution much better than a
+        # Gaussian or fixed-scale chi2. The reported p-value stays empirical.
+        binwidth = htoy_gof.GetXaxis().GetBinWidth(1)
+        mean = max(1.0, htoy_gof.GetMean())
+        chi2fit = ROOT.TF1('gammafit','[0]*ROOT::Math::gamma_pdf(x,[1],[2],0)',
+                           htoy_gof.GetXaxis().GetXmin(), htoy_gof.GetXaxis().GetXmax())
+        chi2fit.SetParameters(htoy_gof.Integral()*binwidth, 2.0, mean/2.0)  # norm, shape, scale
+        chi2fit.SetParName(0,'norm')
+        chi2fit.SetParName(1,'shape')
+        chi2fit.SetParName(2,'scale')
+        # Wide shape range: as shape->inf the gamma -> Gaussian, so a symmetric/Gaussian-like
+        # toy distribution is still fit well (gamma contains the Gaussian as a limiting case).
+        chi2fit.SetParLimits(1, 0.1, 1000)
+        chi2fit.SetParLimits(2, 0.001, 50)
+        chi2fit.SetLineColor(ROOT.kAzure+1)
+        chi2fit.SetLineWidth(2)
+        htoy_gof.Fit(chi2fit,'QR')
 
         # Arrow for observed
-        arrow = ROOT.TArrow(gof_data,0.25*htoy_gof.GetMaximum(),gof_data,0)
-        arrow.SetLineWidth(2)
+        arrow = ROOT.TArrow(gof_data,0.25*htoy_gof.GetMaximum(),gof_data,0,0.02,'|>')
+        arrow.SetLineWidth(3)
+        arrow.SetLineColor(ROOT.kRed+1)
+        arrow.SetFillColor(ROOT.kRed+1)
 
         # Legend
-        leg = ROOT.TLegend(0.6,0.7,0.9,0.9)
-        leg.SetLineColor(ROOT.kBlack)
+        leg = ROOT.TLegend(0.46,0.70,0.88,0.88)
         leg.SetLineWidth(0)
+        leg.SetBorderSize(0)
         leg.SetFillStyle(0)
         leg.SetTextFont(42)
-        leg.AddEntry(htoy_gof,"toy data","lep")
-        leg.AddEntry(arrow,"observed = %.1f"%gof_data,"l")
-        leg.AddEntry(0,"p-value = %.2f"%(pvalue),"")
+        leg.SetTextSize(0.035)
+        # Total toys thrown (the drawn histogram may show fewer, since a display
+        # cut of limit < 2*observed can crop far-tail toys).
+        n_toys = int(toy_limit_tree.GetEntries())
+        leg.AddEntry(htoy_gof,"Toy data (%d thrown)"%n_toys,"lep")
+        leg.AddEntry(chi2fit,"Gamma fit","l")
+        leg.AddEntry(arrow,"Observed = %.1f"%gof_data,"l")
+        leg.AddEntry(0,"#it{p}-value = %.2f"%(pvalue),"")
 
         # Draw
-        cout = ROOT.TCanvas('cout','cout',800,700)
-        htoy_gof.SetTitle('')
-        htoy_gof.Draw('pez')
+        htoy_gof.Draw('pe')
+        chi2fit.Draw('same')
         arrow.Draw()
         leg.Draw()
 
+        # CMS Internal label
+        latex = ROOT.TLatex()
+        latex.SetNDC()
+        latex.SetTextAlign(11)
+        latex.SetTextFont(62)
+        latex.SetTextSize(0.05)
+        latex.DrawLatex(0.13,0.93,"CMS")
+        latex.SetTextFont(52)
+        latex.SetTextSize(0.04)
+        latex.DrawLatex(0.23,0.93,"Internal")
+
+        cout.RedrawAxis()
         cout.Print('gof_plot.pdf','pdf')
         cout.Print('gof_plot.png','png')
 
     if condor:
             execute_cmd('rm -r '+tmpdir)
+
+def plot_transfer_funcs(tag, subtag, projection='projx2', savename=None, cmsText='Internal'):
+    '''Plot the transfer factor (postfit pass/fail ratio) vs pT for one fit area.
+
+    Reads the b-only postfit projections from <tag>/<subtag>/plots_fit_b/all_plots.root
+    and divides the pass projection by the fail projection to form the transfer factor.
+    Integrated (and CMS-restyled) from the former standalone helper_scripts/plot_TF.py.
+
+    Args:
+        tag (str): working area (e.g. 'rpfmult_Binningv9_Inputv25_SR_BkgMC').
+        subtag (str): fit area (e.g. 'Signal_M3000GeV_e4_SR-2x0_area').
+        projection (str, optional): which postfit x-projection to use. Defaults to 'projx2'.
+        savename (str, optional): output path stem (no extension). Defaults to
+            <tag>/<subtag>/transfer_func.
+        cmsText (str, optional): sublabel drawn after 'CMS'. Defaults to 'Internal'.
+    '''
+    rundir = tag+'/'+subtag
+    fpath = rundir+'/plots_fit_b/all_plots.root'
+    if not os.path.exists(fpath):
+        raise Exception('Postfit shapes not found: %s (run the fit + StdPlots first)'%fpath)
+
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptStat(False)
+
+    f = ROOT.TFile.Open(fpath)
+    h_pass = f.Get('TotalBkg_pass_postfit_'+projection)
+    h_fail = f.Get('TotalBkg_fail_postfit_'+projection)
+    if not h_pass or not h_fail:
+        f.Close()
+        raise Exception('Missing TotalBkg_{pass,fail}_postfit_%s in %s'%(projection,fpath))
+    h_ratio = h_pass.Clone('h_TF_'+subtag)
+    h_ratio.Divide(h_fail)
+    h_ratio.SetDirectory(0)  # detach so it survives the file close
+    f.Close()
+
+    # Canvas (CMS style, matches the GoF / F-test plots)
+    c = ROOT.TCanvas('cTF','cTF',800,800)
+    c.SetLeftMargin(0.13)
+    c.SetRightMargin(0.05)
+    c.SetTopMargin(0.08)
+    c.SetBottomMargin(0.12)
+    c.SetTickx(1)
+    c.SetTicky(1)
+
+    h_ratio.SetTitle('')
+    h_ratio.SetLineColor(ROOT.kBlack)
+    h_ratio.SetLineWidth(2)
+    h_ratio.SetMarkerStyle(0)
+    h_ratio.GetXaxis().SetTitle('p_{T} [GeV]')
+    h_ratio.GetYaxis().SetTitle('Transfer Factor')
+    h_ratio.GetXaxis().SetTitleSize(0.045)
+    h_ratio.GetYaxis().SetTitleSize(0.045)
+    h_ratio.GetXaxis().SetTitleOffset(1.1)
+    h_ratio.GetYaxis().SetTitleOffset(1.35)
+    h_ratio.GetXaxis().SetLabelSize(0.04)
+    h_ratio.GetYaxis().SetLabelSize(0.04)
+    h_ratio.SetMinimum(0)
+    h_ratio.Draw('hist ][ C')
+
+    # CMS Internal label
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextAlign(11)
+    latex.SetTextFont(62)
+    latex.SetTextSize(0.05)
+    latex.DrawLatex(0.13,0.93,"CMS")
+    latex.SetTextFont(52)
+    latex.SetTextSize(0.04)
+    latex.DrawLatex(0.23,0.93,cmsText)
+
+    c.RedrawAxis()
+    if savename is None:
+        savename = rundir+'/transfer_func'
+    c.Print(savename+'.pdf','pdf')
+    c.Print(savename+'.png','png')
+
+def plot_ftest(base_fstat, nRpfs1, nRpfs2, nBins, poly1, poly2, savedir, cmsText='Internal'):
+    '''Plot the Fisher F-test comparing two transfer-function orders (no toys).
+
+    Draws the analytic F-distribution with ndf=(p2-p1, nBins-p2), marks the observed
+    F-statistic, and reports the p-value as its upper-tail integral. Saves
+    ftest_<poly1>_vs_<poly2>_notoys.{png,pdf} under savedir.
+
+    Args:
+        base_fstat (list): output of TwoDAlphabet.ftest.FstatCalc; base_fstat[0] is the observed F.
+        nRpfs1, nRpfs2 (int): number of RPF parameters of the two fits.
+        nBins (int): number of bins entering the fit.
+        poly1, poly2 (str): TF order labels (e.g. '1x0', '2x0').
+        savedir (str): directory to write the output plots into (the working area).
+        cmsText (str, optional): sublabel after 'CMS'. Defaults to 'Internal'.
+    '''
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptStat(0)
+
+    if len(base_fstat) == 0:
+        base_fstat = [0.0]
+
+    ftest_p1    = min(nRpfs1,nRpfs2)
+    ftest_p2    = max(nRpfs1,nRpfs2)
+    xmax        = max(10,1.3*base_fstat[0])
+    fdist       = ROOT.TF1("fDist", "[0]*TMath::FDist(x, [1], [2])", 0, xmax)
+    fdist.SetParameter(0,1)
+    fdist.SetParameter(1,ftest_p2-ftest_p1)
+    fdist.SetParameter(2,nBins-ftest_p2)
+
+    pval = fdist.Integral(0.0,base_fstat[0])
+    print('F-test p-value: %s'%(1-pval))
+
+    # Canvas (CMS style, matches the GoF plots)
+    c = ROOT.TCanvas('cFtest','cFtest',800,800)
+    c.SetLeftMargin(0.13)
+    c.SetRightMargin(0.05)
+    c.SetTopMargin(0.08)
+    c.SetBottomMargin(0.12)
+    c.SetTickx(1)
+    c.SetTicky(1)
+
+    # The F-dist PDF diverges at x->0 when ndf1==1, so fdist.GetMaximum() is unusable.
+    # Cap the y-axis where the bulk of the distribution lives.
+    ymax = 1.1
+
+    frame = ROOT.TH1F("Fhist","",100,0,xmax)
+    frame.GetXaxis().SetTitle("F statistic")
+    frame.GetYaxis().SetTitle("Probability density")
+    frame.GetXaxis().SetTitleSize(0.045)
+    frame.GetYaxis().SetTitleSize(0.045)
+    frame.GetXaxis().SetTitleOffset(1.1)
+    frame.GetYaxis().SetTitleOffset(1.35)
+    frame.GetXaxis().SetLabelSize(0.04)
+    frame.GetYaxis().SetLabelSize(0.04)
+    frame.SetMaximum(ymax)
+    frame.SetMinimum(0)
+    frame.Draw()
+
+    fdist.SetLineColor(ROOT.kAzure+1)
+    fdist.SetLineWidth(2)
+    fdist.Draw('same')
+
+    # Observed arrow (red, matches GoF observed marker)
+    ftestobs = ROOT.TArrow(base_fstat[0],0.25*ymax,base_fstat[0],0,0.02,'|>')
+    ftestobs.SetLineColor(ROOT.kRed+1)
+    ftestobs.SetFillColor(ROOT.kRed+1)
+    ftestobs.SetLineWidth(3)
+    ftestobs.Draw()
+
+    tLeg = ROOT.TLegend(0.46,0.70,0.88,0.88)
+    tLeg.SetLineWidth(0)
+    tLeg.SetBorderSize(0)
+    tLeg.SetFillStyle(0)
+    tLeg.SetTextFont(42)
+    tLeg.SetTextSize(0.035)
+    tLeg.AddEntry(fdist,"F-dist, ndf = (%.0f, %.0f)"%(fdist.GetParameter(1),fdist.GetParameter(2)),"l")
+    tLeg.AddEntry(ftestobs,"Observed = %.1f"%base_fstat[0],"l")
+    tLeg.AddEntry(0,"%s vs. %s"%(poly1,poly2),"")
+    tLeg.AddEntry(0,"#it{p}-value = %.2f"%(1-pval),"")
+    tLeg.Draw("same")
+
+    # CMS Internal label
+    latex = ROOT.TLatex()
+    latex.SetNDC()
+    latex.SetTextAlign(11)
+    latex.SetTextFont(62)
+    latex.SetTextSize(0.05)
+    latex.DrawLatex(0.13,0.93,"CMS")
+    latex.SetTextFont(52)
+    latex.SetTextSize(0.04)
+    latex.DrawLatex(0.23,0.93,cmsText)
+
+    c.RedrawAxis()
+    c.SaveAs(savedir+'/ftest_{0}_vs_{1}_notoys.png'.format(poly1,poly2))
+    c.SaveAs(savedir+'/ftest_{0}_vs_{1}_notoys.pdf'.format(poly1,poly2))
 
 def plot_signalInjection(tag, subtag, injectedAmount, seed=123456, stats=True, condor=False):
     # if injectedAmount is not an integer, need to look for different file
@@ -1117,7 +1342,7 @@ def plotRPF(postfitShapesFile,odir,qcdTag,passTag="M",failTag="F",xRange=[60,200
     if legendFlag:
         plt.legend()
 
-    hep.cms.text("Work in progress",loc=0)
+    hep.cms.text("Internal",loc=0)
     
     ax.set_xlim(xRange)
     ax.set_ylim([0.,maxRpf*1.3])

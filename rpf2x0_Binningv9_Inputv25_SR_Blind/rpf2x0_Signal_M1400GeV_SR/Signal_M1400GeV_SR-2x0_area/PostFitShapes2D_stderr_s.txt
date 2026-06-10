@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 1.03488   
-pass_LOW                  1.32333   
-pass_SIG                  1.08981   
+pass_HIGH                 0.61771   
+pass_LOW                  0.96878   
+pass_SIG                  0.77591   
 >> Doing postfit: fail_HIGH,CMS_EXO26004_Background
 >> Doing postfit: fail_HIGH,Signal_M1400GeV_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -79,22 +79,22 @@ Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
 fail_HIGH                 0.01583   
 fail_LOW                  0.00102   
-fail_SIG                  0.01150   
-pass_HIGH                 0.41959   
-pass_LOW                  0.14064   
-pass_SIG                  0.25596   
+fail_SIG                  0.01149   
+pass_HIGH                 0.24299   
+pass_LOW                  0.10674   
+pass_SIG                  0.31100   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
 fail_HIGH                 CMS_EXO26004_Background 0.99998   
-fail_HIGH                 Signal_M1400GeV_SR   1.20835   
+fail_HIGH                 Signal_M1400GeV_SR   1.10292   
 fail_LOW                  CMS_EXO26004_Background 1.00000   
-fail_LOW                  Signal_M1400GeV_SR   1.20848   
-fail_SIG                  CMS_EXO26004_Background 0.99980   
-fail_SIG                  Signal_M1400GeV_SR   1.20814   
-pass_HIGH                 CMS_EXO26004_Background_2x0 0.09888   
-pass_HIGH                 Signal_M1400GeV_SR   1.20844   
-pass_LOW                  CMS_EXO26004_Background_2x0 0.09173   
-pass_LOW                  Signal_M1400GeV_SR   1.20860   
-pass_SIG                  CMS_EXO26004_Background_2x0 0.09679   
-pass_SIG                  Signal_M1400GeV_SR   1.20818   
+fail_LOW                  Signal_M1400GeV_SR   1.09876   
+fail_SIG                  CMS_EXO26004_Background 0.99981   
+fail_SIG                  Signal_M1400GeV_SR   1.10836   
+pass_HIGH                 CMS_EXO26004_Background_2x0 0.06148   
+pass_HIGH                 Signal_M1400GeV_SR   1.10283   
+pass_LOW                  CMS_EXO26004_Background_2x0 0.01034   
+pass_LOW                  Signal_M1400GeV_SR   1.09817   
+pass_SIG                  CMS_EXO26004_Background_2x0 0.02599   
+pass_SIG                  Signal_M1400GeV_SR   1.10937   

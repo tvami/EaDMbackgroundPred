@@ -475,20 +475,38 @@ class TwoDAlphabet:
         return masked_regions
 
     def GoodnessOfFit(self, subtag, ntoys, card_or_w='card.txt', freezeSignal=False, seed=123456,
-                            verbosity=0, extra='', condor=False, eosRootfiles=None, njobs=0, makeEnv=False):
-        # NOTE: There's no way to blind data here - need to evaluate it to get the p-value
-        # param_str = '' if setParams == {} else '--setParameters '+','.join(['%s=%s'%(p,v) for p,v in setParams.items()])
+                            verbosity=0, extra='', condor=False, eosRootfiles=None, njobs=0, makeEnv=False,
+                            singularityImage=None, desiredSites=None):
+        # Blind the GoF the same way the fit (_runMLfit) does: mask the pass SIG/HIGH channels so
+        # the saturated statistic (for both data and toys) is computed only over the unblinded bins
+        # that were actually fit. Without this the saturated TS includes the blinded bins where the
+        # model was never fit to data and blows up. Driven by the same self.options.blindedFit.
+        #
+        # We pre-build a channel-masks workspace and pass plain --setParameters, rather than an
+        # inline `--text2workspace "--channel-masks"`: the embedded double-quotes break condor's
+        # JDL Arguments parsing (and bash would strip them on the local path), so no single inline
+        # form works for both. A prebuilt .root workspace + quote-free --setParameters does.
+        blinding = getattr(self.options, 'blindedFit', [])
+        mask_opt = ''
+        gof_input = card_or_w
 
         run_dir = self.tag+'/'+subtag
         print(f'Entering run directory: {run_dir}')
         _runDirSetup(run_dir)
-        
+
         with cd(run_dir):
             print(os.getcwd())
+            if len(blinding) > 0:
+                masks = ['mask_%s_%s=1'%(r,suffix) for r in blinding for suffix in ['SIG','HIGH']]
+                mask_opt = '--setParameters '+','.join(masks)
+                gof_input = 'gof_workspace.root'
+                execute_cmd('text2workspace.py -b {0} -o {1} --channel-masks --X-no-jmax'.format(card_or_w, gof_input))
+
             gof_data_cmd = [
                 'combine -M GoodnessOfFit',
-                '-d '+card_or_w,
+                '-d '+gof_input,
                 '--algo=saturated',
+                mask_opt,
                 '' if not freezeSignal else '--fixedSignalStrength %s'%freezeSignal,
                 '-n _gof_data', '-v %s'%verbosity, extra
             ]
@@ -532,11 +550,13 @@ class TwoDAlphabet:
                     runIn=run_dir,
                     toGrab=run_dir+'/higgsCombine_gof_toys.GoodnessOfFit.mH120.*.root',
                     eosRootfileTarball=eosRootfiles,
-                    remakeEnv=makeEnv
+                    remakeEnv=makeEnv,
+                    singularityImage=singularityImage,
+                    desiredSites=desiredSites
                 )
                 condor.submit()
-            
-    def SignalInjection(self, subtag, injectAmount, ntoys, blindData=True, card_or_w='card.txt', rMin=-5, rMax=5, 
+
+    def SignalInjection(self, subtag, injectAmount, ntoys, blindData=True, card_or_w='card.txt', rMin=-5, rMax=5,
                               seed=123456, verbosity=0, setParams={}, defMinStrat=0, extra='', condor=False, eosRootfiles=None, njobs=0, makeEnv=False):
         run_dir = self.tag+'/'+subtag
         _runDirSetup(run_dir)

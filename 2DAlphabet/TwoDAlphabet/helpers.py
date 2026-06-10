@@ -336,7 +336,8 @@ def _combineTool_impacts_fix(fileNameExpected):
 
 # ----------------- Inline condor submission --------------------
 class CondorRunner():
-    def __init__(self, name, primaryCmds, toPkg, runIn, toGrab, remakeEnv=False, eosRootfileTarball=None):
+    def __init__(self, name, primaryCmds, toPkg, runIn, toGrab, remakeEnv=False, eosRootfileTarball=None,
+                 singularityImage=None, desiredSites=None, requestMemory=6000, requestDisk='10GB'):
         '''Should be run in a CMSSW/src directory and not in a nested folder. All paths
         (besides the EOS rootfile tarball path) are treated relative to this folder.
 
@@ -348,6 +349,13 @@ class CondorRunner():
             toGrab ([type]): [description]
             remakeEnv (bool, optional): [description]. Defaults to False.
             eosRootfileTarball ([type], optional): [description]. Defaults to None.
+            singularityImage (str, optional): If set, use the Singularity/non-LPC workflow
+                (e.g. T2_US_UCSD): ship the analysis source dirs, build CMSSW from cvmfs inside
+                the image, and retrieve output via condor transfer_output_files. Defaults to None
+                (original FNAL EOS env-tarball behavior).
+            desiredSites (str, optional): Value for the +DESIRED_Sites classad (e.g. "T2_US_UCSD").
+            requestMemory (int, optional): request_memory (MB) for the singularity JDL. Defaults to 6000.
+            requestDisk (str, optional): request_disk for the singularity JDL. Defaults to '10GB'.
         '''
         self.name = name
         self.run_in = runIn
@@ -355,9 +363,14 @@ class CondorRunner():
         self.primary_cmds = primaryCmds
         self.rootfile_tarball_path = eosRootfileTarball
         self.cmssw = os.environ['CMSSW_BASE'].split('/')[-1]
+        self.singularity_image = singularityImage
+        self.desired_sites = desiredSites
+        self.request_memory = requestMemory
+        self.request_disk = requestDisk
         if not os.path.exists('notneeded/'): execute_cmd('mkdir notneeded')
-        
-        self.env_tarball_path = make_env_tarball(remakeEnv)
+
+        # The Singularity workflow ships+compiles source rather than xrdcp'ing a prebuilt env
+        self.env_tarball_path = '' if singularityImage else make_env_tarball(remakeEnv)
         self.pkg_tarball_path = self._make_pkg_tarball(toPkg) if toPkg != None else ''
         self.run_script_path = self._make_run_script()
         self.run_args_path = self.run_script_path.replace('.sh','_args.txt')
@@ -368,9 +381,38 @@ class CondorRunner():
         timestr = time.strftime("%Y%m%d-%H%M%S")
         out_jdl = 'temp_'+timestr+'_jdl'
 
-        execute_cmd("sed 's$TEMPSCRIPT${0}$g' {1}/condor/jdl_template > {2}".format(self.run_script_path, abs_twoD_dir_base, out_jdl))
-        execute_cmd("sed -i 's$TEMPTAR${0}$g' {1}".format(self.pkg_tarball_path, out_jdl))
-        execute_cmd("sed -i 's$TEMPARGS${0}$g' {1}".format(self.run_args_path, out_jdl))
+        if self.singularity_image:
+            # Ship the analysis source dirs alongside the working-area tarball so combine
+            # can be compiled in the fresh CMSSW (mirrors the working condor_2DA_SR.cfg).
+            cmssw_src = os.environ['CMSSW_BASE']+'/src'
+            # Everything (working area + analysis source dirs) ships inside the single static
+            # pkg tarball built at submit time; see _make_pkg_tarball. We deliberately do NOT
+            # list the live source directories here: condor stages inputs per-job and lazily,
+            # so a directory that changes underfoot (e.g. a regenerated/deleted __pycache__
+            # .pyc) can fail the transfer and hold the job. A tarball snapshot avoids that.
+            input_files = self.pkg_tarball_path
+            out_id = '%s_output'%self.name
+            # Resolve the grid proxy: honor X509_USER_PROXY if set, else the standard
+            # /tmp/x509up_u<uid> location (matches the working condor_2DA_SR.cfg). Run
+            # `voms-proxy-init -voms cms` first or condor_submit can't read it.
+            proxy_path = os.environ.get('X509_USER_PROXY') or '/tmp/x509up_u%d'%os.getuid()
+            if not os.path.exists(proxy_path):
+                print('\nWARNING: grid proxy not found at %s. Run `voms-proxy-init -voms cms` before submitting.\n' % proxy_path)
+
+            execute_cmd("sed 's$TEMPSCRIPT${0}$g' {1}/condor/jdl_template_singularity > {2}".format(self.run_script_path, abs_twoD_dir_base, out_jdl))
+            execute_cmd("sed -i 's$TEMPTAR${0}$g' {1}".format(input_files, out_jdl))
+            execute_cmd("sed -i 's$TEMPOUT${0}$g' {1}".format(out_id, out_jdl))
+            execute_cmd("sed -i 's$TEMPPROXY${0}$g' {1}".format(proxy_path, out_jdl))
+            execute_cmd("sed -i 's$TEMPIMAGE${0}$g' {1}".format(self.singularity_image, out_jdl))
+            execute_cmd("sed -i 's$TEMPSITES${0}$g' {1}".format(self.desired_sites if self.desired_sites else '', out_jdl))
+            execute_cmd("sed -i 's$TEMPMEM${0}$g' {1}".format(self.request_memory, out_jdl))
+            execute_cmd("sed -i 's$TEMPDISK${0}$g' {1}".format(self.request_disk, out_jdl))
+            execute_cmd("sed -i 's$TEMPARGS${0}$g' {1}".format(self.run_args_path, out_jdl))
+        else:
+            execute_cmd("sed 's$TEMPSCRIPT${0}$g' {1}/condor/jdl_template > {2}".format(self.run_script_path, abs_twoD_dir_base, out_jdl))
+            execute_cmd("sed -i 's$TEMPTAR${0}$g' {1}".format(self.pkg_tarball_path, out_jdl))
+            execute_cmd("sed -i 's$TEMPARGS${0}$g' {1}".format(self.run_args_path, out_jdl))
+
         execute_cmd("condor_submit "+out_jdl)
         execute_cmd("mv {0} notneeded/".format(out_jdl))
 
@@ -378,17 +420,27 @@ class CondorRunner():
         start_dir = os.getcwd()
         out_dir = start_dir+'/notneeded'
         out_path = '%s/%s_input.tgz'%(out_dir,self.name)
+        # For the Singularity workflow, bundle the analysis source dirs into the same static
+        # tarball (the worker has no shared FS). Always exclude transient __pycache__/*.pyc so a
+        # regenerated/deleted .pyc can't break condor's per-job input staging.
+        extra = ''
+        if self.singularity_image:
+            extra = ' ' + ' '.join(d for d in ('HiggsAnalysis','CombineHarvester','2DAlphabet')
+                                   if os.path.exists(os.environ['CMSSW_BASE']+'/src/'+d))
         with cd(os.environ['CMSSW_BASE']+'/src'):
             if os.path.exists(out_path):
                 execute_cmd('rm '+out_path)
             print ('Making package tarball %s.tgz'%self.name)
-            execute_cmd('tar --exclude=*.tgz -czf {0}.tgz {1}'.format(self.name, to_pkg))
+            execute_cmd('tar --exclude=*.tgz --exclude=__pycache__ --exclude=*.pyc -czf {0}.tgz {1}{2}'.format(self.name, to_pkg, extra))
             print ('Done')
             execute_cmd('mv %s.tgz %s'%(self.name,out_path))
 
         return out_path
 
     def _make_run_script(self):
+        if self.singularity_image:
+            return self._make_run_script_singularity()
+
         blocks = []
         blocks.append(
             _setup_env.format(
@@ -411,6 +463,41 @@ class CondorRunner():
         blocks.append('$*')
         blocks.append('cd $CMSSW_BASE/src/')
         blocks.append(_grab_output.format(out_id='%s_output_${CONDOR_ID}'%(self.name), to_grab=self.to_grab))
+
+        shell_name = 'run_'+self.name+'.sh'
+        with open(shell_name,'w') as run_script:
+            for block in blocks:
+                run_script.write(block+'\n')
+
+        with open(shell_name.replace('.sh','_args.txt'),'w') as run_args:
+            for c in self.primary_cmds:
+                run_args.write(c+'\n')
+
+        return os.path.abspath(shell_name)
+
+    def _make_run_script_singularity(self):
+        '''Run script for the Singularity/non-LPC (e.g. T2_US_UCSD) workflow. Builds a fresh
+        CMSSW from cvmfs inside the rhel8 image, compiles the shipped source, runs the combine
+        command in the run dir, and tars the output at the scratch top for condor to return.'''
+        blocks = []
+        blocks.append(
+            _setup_env_singularity.format(
+                cmssw=self.cmssw,
+                scram_arch=os.environ['SCRAM_ARCH']
+            )
+        )
+
+        if self.pkg_tarball_path != None:
+            blocks.append(_setup_tar_pkg_singularity.format(pkg_tarball=self.pkg_tarball_path.split('/')[-1], cmssw=self.cmssw))
+
+        blocks.append(
+            _compile_and_run_singularity.format(
+                cmssw=self.cmssw,
+                run_in=self.run_in,
+                out_id='%s_output_${CONDOR_ID}'%(self.name),
+                to_grab=self.to_grab
+            )
+        )
 
         shell_name = 'run_'+self.name+'.sh'
         with open(shell_name,'w') as run_script:
@@ -469,3 +556,41 @@ cd ../'''
 _grab_output = '''
 tar -czvf {out_id}.tgz {to_grab}
 cp {out_id}.tgz $CMSSW_BASE/../'''
+
+# ---- Singularity / non-LPC (e.g. T2_US_UCSD) condor workflow ----
+# Mirrors the proven run_2DA_SR_batch.sh recipe: build a fresh CMSSW from cvmfs
+# inside the rhel8 image, move the shipped source dirs in, and `scram b`. The
+# compiled `combine` is all the GoF toy command needs (no 2DAlphabet venv).
+# Run from the condor scratch top dir; $baseDir is captured for output retrieval.
+_setup_env_singularity = '''#!/bin/bash
+echo "Run script starting"; printf "Node: "; /bin/hostname
+arch={scram_arch}
+rel={cmssw}
+export SCRAM_ARCH=$arch
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+baseDir=`/bin/pwd -P`
+echo "Base directory: $baseDir"
+scramv1 project CMSSW $rel'''
+
+# Unpack the working-area tarball into the fresh CMSSW/src (same as the LPC path)
+_setup_tar_pkg_singularity = '''
+mkdir tardir; cp {pkg_tarball} tardir/; cd tardir
+tar -xzf {pkg_tarball}
+rm {pkg_tarball}
+cp -r * ../{cmssw}/src/
+cd ../'''
+
+# Compile combine, then the '$*' (combine GoF toy command) runs in the run dir.
+# Output is tarred at $baseDir (scratch top) so condor transfer_output_files
+# can return it to the submit (run) dir. strip-components in plot_gof removes
+# the leading '<tag>/<subtag>/' so only the higgsCombine root files land back.
+_compile_and_run_singularity = '''
+cd {cmssw}/src/
+eval `scramv1 runtime -sh`
+echo "Compiling with scram b..."
+scram b -j 4
+cd $CMSSW_BASE/src/{run_in}
+echo "Running: $*"
+$*
+cd $CMSSW_BASE/src
+tar -czvf $baseDir/{out_id}.tgz {to_grab}'''

@@ -35,6 +35,48 @@ source twoD-env/bin/activate
 python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_BinningvX_InputvY_-R_Unblind.json
 ```
 
+## Run files (Binningv9 / Inputv25)
+Each run file pairs with the config of the same suffix and runs the full chain for that region:
+build the workspace, fit each TF order, make the fit/transfer-factor plots, run the
+goodness-of-fit on condor (then harvest + plot it), and run the 1x0-vs-2x0 F-test.
+
+| Run file | Config | Signal | Region cut |
+|---|---|---|---|
+| `runWith1DVanilla_v25_SR_BkgMC.py` | `config_Binningv9_Inputv25_SR_BkgMC.json` | `Signal_M3000GeV_e4_SR` | SR, "data" = cosmics BkgMC |
+| `runWith1DVanilla_v25_SR_M3000GeV_e4.py` | `config_Binningv9_Inputv25_SR_M3000GeV_e4.json` | `Signal_M3000GeV_e4_SR` | SR, RNNScore >= 0.9999 |
+| `runWith1DVanilla_v25_VR1_M3000GeV_e4.py` | `config_Binningv9_Inputv25_VR1_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR1` | VR1, 0.45 <= RNNScore < 0.9999 |
+| `runWith1DVanilla_v25_VR2_M3000GeV_e4.py` | `config_Binningv9alt_Inputv25_VR2_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR2` | VR2, pT < 200 GeV (alt binning), RNNScore >= 0.9999 |
+
+Each takes the working-area name as its first argument, e.g.:
+```
+python3 runWith1DVanilla_v25_VR1_M3000GeV_e4.py rpfmult_Binningv9_Inputv25_VR1_M3000GeV_e4
+```
+The GoF is submitted to condor (T2_US_UCSD, rhel8 image); `wait_for_condor` blocks until the
+jobs finish, then the toys are harvested and plotted. A valid grid proxy is required first
+(`voms-proxy-init -voms cms`); set `useCondor = False` in `__main__` to run the toys locally instead.
+
+## Re-plotting the GoF (regenerate plots without re-running the fits/toys)
+Run from `.../CMSSW_14_1_0_pre4/src` with the environment active (see "Use the enviroment").
+The plotting functions read existing fit/toy output, so they are fast and need no proxy.
+
+Goodness-of-fit plot (`gof_plot.{png,pdf}` + `gof_results.txt` in the fit area).
+Use `condor=True` if the toys are condor output tarballs (`*_gof_toys_output_*.tgz`),
+or `condor=False` for a single local toy file:
+```
+python3 -c "from TwoDAlphabet import plot; plot.plot_gof('rpfmult_Binningv9_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area', condor=True)"
+```
+
+Transfer-factor plot (`transfer_func.{png,pdf}`, from the b-only postfit pass/fail ratio):
+```
+python3 -c "from TwoDAlphabet import plot; plot.plot_transfer_funcs('rpfmult_Binningv9_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area')"
+```
+
+F-test plot (`ftest_<poly1>_vs_<poly2>_notoys.{png,pdf}`). The leading `sys.argv` is only
+needed because the run script reads the working area from `sys.argv[1]` at import:
+```
+python3 -c "import sys; sys.argv=['x','rpfmult_Binningv9_Inputv25_SR_BkgMC','config_Binningv9_Inputv25_SR_BkgMC.json']; import runWith1DVanilla_v25_SR_BkgMC as m; m.test_FTest('1x0','2x0','Signal_M3000GeV_e4_SR')"
+```
+
 ## Histogram Versions
 
 - v0: Cosmic MC
@@ -83,11 +125,13 @@ python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_Bin
 - v22: Run-3 Cosmics w/ skimmed ntuples v4.0.9 but extended range and new preselection applied correctly
 - v23: Run-3 Cosmics w/ skimmed ntuples v4.0.9 but reduced range and new preselection applied correctly
 - v24: Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic
+ - v25:  Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic but binning such that the overflow is included
 
 ## Binning Versions
 
 - v7: SR/VR1 BINS = [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 - v8: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
+- v9: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6001], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 
 ## Running on condor
 ```

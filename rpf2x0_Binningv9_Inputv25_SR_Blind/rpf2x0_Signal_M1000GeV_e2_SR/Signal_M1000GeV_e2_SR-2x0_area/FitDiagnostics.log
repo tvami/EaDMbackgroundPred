@@ -7,72 +7,34 @@ Set Default Value of Parameter mask_pass_HIGH To : 1
 Set Default Value of Parameter r To : 1
 >>> 2 out of 6 channels masked
 
->> Found 15 floating parameters
+>> Found 14 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues:
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 14 : -0.00464857
- - 0.602838	CMS_EXO26004_Background_rpf_2x0_par3
- - 0.56093	CMS_EXO26004_Background_rpf_2x0_par2
- - -0.499679	CMS_EXO26004_Background_rpf_2x0_par1
- - -0.268819	CMS_EXO26004_Background_rpf_2x0_par0
- - 0.000716954	CMS_EXO26004_Background_fail_LOW_bin_2-1
->> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
->> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_EXO26004_Background_rpf_2x0_par3
  Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
 Running Minos for POI r
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (0.998062) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=9.84157e+08	CMS_EXO26004_Background_fail_HIGH_bin_2-1=9.41209e+08	CMS_EXO26004_Background_fail_HIGH_bin_3-1=3.04263e+07	CMS_EXO26004_Background_fail_LOW_bin_1-1=9.63541e+08	CMS_EXO26004_Background_fail_LOW_bin_2-1=8.24381e+06	CMS_EXO26004_Background_fail_LOW_bin_3-1=4.87392e+08	CMS_EXO26004_Background_fail_SIG_bin_1-1=9.68607e+08	CMS_EXO26004_Background_rpf_2x0_par0=0.554148	CMS_EXO26004_Background_rpf_2x0_par1=0.50176	CMS_EXO26004_Background_rpf_2x0_par2=-1.92398	CMS_EXO26004_Background_rpf_2x0_par3=0.704005	RNN=-223.426	lumi=-30.7558	pT=-124.502	r=2.69923	t0=10.4155
-
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (4.33405e+18) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=7.65133e+07	CMS_EXO26004_Background_fail_HIGH_bin_2-1=7.4631e+07	CMS_EXO26004_Background_fail_HIGH_bin_3-1=1.35694e+08	CMS_EXO26004_Background_fail_LOW_bin_1-1=7.4644e+08	CMS_EXO26004_Background_fail_LOW_bin_2-1=7.53396e+08	CMS_EXO26004_Background_fail_LOW_bin_3-1=9.18347e+08	CMS_EXO26004_Background_fail_SIG_bin_1-1=2.75175e+08	CMS_EXO26004_Background_rpf_2x0_par0=0.76301	CMS_EXO26004_Background_rpf_2x0_par1=0.501824	CMS_EXO26004_Background_rpf_2x0_par2=-1.9241	CMS_EXO26004_Background_rpf_2x0_par3=0.921437	RNN=-223.537	lumi=-30.7297	pT=-124.399	r=2.69923	t0=10.4273
-
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (4.33405e+18) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=7.45628e+06	CMS_EXO26004_Background_fail_HIGH_bin_2-1=2.82828e+06	CMS_EXO26004_Background_fail_HIGH_bin_3-1=8.77459e+08	CMS_EXO26004_Background_fail_LOW_bin_1-1=3.93469e+08	CMS_EXO26004_Background_fail_LOW_bin_2-1=2.79218e+08	CMS_EXO26004_Background_fail_LOW_bin_3-1=4.36522e+08	CMS_EXO26004_Background_fail_SIG_bin_1-1=6.10716e+06	CMS_EXO26004_Background_rpf_2x0_par0=0.92779	CMS_EXO26004_Background_rpf_2x0_par1=0.501624	CMS_EXO26004_Background_rpf_2x0_par2=-1.92412	CMS_EXO26004_Background_rpf_2x0_par3=1.07211	RNN=-223.54	lumi=-30.7302	pT=-124.396	r=2.69923	t0=10.4275
-
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (4.33405e+18) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=3.60533e+08	CMS_EXO26004_Background_fail_HIGH_bin_2-1=5.73388e+08	CMS_EXO26004_Background_fail_HIGH_bin_3-1=8.16837e+08	CMS_EXO26004_Background_fail_LOW_bin_1-1=9.90225e+08	CMS_EXO26004_Background_fail_LOW_bin_2-1=7.68398e+08	CMS_EXO26004_Background_fail_LOW_bin_3-1=6.93847e+08	CMS_EXO26004_Background_fail_SIG_bin_1-1=9.9861e+08	CMS_EXO26004_Background_rpf_2x0_par0=0.0833084	CMS_EXO26004_Background_rpf_2x0_par1=0.548796	CMS_EXO26004_Background_rpf_2x0_par2=-1.96882	CMS_EXO26004_Background_rpf_2x0_par3=0.390613	RNN=-237.164	lumi=-32.766	pT=-112.847	r=2.69923	t0=11.2046
-
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (4.33405e+18) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=12215.7	CMS_EXO26004_Background_fail_HIGH_bin_2-1=7073.1	CMS_EXO26004_Background_fail_HIGH_bin_3-1=14291	CMS_EXO26004_Background_fail_LOW_bin_1-1=594616	CMS_EXO26004_Background_fail_LOW_bin_2-1=309651	CMS_EXO26004_Background_fail_LOW_bin_3-1=43183.5	CMS_EXO26004_Background_fail_SIG_bin_1-1=42465.9	CMS_EXO26004_Background_rpf_2x0_par0=0.101382	CMS_EXO26004_Background_rpf_2x0_par1=0.548662	CMS_EXO26004_Background_rpf_2x0_par2=-1.96882	CMS_EXO26004_Background_rpf_2x0_par3=0.762884	RNN=-237.164	lumi=-32.7661	pT=-112.847	r=2.69923	t0=11.2046
-
-RooAbsMinimizerFcn: Minimized function has error status.
-Returning maximum FCN so far (4.33405e+18) to force MIGRAD to back out of this region. Error log follows.
-Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=1722.36	CMS_EXO26004_Background_fail_HIGH_bin_2-1=2850.07	CMS_EXO26004_Background_fail_HIGH_bin_3-1=5432.78	CMS_EXO26004_Background_fail_LOW_bin_1-1=584888	CMS_EXO26004_Background_fail_LOW_bin_2-1=127860	CMS_EXO26004_Background_fail_LOW_bin_3-1=32527.4	CMS_EXO26004_Background_fail_SIG_bin_1-1=5331.54	CMS_EXO26004_Background_rpf_2x0_par0=0.0846968	CMS_EXO26004_Background_rpf_2x0_par1=0.546333	CMS_EXO26004_Background_rpf_2x0_par2=-1.96873	CMS_EXO26004_Background_rpf_2x0_par3=0.771178	RNN=-237.264	lumi=-32.7799	pT=-112.894	r=2.69923	t0=11.2093
-
->> Found 16 floating parameters
+>> Found 15 floating parameters
 >> The following parameters are protected in the event of negative eigenvalues: r
->> Parameter CMS_EXO26004_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
 >> Verifying eigenvalues are all positive (iteration 0)
-Eigenvalue 14 : -0.000130965
- - -0.750798	CMS_EXO26004_Background_rpf_2x0_par3
- - 0.649149	CMS_EXO26004_Background_rpf_2x0_par0
- - 0.12143	CMS_EXO26004_Background_rpf_2x0_par1
- - -0.0122648	r
- - 0.00340192	pT
+Eigenvalue 14 : -0.00184116
+ - 0.720622	CMS_EXO26004_Background_rpf_2x0_par2
+ - -0.586394	CMS_EXO26004_Background_rpf_2x0_par1
+ - -0.322631	r
+ - 0.180203	CMS_EXO26004_Background_rpf_2x0_par0
+ - -0.0159687	RNN
 >> Attempt 0 failed, remove the variable with largest eigenvector component...
->> Dropping CMS_EXO26004_Background_rpf_2x0_par3 from the hessian
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par2 from the hessian
 >> Verifying eigenvalues are all positive (iteration 1)
 >> All eigenvalues are positive
 >> Inverting Hessian...
 >> Matrix inverted
->> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
-     - CMS_EXO26004_Background_rpf_2x0_par2
 >> Note: the following parameters were dropped to make the covariance matrix pos-def:
-     - CMS_EXO26004_Background_rpf_2x0_par3
-Fit S+B, status = 1, numBadNLL = 0, covariance quality = -1
+     - CMS_EXO26004_Background_rpf_2x0_par2
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
 
  --- FitDiagnostics ---
-Best fit r: 2.06662  -2.06662/+47.9334  (68% CL)
+Best fit r: 1.92255  -1.92255/+48.0775  (68% CL)
 Done in 0.01 min (cpu), 0.01 min (real)
-30 log messages saved to combine_logger.out
+26 log messages saved to combine_logger.out
