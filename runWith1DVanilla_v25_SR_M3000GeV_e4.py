@@ -54,12 +54,11 @@ _rpf_options = {
         'constraints': _generate_constraints(3)
     },
     '2x0': {
-        'form': '0.1*(@0+@1*x+@2*x**2)*(@3)',
+        'form': '0.1*(@0+@1*x+@2*x**2)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 1},
-            1: {"MIN": 0.5, "MAX": 1},
-            2: {"MIN": -1, "MAX": 0},
-            3: {"MIN": 0, "MAX": 1}
+            0: {"MIN": 0.0, "MAX": 50},
+            1: {"MIN": 0.0, "MAX": 50},
+            2: {"MIN": 0.0, "MAX": 50}
         }
     },
     '2x1': {
@@ -169,12 +168,50 @@ def GOF(signal,tf,condor=True, extra=''):
     else:
         twoD.GoodnessOfFit(
             signame+'-{}_area'.format(tf), ntoys=5000, freezeSignal=0,
-            condor=True, njobs=10, extra=extra
+            condor=True, njobs=10, extra=extra,
+            singularityImage='/cvmfs/singularity.opensciencegrid.org/cmssw/cms:rhel8',
+            desiredSites='T2_US_UCSD'
         )
 
 def plot_GOF(signal, tf, condor=True):
     working_area = workingArea
     plot.plot_gof('{}'.format(working_area), '{}-{}_area'.format(signal, tf), condor=condor)
+
+def plot_TF(signal, tf):
+    working_area = workingArea
+    plot.plot_transfer_funcs(working_area, '{}-{}_area'.format(signal, tf))
+
+def wait_for_condor(name_filter=None, poll_interval=120, timeout=None):
+    '''Block until the relevant condor jobs are done before harvesting their output.
+
+    Args:
+        name_filter (str, optional): Substring of the job executable (Cmd) to match, so we only
+            wait on these GoF jobs rather than every job the user has queued. If None, waits on
+            all of the user's jobs.
+        poll_interval (int, optional): Seconds between condor_q polls. Defaults to 120.
+        timeout (int, optional): Give up after this many seconds (None = wait indefinitely).
+    '''
+    import time, subprocess, getpass
+    user = getpass.getuser()
+    cmd = ['condor_q', user, '-af', 'ClusterId']
+    if name_filter:
+        cmd = ['condor_q', user, '-constraint', 'regexp("{}", Cmd)'.format(name_filter), '-af', 'ClusterId']
+    start = time.time()
+    while True:
+        try:
+            out = subprocess.run(cmd, capture_output=True, text=True).stdout
+        except Exception as e:
+            print('condor_q failed (%s); assuming jobs are done.' % e)
+            return
+        njobs = len([l for l in out.splitlines() if l.strip()])
+        if njobs == 0:
+            print('All condor jobs finished%s.' % (' for '+name_filter if name_filter else ''))
+            return
+        if timeout is not None and (time.time()-start) > timeout:
+            print('WARNING: timed out after %ds with %d job(s) still in queue.' % (timeout, njobs))
+            return
+        print('Waiting on %d condor job(s)... (polling every %ds)' % (njobs, poll_interval))
+        time.sleep(poll_interval)
 
 def run_limits(signal, tf):
     working_area = workingArea
@@ -226,72 +263,7 @@ def test_FTest(poly1, poly2, signal=''):
     base_fstat = FstatCalc(gofFile1,gofFile2,nRpfs1,nRpfs2,nBins)
     print(base_fstat)
 
-    def plot_FTest(base_fstat,nRpfs1,nRpfs2,nBins):
-        from ROOT import TF1, TH1F, TLegend, TPaveText, TLatex, TArrow, TCanvas, kBlue, gStyle
-        gStyle.SetOptStat(0000)
-
-        if len(base_fstat) == 0: base_fstat = [0.0]
-
-        ftest_p1    = min(nRpfs1,nRpfs2)
-        ftest_p2    = max(nRpfs1,nRpfs2)
-        ftest_nbins = nBins
-        fdist       = TF1("fDist", "[0]*TMath::FDist(x, [1], [2])", 0,max(10,1.3*base_fstat[0]))
-        fdist.SetParameter(0,1)
-        fdist.SetParameter(1,ftest_p2-ftest_p1)
-        fdist.SetParameter(2,ftest_nbins-ftest_p2)
-
-        pval = fdist.Integral(0.0,base_fstat[0])
-        print('P-value: ' + str(pval))
-
-        c = TCanvas('c','c',800,600)
-        c.SetLeftMargin(0.12)
-        c.SetBottomMargin(0.12)
-        c.SetRightMargin(0.1)
-        c.SetTopMargin(0.1)
-        ftestHist_nbins = 30
-        ftestHist = TH1F("Fhist","",ftestHist_nbins,0,max(10,1.3*base_fstat[0]))
-        ftestHist.GetXaxis().SetTitle("F = #frac{-2log(#lambda_{1}/#lambda_{2})/(p_{2}-p_{1})}{-2log#lambda_{2}/(n-p_{2})}")
-        ftestHist.GetXaxis().SetTitleSize(0.025)
-        ftestHist.GetXaxis().SetTitleOffset(2)
-        ftestHist.GetYaxis().SetTitleOffset(0.85)
-
-        ftestHist.Draw("pez")
-        ftestobs  = TArrow(base_fstat[0],0.25,base_fstat[0],0)
-        ftestobs.SetLineColor(kBlue+1)
-        ftestobs.SetLineWidth(2)
-        fdist.Draw('same')
-
-        ftestobs.Draw()
-        tLeg = TLegend(0.6,0.73,0.89,0.89)
-        tLeg.SetLineWidth(0)
-        tLeg.SetFillStyle(0)
-        tLeg.SetTextFont(42)
-        tLeg.SetTextSize(0.03)
-        tLeg.AddEntry(ftestobs,"observed = %.3f"%base_fstat[0],"l")
-        tLeg.AddEntry(fdist,"F-dist, ndf = (%.0f, %.0f) "%(fdist.GetParameter(1),fdist.GetParameter(2)),"l")
-        tLeg.Draw("same")
-
-        model_info = TPaveText(0.2,0.6,0.4,0.8,"brNDC")
-        model_info.AddText('p1 = '+poly1)
-        model_info.AddText('p2 = '+poly2)
-        model_info.AddText("p-value = %.2f"%(1-pval))
-        model_info.Draw('same')
-
-        latex = TLatex()
-        latex.SetTextAlign(11)
-        latex.SetTextSize(0.06)
-        latex.SetTextFont(62)
-        latex.SetNDC()
-        latex.DrawLatex(0.12,0.91,"CMS")
-        latex.SetTextSize(0.05)
-        latex.SetTextFont(52)
-        latex.DrawLatex(0.23,0.91,"Work in Progress")
-        latex.SetTextFont(42)
-        latex.SetTextFont(52)
-        latex.SetTextSize(0.045)
-        c.SaveAs(working_area+'/ftest_{0}_vs_{1}_notoys.png'.format(poly1,poly2))
-
-    plot_FTest(base_fstat,nRpfs1,nRpfs2,nBins)
+    plot.plot_ftest(base_fstat, nRpfs1, nRpfs2, nBins, poly1, poly2, working_area)
 
 if __name__ == "__main__":
     make_workspace()
@@ -310,8 +282,15 @@ if __name__ == "__main__":
           if not "Fit failed" in content: fitPassed = True
           rMax = rMax / 2.
       plot_fit(signal,tf_type)
+      plot_TF(signal,tf_type)
       print("\n\n\nFit is succesful, running limits now for " + str(signal))
       #run_limits(signal,tf_type)
+      useCondor = True
+      GOF(signal,tf_type,condor=useCondor)
+      if useCondor:
+        # GOF submits asynchronously; block until these jobs finish before harvesting their output
+        wait_for_condor(name_filter=f"{workingArea}_{signal}-{tf_type}_area_gof_toys")
+      plot_GOF(signal,tf_type,condor=useCondor)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
     test_FTest('1x0','2x0',"Signal_M3000GeV_e4_SR")

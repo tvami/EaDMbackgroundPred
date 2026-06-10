@@ -1,0 +1,42 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter r To : 1
+>>> 0 out of 6 channels masked
+
+>> Found 14 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Verifying eigenvalues are all positive (iteration 0)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+RooAbsMinimizerFcn: Minimized function has error status.
+Returning maximum FCN so far (3.22033e+10) to force MIGRAD to back out of this region. Error log follows.
+Parameter values: 	CMS_EXO26004_Background_fail_HIGH_bin_1-1=110.414	CMS_EXO26004_Background_fail_HIGH_bin_2-1=74.8576	CMS_EXO26004_Background_fail_HIGH_bin_3-1=797.771	CMS_EXO26004_Background_fail_LOW_bin_1-1=2363.16	CMS_EXO26004_Background_fail_LOW_bin_2-1=996.15	CMS_EXO26004_Background_fail_LOW_bin_3-1=227.148	CMS_EXO26004_Background_fail_SIG_bin_1-1=448.196	CMS_EXO26004_Background_rpf_2x0_par0=0.0965718	CMS_EXO26004_Background_rpf_2x0_par1=48.406	CMS_EXO26004_Background_rpf_2x0_par2=21.2827	RNN=-7.01374	lumi=2.10766	pT=-89.6398	r=0.135316	t0=0.568343
+
+>> Found 15 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 14 : -0.000461429
+ - -0.997396	r
+ - 0.05501	RNN
+ - 0.0370067	CMS_EXO26004_Background_fail_HIGH_bin_1-1
+ - 0.0163011	CMS_EXO26004_Background_fail_HIGH_bin_2-1
+ - 0.0139498	CMS_EXO26004_Background_rpf_2x0_par2
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping RNN from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - RNN
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 1.02261e-08  -1.02261e-08/+50  (68% CL)
+Done in 0.00 min (cpu), 0.01 min (real)
+29 log messages saved to combine_logger.out

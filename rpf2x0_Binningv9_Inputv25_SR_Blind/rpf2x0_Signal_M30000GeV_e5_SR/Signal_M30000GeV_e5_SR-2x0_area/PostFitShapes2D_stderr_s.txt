@@ -41,9 +41,9 @@ Bin                       Total relative bkg uncert. (prefit)
 fail_HIGH                 0.00000   
 fail_LOW                  0.00000   
 fail_SIG                  0.00000   
-pass_HIGH                 1.03488   
-pass_LOW                  1.32333   
-pass_SIG                  1.08981   
+pass_HIGH                 0.61771   
+pass_LOW                  0.96878   
+pass_SIG                  0.77591   
 >> Doing postfit: fail_HIGH,CMS_EXO26004_Background
 >> Doing postfit: fail_HIGH,Signal_M30000GeV_e5_SR
 >> Doing postfit: fail_HIGH,TotalBkg
@@ -77,24 +77,24 @@ pass_SIG                  1.08981
 
 Bin                       Total relative bkg uncert. (postfit)
 ----------------------------------------------------------
-fail_HIGH                 0.14522   
-fail_LOW                  0.00107   
-fail_SIG                  0.01188   
-pass_HIGH                 0.59176   
-pass_LOW                  0.25210   
-pass_SIG                  0.27491   
+fail_HIGH                 0.11863   
+fail_LOW                  0.00102   
+fail_SIG                  0.01083   
+pass_HIGH                 1.19230   
+pass_LOW                  0.40001   
+pass_SIG                  0.88857   
 
 Bin                       Process              Scale factor
 ----------------------------------------------------------
-fail_HIGH                 CMS_EXO26004_Background 0.97408   
-fail_HIGH                 Signal_M30000GeV_e5_SR 48.80214  
+fail_HIGH                 CMS_EXO26004_Background 0.97360   
+fail_HIGH                 Signal_M30000GeV_e5_SR 49.69363  
 fail_LOW                  CMS_EXO26004_Background 0.99999   
-fail_LOW                  Signal_M30000GeV_e5_SR 49.74185  
+fail_LOW                  Signal_M30000GeV_e5_SR 49.91836  
 fail_SIG                  CMS_EXO26004_Background 0.99958   
-fail_SIG                  Signal_M30000GeV_e5_SR 49.67369  
-pass_HIGH                 CMS_EXO26004_Background_2x0 0.23347   
-pass_HIGH                 Signal_M30000GeV_e5_SR 51.59275  
-pass_LOW                  CMS_EXO26004_Background_2x0 0.10164   
-pass_LOW                  Signal_M30000GeV_e5_SR 52.18069  
-pass_SIG                  CMS_EXO26004_Background_2x0 0.20128   
-pass_SIG                  Signal_M30000GeV_e5_SR 52.34198  
+fail_SIG                  Signal_M30000GeV_e5_SR 49.89849  
+pass_HIGH                 CMS_EXO26004_Background_2x0 0.27840   
+pass_HIGH                 Signal_M30000GeV_e5_SR 50.42856  
+pass_LOW                  CMS_EXO26004_Background_2x0 0.01139   
+pass_LOW                  Signal_M30000GeV_e5_SR 50.56303  
+pass_SIG                  CMS_EXO26004_Background_2x0 0.08378   
+pass_SIG                  Signal_M30000GeV_e5_SR 50.60355  
