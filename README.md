@@ -292,11 +292,11 @@ source twoD-env/bin/activate
    - Signal: `EaDM_Signal_M{mass}GeV_{SR/VR1/VR2}.root`
    - BkgMC: `EaDM_CosmicMC_Data_{SR/VR1/VR2}.root`, `EaDM_NeutrinoMC_Data_{SR/VR1/VR2}.root`
 
-### Run 8: Limits
+### 8: Run Limits
 ```
 python3 helper_scripts/CalcSigRatesCentralMC.py # run only if you updated directory or masspoints
 python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py -L "Run 3 Cosmics" --outdir OUTDIR -s signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_rate_Vol.txt 
 python3 helper_scripts/plotExcludedMassVsEp_2D.py
 ```
-- Note: After running `set_limit.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0_closed` and `max_exp_lim_Run3_e0` of `plotExcludedMassVsEp_2D.py`  
+- Note: After running `set_limit.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`  
 
