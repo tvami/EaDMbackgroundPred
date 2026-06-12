@@ -132,6 +132,7 @@ python3 -c "import sys; sys.argv=['x','rpfmult_Binningv9_Inputv25_SR_BkgMC','con
 - v7: SR/VR1 BINS = [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 - v8: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 - v9: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6001], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
+- v10: SR/VR1 BINS = [200, 350, 726, 1027, 1329, 2157, 3212, 4267, 6001] -- the v9 third bin [726,1329] is split at 1027, giving 4 unblinded SR bins (pT < 1329) instead of 3 while keeping the same blinding boundary (SIGSTART 1329, so [1329,2157] stays blinded)
 
 ## Running on condor
 ```
