@@ -120,7 +120,7 @@ python3 run_single_signal_2DA.py "$workingArea" "$config_file" "$signal" "$tf_ty
 echo -e "\n[4] Preparing output for transfer"
 
 # Create parent directory structure unconditionally (so Condor always has something to transfer)
-parent_dir="rpf2x0_Binningv9_Inputv25_SR_Blind"
+parent_dir="rpf2x0_Binningv10_Inputv25_SR_Blind"
 echo "Creating parent directory: $baseDir/$parent_dir"
 mkdir -p "$baseDir/$parent_dir"
 

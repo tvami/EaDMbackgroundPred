@@ -10,7 +10,7 @@ from optparse import OptionParser
 parser = OptionParser(usage="Usage: python %prog workingArea config.json")
 
 workingArea = sys.argv[1]
-configJSON = "config_Binningv9_Inputv25_SR_M3000GeV_e4.json" # sys.argv[2]
+configJSON = "config_Binningv10_Inputv25_SR_M3000GeV_e4.json" # sys.argv[2]
 
 # Helper function to get region names
 def _get_other_region_names(pass_reg_name):
@@ -53,12 +53,14 @@ _rpf_options = {
         'form': '0.1*(@0+@1*x)*(1+@2*y)',
         'constraints': _generate_constraints(3)
     },
+    # Multiplicative quadratic, positivity-safe.
+    # (@0+@1*x)>=0 and (1+@2*x)>0 for @2 in [-0.9,0] over x in [0,1];
     '2x0': {
-        'form': '0.1*(@0+@1*x+@2*x**2)',
+        'form': '0.1*(@0+@1*x)*(1+@2*x)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": 0.0, "MAX": 50},
-            2: {"MIN": 0.0, "MAX": 50}
+            0: {"MIN": 0.0,  "MAX": 50},
+            1: {"MIN": 0.0,  "MAX": 50},
+            2: {"MIN": -0.9, "MAX": 0.0}
         }
     },
     '2x1': {
