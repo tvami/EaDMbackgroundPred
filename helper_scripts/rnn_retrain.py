@@ -33,10 +33,10 @@ def print_memory_usage():
 preprocessing_flag = 1
 # IMPORTANT!!!!!!!!!
 
-dir_path = "/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.2/"
+dir_path = "/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1/"
 input_files = [
-    "BkgMC/*/matched_muon/skimmed_matched_muon_*_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root",
-    "BkgMC/*/matched_muon/skimmed_matched_muon_*_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root",
+    "BkgMC/*/matched_muon/skimmed_matched_muon_*_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-89_cosmuogen.root",
+    "BkgMC_old/*/matched_muon/skimmed_matched_muon_*_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root",
     "Signal/*/matched_muon/skimmed_matched_muon_*_CosmicToMu_Par-MinP-*-MinTheta-91-MaxTheta-179_cosmuogen.root",
 ]
 labels = ["CosmicMC", "NeutrinoMC", "Signal"]
@@ -49,27 +49,37 @@ if preprocessing_flag == 1:
     for input_file in input_files:
         
         rootTChain = ROOT.TChain("tree")
-        for file in glob.glob(f'{dir_path}/{input_file}'):
-            if 'Signal' in file and ('-1000-MinTheta' in file or '-5000-MinTheta' in file or '-10000-MinTheta' in file or '-90000-MinTheta' in file): continue
-            print("running on:", Path(file).stem)
-            rootTChain.Add(file)
+        for fname in glob.glob(f"{dir_path}/{input_file}"):
+            if 'vr1' in fname:
+                continue
+            if 'Signal' in fname and (
+                '-1000-MinTheta' in fname or
+                '-5000-MinTheta' in fname or
+                '-10000-MinTheta' in fname or
+                '-90000-MinTheta' in fname
+            ):
+                continue
 
-        # Create RDataFrame from input tree
-        df_initial = ROOT.RDataFrame(rootTChain)
-        df = df_initial.Filter(f"ROOT::VecOps::All(abs(muon_dtSeg_globY) > 125 & abs(muon_dtSeg_globZ) > 125)")
-        
-        # Extract required jagged branches into Python
-        RNN_input_arr = df.AsNumpy([
+            rootTChain.Add(fname)
+
+        print("Files in chain:", rootTChain.GetNtrees())
+        print("Entries:", rootTChain.GetEntries())
+
+        df = ROOT.RDataFrame(rootTChain)
+
+        wanted = [
             "muon_dtSeg_t0timing",
             "muon_dtSeg_globX",
             "muon_dtSeg_globY",
-            "muon_dtSeg_globZ"
-        ])
+            "muon_dtSeg_globZ",
+        ]
 
+        RNN_input_arr = df.AsNumpy(wanted)
+        
         print("Checkpoint 1: Extracted branches")
-        print("Check if Y/Z restrictions are implemented properly")
-        print(ak.Array(list(RNN_input_arr["muon_dtSeg_globY"]))[:1000])
-        print(ak.Array(list(RNN_input_arr["muon_dtSeg_globZ"]))[:1000])
+        # print("Check if Y/Z restrictions are implemented properly")
+        # print(ak.Array(list(RNN_input_arr["muon_dtSeg_globY"]))[:1000])
+        # print(ak.Array(list(RNN_input_arr["muon_dtSeg_globZ"]))[:1000])
 
         # =========================
         # Convert ROOT RVec -> Awkward Arrays
@@ -128,15 +138,15 @@ if preprocessing_flag == 1:
     total_label_arr = np.concatenate([total_label_list[0], total_label_list[1], total_label_list[2]])
     print(total_fit_arr.shape, total_label_arr.shape)
 
-    np.save("fit_arr_central_mc_globYZgt125cm.npy", total_fit_arr)
-    np.save("label_arr_central_mc_globYZgt125cm.npy", total_label_arr)
+    np.save("fit_arr_privateCosmicMC_centralSignalMC.npy", total_fit_arr)
+    np.save("label_arr_privateCosmicMC_centralSignalMC.npy", total_label_arr)
 
 print("Before loading data")
 print_memory_usage()
 
 if preprocessing_flag == 0:
-    total_fit_arr = np.load('fit_arr_central_mc_globYZgt125cm.npy')
-    total_label_arr = np.load('label_arr_central_mc_globYZgt125cm.npy')
+    total_fit_arr = np.load('fit_arr_privateCosmicMC_centralSignalMC.npy')
+    total_label_arr = np.load('label_arr_privateCosmicMC_centralSignalMC.npy')
 
 print(total_fit_arr.shape, total_label_arr.shape)
 
@@ -152,11 +162,11 @@ gc.collect()
 
 print("np.bincount of Y_train:", np.bincount(Y_train.astype(np.int64)), "\nnp.bincount of Y_test:", np.bincount(Y_test.astype(np.int64)))
 
-checkpoint_path='rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
+checkpoint_path='rnn_retrain_weights_june2026_privateCosmicMC.ckpt'
 
 earlyStopping = keras.callbacks.EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True)
 
-csv_logger = keras.callbacks.CSVLogger('training_history_globYZgt125cm.csv', append=True)
+csv_logger = keras.callbacks.CSVLogger('training_history_june2026_privateCosmicMC.csv', append=True)
 
 cp_callback = keras.callbacks.ModelCheckpoint(
     filepath=checkpoint_path, 
