@@ -101,7 +101,7 @@ print(len(signal_names))
 signal_mass = signal_file.readline().split(',')
 signal_mass = [float(m.strip())/1000 for m in signal_mass]
 print("min/max signal_mass (TeV):", min(signal_mass), max(signal_mass))
-# Read in rate 2DA is normalized to (100 events always)
+# Read in rate 2DA is normalized to (100 events always but depending on runtime, this is artifically lowered by a factor of 1/runtime)
 signal_xsecs = signal_file.readline().split(',')
 signal_xsecs = [100/float(options.lumi) for x in signal_xsecs]
 
