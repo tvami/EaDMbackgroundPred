@@ -10,7 +10,7 @@ The right panel overlays six contour-filled exclusion regions corresponding
 to different tracker timing resolutions (0 mm → 1e6 mm), colored and styled
 distinctly. The left panel draws a simple thermal exclusion boundary.
 
-Output: figures/ExcludedMass_mX_ep_explim_Run3_APS.png
+Output: figures/ExcludedMass_mX_ep_explim_Run3VolLim.png
 """
 
 import matplotlib.pyplot as plt
@@ -28,6 +28,7 @@ from matplotlib.path import Path
 pd.set_option('display.max_columns', None)
 plt.rcParams.update({'font.size': 15})
 cms_fp = FontProperties(family="sans-serif", weight="bold")
+y_axis = 'lifetime' # Can be either lifetime or epsilon
 
 # ── LOAD DATA ────────────────────────────────────────────────────────────────
 # Parquet file contains signal rates for muons, electrons, and combined,
@@ -43,20 +44,26 @@ df = pd.read_parquet(
 # Suffix _closed = the upper/inner edge of the exclusion band (upper limit w.r.t mass).
 # No suffix    = the outer/lower edge of the exclusion band (lower limit w.r.t mass).
 
-max_exp_lim_Run3_e0_closed = [-1, -1, -1, -1, -1, -1, -1, -1, 6.390118658802888, 8.249748784515702, 10.991681622012011, 13.998831294762706, 16.82624966503901, 19.50206516300301, 22.05032894299055, 24.49198130008609, 26.845608715111496, 29.128067879161744, 31.354950364166065, 33.54100393154571, 35.7005081373103, 64.71520289450326, 98.13151954498144, 143.81721245761173, 183.74557329913668, 255.77499402245505, 376.70160716874136, 524.8669621562898, 731.1194797412135, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-max_exp_lim_Run3_e0 = [-1, -1, -1, -1, -1, -1, -1, -1, 3.9781508868507403, 3.918508683984649, 3.866947255962201, 3.8225891334031155, 3.784711673632542, 3.7527090282667985, 3.7260648714532647, 3.7043321084129914, 3.687118590123266, 3.6740760329528466, 3.664891966384927, 3.6592831736579923, 3.656991098219637, 3.771457932892746, 4.221369910871736, 5.676153339806469, 7.429134169594552, 12.549313511118493, 22.04039107754671, 27.576492745722415, 31.27242213787334, 33.9395468179377, 35.963663016852976, 37.55492463934678, 38.83904364343433, 39.89650710910531, 47.01686766336138, 53.19863764412005, 58.13923118782731, 65.1655276271236, 72.87401761453081, 79.17973941140585, 88.48922792980899, 96.76123502402422, 111.91623629730546, 130.03477667543706, 144.85034533136167, 157.23593475707384, 167.7750121117951, 176.87333992554917, 184.8225155308739, 201.20532353876027, 237.91893069157848, 267.10351084793643, 290.91267346524796, 322.64475058653875, 357.6264412545303, 387.2475802350227, 422.9648295601225, 462.3742783301129, 496.3192803434011, 539.5794995189143, 579.159562389402, 619.9131011313849, 663.7479251232674, 704.3692262745441, 756.4759274404706, 803.4910545411283, 856.2489193618117, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+max_exp_lim_Run3_e0_closed = [-1, -1, -1, -1, -1, -1, -1, -1, 6.924391665054693, 10.124944014543727, 13.570668894842978, 16.797999814022926, 19.842984928482345, 22.736043353900126, 25.503389253343443, 28.16807663007822, 30.75081967426698, 33.27068383182138, 35.74561272759944, 38.19292441076089, 40.9467676243157, 75.70740894444864, 119.09295111172712, 167.15377255407702, 224.10138597491175, 344.43776506803, 498.8756181838581, 722.1171566956488, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+max_exp_lim_Run3_e0 = [-1, -1, -1, -1, -1, -1, -1, -1, 3.9839680946435196, 3.919900665533535, 3.864564541066366, 3.8170107390531713, 3.7764565061416673, 3.742244463919242, 3.7138133291985524, 3.690676158883672, 3.672405053338485, 3.658619299092049, 3.648976775335615, 3.6431669622185705, 3.640906046500938, 3.764007453400987, 4.234064633522015, 5.635643255693138, 7.290007827541081, 10.595600738047432, 20.474082137290022, 26.327442688335335, 30.258110408645067, 33.100044087740436, 35.25714674872506, 36.95181852743722, 38.317949587272665, 39.441582847728846, 43.4286068239164, 50.159896987093354, 55.52425613973532, 59.909308618009874, 68.22517121402764, 75.11064639408757, 81.6205305628775, 90.73929063890353, 98.35244865416057, 115.01453037427422, 131.58300367921612, 145.4016927552277, 157.13208104367985, 167.23465391465038, 176.04050050392834, 193.22618336010765, 219.72339622367028, 251.74134643168264, 277.73768426088526, 299.2846616022484, 336.54189298614125, 368.655050532336, 396.125841875143, 435.75829782978934, 472.51116023545467, 506.7820346182345, 549.5144740847568, 587.1503097009091, 628.9617782185678, 670.9699257725044, 712.8660208008652, 762.7981705209223, 809.3775663903112, 860.4079776585296, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
 
 # ── EPSILON GRID ─────────────────────────────────────────────────────────────
 # Kinetic-mixing parameter epsilon sampled at 49 points.
 # Two sub-ranges: fine-grained near 4–24e-9, then coarser from 34e-9 to 314e-9.
 eps = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.4e-08, 3.4e-08, 4.4e-08, 5.4e-08, 6.4e-08, 7.4e-08, 8.4e-08, 9.4e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07, 3.28e-07, 3.52e-07, 3.76e-07, 4.00e-07, 4.24e-07, 4.48e-07, 4.72e-07, 4.96e-07, 5.20e-07, 5.44e-07, 5.68e-07, 5.92e-07, 6.16e-07, 6.40e-07, 6.64e-07, 6.88e-07, 7.12e-07, 7.36e-07, 7.60e-07, 7.84e-07, 8.08e-07, 8.32e-07, 8.56e-07, 8.80e-07, 9.04e-07, 9.28e-07, 9.52e-07, 9.76e-07, 1.00e-06]
 
+A = 1.6e-21
+tau = [A * e**(-2) for e in eps]
+
+if y_axis == 'lifetime': yAxis = tau
+elif y_axis == 'epsilon': yAxis = eps
+
 # ── FLAT THERMAL LIMIT LINE ───────────────────────────────────────────────────
 # A flat m_chi = 11 TeV limit across all epsilon values; used as a simple
 # reference line on the thermal (left) panel.
-thermal_exp_lim = [11] * len(eps)
+thermal_exp_lim = [11] * len(yAxis)
 
-print(len(max_exp_lim_Run3_e0_closed), len(max_exp_lim_Run3_e0), len(eps))
+print(len(max_exp_lim_Run3_e0_closed), len(max_exp_lim_Run3_e0), len(yAxis))
 
 # ── BUILD POLYGON BOUNDARY COORDINATES ───────────────────────────────────────
 # Each exclusion region is defined by two boundary curves that together form a
@@ -65,32 +72,19 @@ print(len(max_exp_lim_Run3_e0_closed), len(max_exp_lim_Run3_e0), len(eps))
 # Units: m_chi arrays are stored in TeV; multiply by 1000 to convert to GeV.
 # The sentinel value 10000001 closes each curve at the right plot boundary.
 
-x1 = [x * 1000 for x in max_exp_lim_Run3_e0_closed[8:29]] + [10000001]  # outer edge, indices 6-25
-y1 = eps[8:30]                                                            # match length: 20 values + sentinel
+x1 = [x * 1000 for x in max_exp_lim_Run3_e0_closed[8:27]] + [10000001]  # outer edge, indices 6-25
+y1 = yAxis[8:28]                                                            # match length: 20 values + sentinel
 
 x2 = [x * 1000 for x in max_exp_lim_Run3_e0[8:67]] + [10000001]         # inner edge, indices 6-25
-y2 = eps[8:68]
-
-# ── e6 (1e6 mm) — special shape ──────────────────────────────────────────────
-# The e6 region starts at index 11 (epsilon ~ 1.5e-8) rather than index 2,
-# because the detector only becomes sensitive at higher epsilon for this resolution.
-# It also lacks a simple two-band structure, so the closed polygon is built
-# directly from the _closed and open boundary arrays.
-x11 = [x * 1000 for x in max_exp_lim_Run3_e6[11:]] + [180001]       # open (outer) boundary
-y11 = eps[11:50]
-x12 = [x * 1000 for x in max_exp_lim_Run3_e6_closed[11:21]] + [180001]  # closed (inner) boundary
-y12 = eps[11:22]
-
-# Combine outer + reversed inner to close the polygon
-poly_x = x11 + x12[::-1]
-poly_y = y11 + y12[::-1]
+y2 = yAxis[8:68]
 
 # ── CONTOUR GRID ─────────────────────────────────────────────────────────────
 # A dense log-spaced 2-D grid for evaluating inside/outside of each exclusion
 # polygon. Log spacing ensures uniform visual density on the log-log axes.
 mx_grid  = np.logspace(np.log10(1000),  np.log10(1000000), 2000)   # m_chi in GeV
-eps_grid = np.logspace(np.log10(1e-9),  np.log10(1e-6),   600)   # epsilon
-MX, EPS  = np.meshgrid(mx_grid, eps_grid)
+if y_axis == 'epsilon': y_grid = np.logspace(np.log10(1e-9),  np.log10(1e-6),   600)   # epsilon
+elif y_axis == 'lifetime': y_grid = np.logspace(np.log10(1e-9),  np.log10(1e-4),   6000)
+MX, yVALS  = np.meshgrid(mx_grid, y_grid)
 
 # ── EXCLUSION REGION REGISTRY ────────────────────────────────────────────────
 # Each entry is (outer_x, outer_y, inner_x, inner_y).
@@ -105,10 +99,9 @@ exclusion_regions_max = [
     # ("wow", "wow", poly_x, poly_y),  # e6: 1e6 mm (pre-built polygon)
 ]
 
-
-def build_exclusion_masks(regions, MX, EPS):
+def build_exclusion_masks(regions, MX, yVALS):
     """
-    Convert each exclusion region into a binary boolean mask on the (MX, EPS) grid.
+    Convert each exclusion region into a binary boolean mask on the (MX, yVALS) grid.
 
     For each region the two boundary curves are concatenated (inner reversed) to
     form a closed polygon in log10 space.  matplotlib.path.Path.contains_points
@@ -119,7 +112,7 @@ def build_exclusion_masks(regions, MX, EPS):
     regions : list of 4-tuples
         Each tuple is (outer_x, outer_y, inner_x, inner_y) in linear (GeV, -)
         coordinates, OR ("wow", "wow", poly_x, poly_y) for a pre-built polygon.
-    MX, EPS : 2-D np.ndarray
+    MX, yVALS : 2-D np.ndarray
         Meshgrid of m_chi [GeV] and epsilon values.
 
     Returns
@@ -140,7 +133,7 @@ def build_exclusion_masks(regions, MX, EPS):
 
         # Work in log10 space so the path matches the log-log plot axes
         path = Path(np.column_stack([np.log10(poly_x), np.log10(poly_y)]))
-        pts  = np.column_stack([np.log10(MX.ravel()), np.log10(EPS.ravel())])
+        pts  = np.column_stack([np.log10(MX.ravel()), np.log10(yVALS.ravel())])
 
         # contains_points returns a flat boolean array; reshape to grid dims
         mask = path.contains_points(pts).reshape(MX.shape).astype(float)
@@ -160,9 +153,13 @@ for n, ax in enumerate(axs):
     ax.set_xscale('log')
     ax.set_yscale('log')
     ax.set_xlim(1000, 1000000)
-    ax.set_ylim(1e-9, 1e-6)
+    if y_axis == 'epsilon': 
+        ax.set_ylim(1e-9, 1e-6)
+        ax.set_ylabel(r"$\varepsilon$")
+    elif y_axis == 'lifetime': 
+        ax.set_ylim(1e-9, 1e-4)
+        ax.set_ylabel(r"$\tau$")
     ax.set_xlabel(r"$m_\chi\;\mathrm{[TeV]}$")
-    ax.set_ylabel(r"$\varepsilon$")
 
     # Panel annotation: model parameters shown in the upper-left corner
     if n == 0:
@@ -193,7 +190,7 @@ for n, ax in enumerate(axs):
 
     if n == 1:
         # ── RIGHT PANEL: maximum coupling — draw all six exclusion regions ────
-        masks      = build_exclusion_masks(exclusion_regions_max, MX, EPS)
+        masks      = build_exclusion_masks(exclusion_regions_max, MX, yVALS)
         colors     = ['crimson', 'blueviolet', 'gold', 'darkorange', 'blue', 'purple']
         linestyles = ['dashed', 'dotted', 'dashdot', (0,(5,1)), (0,(3,1,1,1)), 'solid']
         labels     = ['0 mm', '1e2 mm', '1e3 mm', '1e4 mm', '1e5 mm', '1e6 mm']
@@ -202,14 +199,14 @@ for n, ax in enumerate(axs):
             color = colors[i % len(colors)]
 
             # Solid contour line at the exclusion boundary (mask = 0.5 threshold)
-            ax.contour(MX, EPS, mask,
+            ax.contour(MX, yVALS, mask,
                        levels=[0.5],
                        colors=[colors[i]],
                        linestyles=[linestyles[i]],
                        linewidths=2.0)
 
             # Semi-transparent fill inside the excluded region
-            ax.contourf(MX, EPS, mask,
+            ax.contourf(MX, yVALS, mask,
                         levels=[0.5, 1.5],
                         colors=[color],
                         alpha=0.3)
@@ -226,7 +223,7 @@ for n, ax in enumerate(axs):
     else:
         # ── LEFT PANEL: thermal coupling — draw simple flat reference line ────
         # The thermal limit is a vertical line at m_chi = 11 TeV, constant in epsilon.
-        ax.plot([x * 1000 for x in thermal_exp_lim], eps,
+        ax.plot([x * 1000 for x in thermal_exp_lim], yAxis,
                 color='black', linestyle='dashed')
 
     # Remove default top/right spines, then re-enable all four (cosmetic clean-up)
@@ -249,4 +246,12 @@ for ax in axs.flat:
     ax.xaxis.set_major_formatter(tev_formatter)
 
 # ── SAVE ─────────────────────────────────────────────────────────────────────
-plt.savefig("figures/ExcludedMass_mX_ep_explim_Run3VolLim.png")
+fig.canvas.draw()
+
+bbox = axs[1].get_tightbbox(fig.canvas.get_renderer())
+bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
+
+fig.savefig(
+    "figures/ExcludedMass_mX_ep_explim_Run3VolLim.pdf",
+    bbox_inches=bbox
+)
