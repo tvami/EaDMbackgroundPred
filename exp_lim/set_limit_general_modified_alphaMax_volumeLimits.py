@@ -47,9 +47,9 @@ parser.add_option('--drawIntersection', action="store_true",
                 dest      =   'drawIntersection',
                 help      =   'Draw intersection values')
 parser.add_option('-l', '--lumi', metavar='F', type='string', action='store',
-                default       =       '101', #137.44
+                default       =       '16.7', #137.44
                 dest          =       'lumi',
-                help          =       'Luminosity option')
+                help          =       'Luminosity option (IN MONTHS)')
 parser.add_option('-m', '--mod', metavar='F', type='string', action='store',
                 default       =       '',
                 dest          =       'mod',
@@ -101,9 +101,9 @@ print(len(signal_names))
 signal_mass = signal_file.readline().split(',')
 signal_mass = [float(m.strip())/1000 for m in signal_mass]
 print("min/max signal_mass (TeV):", min(signal_mass), max(signal_mass))
-# Read in rate 2DA is normalized to
+# Read in rate 2DA is normalized to (100 events always)
 signal_xsecs = signal_file.readline().split(',')
-signal_xsecs = [float(x.strip()) for x in signal_xsecs]
+signal_xsecs = [100/float(options.lumi) for x in signal_xsecs]
 
 for i in range(num_rate):
     # Read in xsecs as a list of strings, strip whitespace, and convert to floats
