@@ -1,9 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# ------------------------------------------------------------------
+# Options
+# ------------------------------------------------------------------
+DO_HADD=1
+
+usage() {
+  cat <<'EOF'
+Usage: organizeNtuples.sh [options]
+
+Organizes skimmed_*/trigger_study_* ROOT files into the destination tree.
+
+Options:
+  --no-hadd, --no-merge
+        Move/rename and organize files into the tree, but skip ALL hadd
+        merging: Step 1 (merging _jobN chunks) and Step 3 (final per-directory
+        merge into *_All_v4.root, which also deletes the individual files).
+        Use this when not all job files are ready yet; re-run later WITHOUT
+        this flag to perform the merge once everything has arrived.
+  -h, --help
+        Show this help and exit.
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --no-hadd|--no-merge) DO_HADD=0; shift ;;
+    -h|--help)            usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
+  esac
+done
+
 # Destination base directory
 # BASE=/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/
-BASE=/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1/
+BASE=/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.0/
 #BASE=/home/users/tvami/EarthAsDM/v2/
 
 # ------------------------------------------------------------------
@@ -25,12 +56,25 @@ mkdir -p unmerged
 # ------------------------------------------------------------------
 shopt -s nullglob
 
+# Skip files modified within the last 2 minutes — they may still be being written
+MIN_AGE_SECONDS=120
+is_recent() {
+  local f=$1 now mtime
+  now=$(date +%s)
+  mtime=$(stat -c %Y "$f" 2>/dev/null) || return 1
+  (( now - mtime < MIN_AGE_SECONDS ))
+}
+
 echo "=== Step 1: Merging/renaming chunked job files ==="
 
 # Find all unique base names (without _jobN suffix)
 declare -A file_groups
 
 for f in ./skimmed_*.root ./trigger_study_*.root; do
+  if is_recent "$f"; then
+    echo "  Skipping (modified <2 min ago, may still be writing): $f"
+    continue
+  fi
   fname=$(basename "$f")
 
   # Remove _jobN suffix if present to get base name
@@ -65,6 +109,9 @@ for base_name in "${!file_groups[@]}"; do
     else
       echo "  Already correct name: $single_file"
     fi
+  elif [[ $DO_HADD -eq 0 ]]; then
+    # --no-hadd: leave the chunk files in place to be merged on a later run
+    echo "  --no-hadd: leaving ${num_files} chunk file(s) for $base_name unmerged"
   else
     # Multiple files - hadd them
     echo "  Merging ${num_files} files into $base_name"
@@ -93,6 +140,10 @@ echo "=== Step 2: Organizing files into directory structure ==="
 # 3) Move merged/renamed ROOT files into the tree
 # ------------------------------------------------------------------
 for f in ./skimmed_*.root ./trigger_study_*.root; do
+  if is_recent "$f"; then
+    echo "  Skipping (modified <2 min ago, may still be writing): $f"
+    continue
+  fi
   fname=$(basename "$f")
 
   # Determine output base: append "_trigger_study" for trigger_study files
@@ -164,7 +215,13 @@ get_sample_identifier() {
 }
 
 # Process both regular and trigger_study directories
+if [[ $DO_HADD -eq 0 ]]; then
+  echo "  --no-hadd: skipping final per-directory merge (files left in the tree)"
+fi
 for base_dir in "$BASE" "${BASE%/}_trigger_study/"; do
+  if [[ $DO_HADD -eq 0 ]]; then
+    continue
+  fi
   if [[ ! -d "$base_dir" ]]; then
     continue
   fi
@@ -234,3 +291,7 @@ done
 echo ""
 echo "=== Organization complete ==="
 echo "Unmerged job files are in: ./unmerged/"
+if [[ $DO_HADD -eq 0 ]]; then
+  echo "NOTE: --no-hadd was set; no merging was performed."
+  echo "      Re-run this script WITHOUT --no-hadd once all files are ready to merge."
+fi

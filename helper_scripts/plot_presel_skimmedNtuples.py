@@ -8,13 +8,16 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
-base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1'
+base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.11'
+# base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1'
 # base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1_wRNN/'
 # base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
-collections = ['matched_muon', 'track', 'muon', 'tuneP']
-#collections = ['matched_muon']
-region = 'sr' # sr, vr1, vr2
+# collections = ['matched_muon', 'track', 'muon', 'tuneP']
+collections = ['matched_muon']
+region = os.environ.get('REGION', 'sr')  # sr, vr1, vr2 (override with REGION env var)
+# Set ONLY_RNN=1 to produce just the RNN-score plot (skips other vars and profile plots)
+ONLY_RNN = os.environ.get('ONLY_RNN', '0') == '1'
 
 samples_dict = {
                 "Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
@@ -59,7 +62,7 @@ base_var_dict = {
             "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
             "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
             "pt_highpt": [28, 500, 0, 10000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
-            # "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
+            "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
             }
 
 track_var_dict={# "track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
@@ -188,6 +191,9 @@ for collection in tqdm(collections, desc="Collections"):
     if collection == 'muon': var_dict.update(muon_var_dict)
     if collection == 'matched_muon': var_dict.update(matched_muon_var_dict)
     if collection == 'tuneP': var_dict.update(tuneP_var_dict)
+
+    if ONLY_RNN:
+        var_dict = {'RNNScore': base_var_dict['RNNScore']}
 
     _profiles_done = False
     for main_var in tqdm(list(var_dict.keys()), desc=f"  {collection} vars", leave=False):
@@ -647,7 +653,12 @@ for collection in tqdm(collections, desc="Collections"):
             for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
 
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-                df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
+                full_path = f"{file_path}_{samples_dict[sample][1]}"
+                if not os.path.exists(full_path):
+                    tqdm.write(f"  WARNING: missing {full_path} - skipping {sample}")
+                    color_numerator -= 1
+                    continue
+                df = ROOT.RDataFrame("tree", full_path)
                 h = 0
                 h = df.Histo1D(
                         (f"h_RNNScore_{sample}", "", nbins, min, max),
@@ -698,8 +709,9 @@ for collection in tqdm(collections, desc="Collections"):
             # overflow_line.Draw()
 
             CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{var_dict[main_var][4+num]}.pdf")
+            os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}.png")
+            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}.pdf")
 
         else: # For variables that are current preselection variables, run all steps (pretrigger, trigger, nminus1, final)
             for num in range(4):
@@ -796,8 +808,8 @@ for collection in tqdm(collections, desc="Collections"):
                 del c
                 del hframe
 
-        # Skip profile sections if already done for this collection
-        if _profiles_done:
+        # Skip profile sections if already done for this collection (or when only the RNN plot is requested)
+        if _profiles_done or ONLY_RNN:
             garbage_protect_list.clear()
             continue
         _profiles_done = True

@@ -45,7 +45,7 @@ echo "Template config: $template_config"
 # Step 3: Submit to Condor
 echo ""
 echo "[Step 3/3] Submitting to Condor..."
-condor_submit condor_2DA_SR.cfg
+condor_submit step7_condor_2DA_SR.cfg
 
 echo ""
 echo "=========================================="

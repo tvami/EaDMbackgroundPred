@@ -8,7 +8,7 @@
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", false, true, 0, 100)'  // first 100 files
 ///       root -l -b -q 'skim_ntuples.C("track", "sr", "/path/to/files/", false, true, 2, 100)'  // files 200-299
 
-// Version: v4.0.6a
+// Version: v5.0.0
 // Version history:
 // v4.0.0: Added alternative cutflow ordering (object+eta before trigger) for comparison
 // v4.0.2: Included HLT_Random trigger for Express datasets, added more histograms for trigger efficiency vs eta/phi/pT, added number of valid hits for muons
@@ -20,6 +20,7 @@
 // v4.0.8: Add 2D histograms of leading object (and leading quality object) kinematics vs trigger
 // v4.0.9: Fix N-1 plots
 // v4.1.0: Add N-1 plots for sigma pT
+// v5.0.0: New v5 (v5a) input ntuples; require B field > 0.1 T (magnet on) as the first cutflow step, before the trigger, and keep the bField branch; embed NTUPLE_VERSION (vX.Y.Z) in the output filename
 void skim_ntuples(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false, bool save_snapshot = true, int job_index = 0, int files_per_job = 0) {
 
     // Enable multi-threading (use all available cores)
@@ -32,9 +33,15 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
     if (dataset_name.EndsWith(".root")) dataset_name.Remove(dataset_name.Length()-5);
+    // Ntuple version (see README "Skimmed Ntuple Versions", vX.Y.Z convention). Bump this
+    // whenever the skim changes so different versions never overwrite each other.
+    const TString NTUPLE_VERSION = "v5.0.0";
+    // Filename layout: skimmed_<object>_<region>_<dataset>_<version>[_jobN].root
+    // Version comes before the job suffix so all jobs of a version sort together.
+    TString output_file = TString::Format("skimmed_%s_%s_%s_%s", object.Data(), region.Data(), dataset_name.Data(), NTUPLE_VERSION.Data());
     if (files_per_job > 0)
-        dataset_name += TString::Format("_job%d", job_index);
-    TString output_file = TString::Format("skimmed_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
+        output_file += TString::Format("_job%d", job_index);
+    output_file += ".root";
 
     // Set variable names based on object
     TString pt_var, eta_var, phi_var, n_var, nhits_var, chi2_var, ndof_var, ptErr_var;
@@ -281,8 +288,11 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // Each step counts objects passing progressively tighter cuts,
     // then requires at least one such object in the event.
 
+    // Step 0: Require the magnetic field to be on (magnet ramped up), before the trigger
+    auto df_bfield = df_with_count.Filter("bField > 0.1", "B field > 0.1 T");
+
     // Step 1: Trigger
-    auto df_trigger = df_with_count.Filter("HLT_L1SingleMuCosmics", "Trigger");
+    auto df_trigger = df_bfield.Filter("HLT_L1SingleMuCosmics", "Trigger");
 
     // Step 2: At least one object
     auto df_cf_hasobjs = df_trigger.Filter(TString::Format("%s > 0", n_var.Data()).Data(), "n > 0");
@@ -371,6 +381,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     // Define count actions BEFORE Snapshot so they run in the same event loop
     auto count_all = df.Count();
+    auto count_bfield = df_bfield.Count();
     auto count_trigger = df_trigger.Count();
     auto count_track = df_cf_hasobjs.Count();
     auto count_cf_nhits = df_cf_nhits.Count();
@@ -630,6 +641,7 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         "run",
         "ls",
         "event",
+        "bField",
         "HLT_L1SingleMuCosmics",
         "HLT_Random",
         "muon_dtSeg_n",
@@ -706,27 +718,29 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
 
     // Create and save cutflow histogram using the already-computed counts
     TFile* f = TFile::Open(output_file.Data(), save_snapshot ? "UPDATE" : "RECREATE");
-    TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 9, 0, 9);
+    TH1F* h_cutflow = new TH1F("h_cutflow", "Cutflow Cumulative Yields;Cut;Cumulative Yields", 10, 0, 10);
     h_cutflow->GetXaxis()->SetBinLabel(1, "All events");
-    h_cutflow->GetXaxis()->SetBinLabel(2, "Trigger");
-    h_cutflow->GetXaxis()->SetBinLabel(3, "N_{obj} > 0");
-    h_cutflow->GetXaxis()->SetBinLabel(4, "N_{hits} > 7");
-    h_cutflow->GetXaxis()->SetBinLabel(5, "#chi^{2}/ndof < 35");
-    h_cutflow->GetXaxis()->SetBinLabel(6, "#sigma(p_{T})/p_{T}^{2} < 10^{-3}");
-    h_cutflow->GetXaxis()->SetBinLabel(7, "|#eta| < 0.9");
-    h_cutflow->GetXaxis()->SetBinLabel(8, pt_cut_label.Data());
-    h_cutflow->GetXaxis()->SetBinLabel(9, "N_{seg} > 2");
+    h_cutflow->GetXaxis()->SetBinLabel(2, "B > 0.1 T");
+    h_cutflow->GetXaxis()->SetBinLabel(3, "Trigger");
+    h_cutflow->GetXaxis()->SetBinLabel(4, "N_{obj} > 0");
+    h_cutflow->GetXaxis()->SetBinLabel(5, "N_{hits} > 7");
+    h_cutflow->GetXaxis()->SetBinLabel(6, "#chi^{2}/ndof < 35");
+    h_cutflow->GetXaxis()->SetBinLabel(7, "#sigma(p_{T})/p_{T}^{2} < 10^{-3}");
+    h_cutflow->GetXaxis()->SetBinLabel(8, "|#eta| < 0.9");
+    h_cutflow->GetXaxis()->SetBinLabel(9, pt_cut_label.Data());
+    h_cutflow->GetXaxis()->SetBinLabel(10, "N_{seg} > 2");
 
     double n_total = *count_all;
     h_cutflow->SetBinContent(1, n_total);
-    h_cutflow->SetBinContent(2, *count_trigger);
-    h_cutflow->SetBinContent(3, *count_track);
-    h_cutflow->SetBinContent(4, *count_cf_nhits);
-    h_cutflow->SetBinContent(5, *count_cf_nhits_chi2);
-    h_cutflow->SetBinContent(6, *count_cf_quality);
-    h_cutflow->SetBinContent(7, *count_cf_eta);
-    h_cutflow->SetBinContent(8, *count_cf_pt);
-    h_cutflow->SetBinContent(9, *count_cf_seg);
+    h_cutflow->SetBinContent(2, *count_bfield);
+    h_cutflow->SetBinContent(3, *count_trigger);
+    h_cutflow->SetBinContent(4, *count_track);
+    h_cutflow->SetBinContent(5, *count_cf_nhits);
+    h_cutflow->SetBinContent(6, *count_cf_nhits_chi2);
+    h_cutflow->SetBinContent(7, *count_cf_quality);
+    h_cutflow->SetBinContent(8, *count_cf_eta);
+    h_cutflow->SetBinContent(9, *count_cf_pt);
+    h_cutflow->SetBinContent(10, *count_cf_seg);
 
     h_cutflow->SetMinimum(0);
     h_cutflow->SetMaximum(1.1*n_total);

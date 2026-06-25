@@ -11,8 +11,58 @@
 /// Version:
 ///       v1: initial version, 10 TeV pT range
 ///       v2: restricted pT range to 5 TeV, added cutflows, and subleading object plots
+///       v5.0.0: added per-hemisphere L1 DT Local Trigger tag-and-probe (port of
+///           test/L1TriggerEfficiency.py); booked as 2D (probe pT vs fired) histograms
+///           so plot_trigger_study.py builds the TEfficiency and overlays samples
+///       v5.0.1: also booked the L1 DT tag-and-probe efficiency vs the probe-leg phi and
+///           eta (_phi / _eta histogram variants), in addition to the pT ones
 
-void trigger_study(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false) {
+#include "ROOT/RVec.hxx"
+#include <set>
+#include <cmath>
+#include <vector>
+
+// --- L1 DT Local Trigger tag-and-probe helpers (port of L1TriggerEfficiency.py) ---
+constexpr double L1DT_PI = 3.14159265358979323846;
+
+static inline double l1dt_dphi(double a, double b) {
+    double d = a - b;
+    while (d >  L1DT_PI) d -= 2 * L1DT_PI;
+    while (d < -L1DT_PI) d += 2 * L1DT_PI;
+    return d;
+}
+static inline double l1dt_dR(double e1, double p1, double e2, double p2) {
+    double de = e1 - e2, dp = l1dt_dphi(p1, p2);
+    return std::sqrt(de * de + dp * dp);
+}
+static inline double l1dt_circ_mean(const std::vector<float>& a) {
+    double s = 0, c = 0;
+    for (auto x : a) { s += std::sin((double)x); c += std::cos((double)x); }
+    return std::atan2(s, c);
+}
+// Paper-like fiducial cuts: probe pT > 5, >= 2 DT stations, away from sector phi-cracks.
+static inline bool l1dt_passes_acceptance(double leg_phi, int n_stations, double pt) {
+    if (pt < 5.0) return false;
+    if (n_stations < 2) return false;
+    double pos = std::fmod(leg_phi * 180.0 / L1DT_PI, 30.0);  // python % keeps sign of divisor
+    if (pos < 0) pos += 30.0;
+    if (std::abs(pos - 15.0) < 5.0) return false;
+    return true;
+}
+
+// Per-event tag-and-probe result: probe kinematics (pT, plus probe-leg phi and eta)
+// and fired flag (0/1) for each probe direction, for the default (no acceptance) and
+// _acc (with acceptance) variants. pt is the leading offline muon momentum (shared by
+// both legs); phi/eta are the probe leg's DT-segment direction.
+struct L1DTResult {
+    ROOT::VecOps::RVec<double> pt_comb, pt_up, pt_low, pt_comb_acc, pt_up_acc, pt_low_acc;
+    ROOT::VecOps::RVec<double> phi_comb, phi_up, phi_low, phi_comb_acc, phi_up_acc, phi_low_acc;
+    ROOT::VecOps::RVec<double> eta_comb, eta_up, eta_low, eta_comb_acc, eta_up_acc, eta_low_acc;
+    ROOT::VecOps::RVec<int>    fired_comb, fired_up, fired_low, fired_comb_acc, fired_up_acc, fired_low_acc;
+};
+
+void trigger_study(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false,
+                   int l1dt_qual = 4, int l1dt_bx = 2, double l1dt_dr = 0.4, int l1dt_minseg = 1) {
 
     ROOT::EnableImplicitMT();
 
@@ -22,7 +72,11 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
     TString dataset_name = base_dir_copy(base_dir_copy.Last('/')+1, base_dir_copy.Length());
     dataset_name.ReplaceAll("crab_", "");
     if (dataset_name.EndsWith(".root")) dataset_name.Remove(dataset_name.Length()-5);
-    TString output_file = TString::Format("trigger_study_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data());
+    // Ntuple version (see README "Skimmed Ntuple Versions", vX.Y.Z convention). Bump this
+    // whenever the input ntuples change so different versions never overwrite each other.
+    const TString NTUPLE_VERSION = "v5.0.1";
+    // Filename layout: trigger_study_<object>_<region>_<dataset>_<version>.root
+    TString output_file = TString::Format("trigger_study_%s_%s_%s_%s.root", object.Data(), region.Data(), dataset_name.Data(), NTUPLE_VERSION.Data());
 
     // Set variable names based on object
     TString pt_var, eta_var, phi_var, n_var, nhits_var, chi2_var, ndof_var, ptErr_var;
@@ -130,6 +184,156 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
         }
         return count;
     }, {"muon_dtSeg_t0timing"});
+
+    // ============================================================
+    // L1 DT Local Trigger efficiency (per-hemisphere tag-and-probe)
+    // ============================================================
+    // Port of test/L1TriggerEfficiency.py. Independent of `object`: always uses
+    // muon_tuneP_Pt for the probe pT and the offline DT segments to define the
+    // upper/lower hemisphere legs. We book 2D (probe pT vs fired 0/1) histograms;
+    // plot_trigger_study.py turns them into TEfficiency and overlays samples.
+    // Two variants per probe direction: default (no acceptance) and _acc (paper-like
+    // fiducial cuts: pT > 5, >= 2 stations on probe leg, away from DT sector phi-cracks).
+    const double L1DT_PTBINS[] = {2, 3, 5, 7, 10, 15, 20, 25, 30, 40, 50,
+                                  70, 100, 150, 200, 300, 500, 1000};
+    const int    L1DT_NPT = 17;            // 18 edges above
+    const double L1DT_YBINS[] = {-0.5, 0.5, 1.5};
+
+    auto df_l1dt = df_with_count
+        .Define("l1dt_result", [l1dt_qual, l1dt_bx, l1dt_dr, l1dt_minseg](
+            const ROOT::VecOps::RVec<float>& muPt,
+            const ROOT::VecOps::RVec<float>& segY,
+            const ROOT::VecOps::RVec<float>& segEta,
+            const ROOT::VecOps::RVec<float>& segPhi,
+            const ROOT::VecOps::RVec<int>&   segSta,
+            const ROOT::VecOps::RVec<float>& trY,
+            const ROOT::VecOps::RVec<int>&   trBx,
+            const ROOT::VecOps::RVec<int>&   trQual,
+            const ROOT::VecOps::RVec<float>& trEta,
+            const ROOT::VecOps::RVec<float>& trPhi) {
+            L1DTResult R;
+            // probe pT = leading offline tuneP muon (both legs share the same momentum)
+            double pt = -1;
+            for (auto p : muPt) if (p > 0 && p < 1e4 && p > pt) pt = p;
+            if (pt < 0) return R;
+            // offline legs from DT segments, split by global-Y sign (position-based hemispheres)
+            std::vector<float> upEta, upPhi, lowEta, lowPhi;
+            std::set<int> upSta, lowSta;
+            for (size_t j = 0; j < segY.size(); ++j) {
+                float y = segY[j];
+                if (std::abs(y) > 9000) continue;
+                if (y > 0) { upEta.push_back(segEta[j]);  upPhi.push_back(segPhi[j]);  upSta.insert(segSta[j]); }
+                else       { lowEta.push_back(segEta[j]); lowPhi.push_back(segPhi[j]); lowSta.insert(segSta[j]); }
+            }
+            if ((int)upEta.size() < l1dt_minseg || (int)lowEta.size() < l1dt_minseg) return R;
+            auto mean = [](const std::vector<float>& v){ double s = 0; for (auto x : v) s += x; return s / v.size(); };
+            double upLegEta = mean(upEta),  upLegPhi  = l1dt_circ_mean(upPhi);
+            double lowLegEta = mean(lowEta), lowLegPhi = l1dt_circ_mean(lowPhi);
+            int up_nst = (int)upSta.size(), low_nst = (int)lowSta.size();
+            // did the DT Local Trigger fire in a given hemisphere, matched to the offline leg?
+            auto fired = [&](double le, double lp, bool wantUpper) -> bool {
+                for (size_t k = 0; k < trY.size(); ++k) {
+                    float y = trY[k];
+                    if (std::abs(y) > 9000 || ((y > 0) != wantUpper)) continue;
+                    if (std::abs(trBx[k]) > l1dt_bx || trQual[k] < l1dt_qual) continue;
+                    if (l1dt_dR(le, lp, trEta[k], trPhi[k]) < l1dt_dr) return true;
+                }
+                return false;
+            };
+            bool up_fired  = fired(upLegEta,  upLegPhi,  true);
+            bool low_fired = fired(lowLegEta, lowLegPhi, false);
+            // tag = lower, probe = upper (probe-leg direction = upper leg)
+            if (low_fired) {
+                int f = up_fired ? 1 : 0;
+                R.pt_up.push_back(pt);   R.phi_up.push_back(upLegPhi);   R.eta_up.push_back(upLegEta);   R.fired_up.push_back(f);
+                R.pt_comb.push_back(pt); R.phi_comb.push_back(upLegPhi); R.eta_comb.push_back(upLegEta); R.fired_comb.push_back(f);
+                if (l1dt_passes_acceptance(upLegPhi, up_nst, pt)) {
+                    R.pt_up_acc.push_back(pt);   R.phi_up_acc.push_back(upLegPhi);   R.eta_up_acc.push_back(upLegEta);   R.fired_up_acc.push_back(f);
+                    R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(upLegPhi); R.eta_comb_acc.push_back(upLegEta); R.fired_comb_acc.push_back(f);
+                }
+            }
+            // tag = upper, probe = lower (probe-leg direction = lower leg)
+            if (up_fired) {
+                int f = low_fired ? 1 : 0;
+                R.pt_low.push_back(pt);  R.phi_low.push_back(lowLegPhi);  R.eta_low.push_back(lowLegEta);  R.fired_low.push_back(f);
+                R.pt_comb.push_back(pt); R.phi_comb.push_back(lowLegPhi); R.eta_comb.push_back(lowLegEta); R.fired_comb.push_back(f);
+                if (l1dt_passes_acceptance(lowLegPhi, low_nst, pt)) {
+                    R.pt_low_acc.push_back(pt);  R.phi_low_acc.push_back(lowLegPhi);  R.eta_low_acc.push_back(lowLegEta);  R.fired_low_acc.push_back(f);
+                    R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(lowLegPhi); R.eta_comb_acc.push_back(lowLegEta); R.fired_comb_acc.push_back(f);
+                }
+            }
+            return R;
+        }, {"muon_tuneP_Pt", "muon_dtSeg_globY", "muon_dtSeg_eta", "muon_dtSeg_phi", "muon_dtSeg_Station_",
+            "dtTrigPh_globY", "dtTrigPh_bx", "dtTrigPh_quality", "dtTrigPh_globEta", "dtTrigPh_globPhi"})
+        .Define("l1dt_pt_comb",        [](const L1DTResult& r){ return r.pt_comb; },        {"l1dt_result"})
+        .Define("l1dt_fired_comb",     [](const L1DTResult& r){ return r.fired_comb; },     {"l1dt_result"})
+        .Define("l1dt_pt_up",          [](const L1DTResult& r){ return r.pt_up; },          {"l1dt_result"})
+        .Define("l1dt_fired_up",       [](const L1DTResult& r){ return r.fired_up; },       {"l1dt_result"})
+        .Define("l1dt_pt_low",         [](const L1DTResult& r){ return r.pt_low; },         {"l1dt_result"})
+        .Define("l1dt_fired_low",      [](const L1DTResult& r){ return r.fired_low; },      {"l1dt_result"})
+        .Define("l1dt_pt_comb_acc",    [](const L1DTResult& r){ return r.pt_comb_acc; },    {"l1dt_result"})
+        .Define("l1dt_fired_comb_acc", [](const L1DTResult& r){ return r.fired_comb_acc; }, {"l1dt_result"})
+        .Define("l1dt_pt_up_acc",      [](const L1DTResult& r){ return r.pt_up_acc; },      {"l1dt_result"})
+        .Define("l1dt_fired_up_acc",   [](const L1DTResult& r){ return r.fired_up_acc; },   {"l1dt_result"})
+        .Define("l1dt_pt_low_acc",     [](const L1DTResult& r){ return r.pt_low_acc; },     {"l1dt_result"})
+        .Define("l1dt_fired_low_acc",  [](const L1DTResult& r){ return r.fired_low_acc; },  {"l1dt_result"})
+        .Define("l1dt_phi_comb",       [](const L1DTResult& r){ return r.phi_comb; },       {"l1dt_result"})
+        .Define("l1dt_phi_up",         [](const L1DTResult& r){ return r.phi_up; },         {"l1dt_result"})
+        .Define("l1dt_phi_low",        [](const L1DTResult& r){ return r.phi_low; },        {"l1dt_result"})
+        .Define("l1dt_phi_comb_acc",   [](const L1DTResult& r){ return r.phi_comb_acc; },   {"l1dt_result"})
+        .Define("l1dt_phi_up_acc",     [](const L1DTResult& r){ return r.phi_up_acc; },     {"l1dt_result"})
+        .Define("l1dt_phi_low_acc",    [](const L1DTResult& r){ return r.phi_low_acc; },    {"l1dt_result"})
+        .Define("l1dt_eta_comb",       [](const L1DTResult& r){ return r.eta_comb; },       {"l1dt_result"})
+        .Define("l1dt_eta_up",         [](const L1DTResult& r){ return r.eta_up; },         {"l1dt_result"})
+        .Define("l1dt_eta_low",        [](const L1DTResult& r){ return r.eta_low; },        {"l1dt_result"})
+        .Define("l1dt_eta_comb_acc",   [](const L1DTResult& r){ return r.eta_comb_acc; },   {"l1dt_result"})
+        .Define("l1dt_eta_up_acc",     [](const L1DTResult& r){ return r.eta_up_acc; },     {"l1dt_result"})
+        .Define("l1dt_eta_low_acc",    [](const L1DTResult& r){ return r.eta_low_acc; },    {"l1dt_result"});
+
+    struct L1DTBook { const char* name; const char* title; const char* ptcol; const char* fcol; };
+    std::vector<L1DTBook> l1dt_books = {
+        {"h2_l1dt_eff_comb",           "L1 DT eff (both hemispheres);probe p_{T} [GeV];fired",       "l1dt_pt_comb",     "l1dt_fired_comb"},
+        {"h2_l1dt_eff_probeUpper",     "L1 DT eff (probe=upper);probe p_{T} [GeV];fired",            "l1dt_pt_up",       "l1dt_fired_up"},
+        {"h2_l1dt_eff_probeLower",     "L1 DT eff (probe=lower);probe p_{T} [GeV];fired",            "l1dt_pt_low",      "l1dt_fired_low"},
+        {"h2_l1dt_eff_comb_acc",       "L1 DT eff (both hemispheres, acc.);probe p_{T} [GeV];fired", "l1dt_pt_comb_acc", "l1dt_fired_comb_acc"},
+        {"h2_l1dt_eff_probeUpper_acc", "L1 DT eff (probe=upper, acc.);probe p_{T} [GeV];fired",      "l1dt_pt_up_acc",   "l1dt_fired_up_acc"},
+        {"h2_l1dt_eff_probeLower_acc", "L1 DT eff (probe=lower, acc.);probe p_{T} [GeV];fired",      "l1dt_pt_low_acc",  "l1dt_fired_low_acc"},
+    };
+    std::vector<ROOT::RDF::RResultPtr<TH2D>> l1dt_hists;
+    for (auto& b : l1dt_books) {
+        l1dt_hists.push_back(df_l1dt.Histo2D(
+            ROOT::RDF::TH2DModel(b.name, b.title, L1DT_NPT, L1DT_PTBINS, 2, L1DT_YBINS),
+            b.ptcol, b.fcol));
+    }
+
+    // Same tag-and-probe efficiency, now vs the probe-leg phi and eta (uniform bins).
+    // Naming mirrors the pT histos with a _phi / _eta infix kept *before* the _acc suffix
+    // so the downstream endswith("_acc") acceptance check still works.
+    const int    L1DT_NPHI = 18;
+    const double L1DT_PHIMIN = -L1DT_PI, L1DT_PHIMAX = L1DT_PI;
+    const int    L1DT_NETA = 25;
+    const double L1DT_ETAMIN = -1.25, L1DT_ETAMAX = 1.25;
+    struct L1DTBookAng { const char* name; const char* title; const char* xcol; const char* fcol;
+                         int nb; double lo, hi; };
+    std::vector<L1DTBookAng> l1dt_books_ang = {
+        {"h2_l1dt_eff_comb_phi",           "L1 DT eff (both hemispheres);probe #phi;fired",       "l1dt_phi_comb",     "l1dt_fired_comb",     L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_probeUpper_phi",     "L1 DT eff (probe=upper);probe #phi;fired",            "l1dt_phi_up",       "l1dt_fired_up",       L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_probeLower_phi",     "L1 DT eff (probe=lower);probe #phi;fired",            "l1dt_phi_low",      "l1dt_fired_low",      L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_comb_phi_acc",       "L1 DT eff (both hemispheres, acc.);probe #phi;fired", "l1dt_phi_comb_acc", "l1dt_fired_comb_acc", L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_probeUpper_phi_acc", "L1 DT eff (probe=upper, acc.);probe #phi;fired",      "l1dt_phi_up_acc",   "l1dt_fired_up_acc",   L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_probeLower_phi_acc", "L1 DT eff (probe=lower, acc.);probe #phi;fired",      "l1dt_phi_low_acc",  "l1dt_fired_low_acc",  L1DT_NPHI, L1DT_PHIMIN, L1DT_PHIMAX},
+        {"h2_l1dt_eff_comb_eta",           "L1 DT eff (both hemispheres);probe #eta;fired",       "l1dt_eta_comb",     "l1dt_fired_comb",     L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+        {"h2_l1dt_eff_probeUpper_eta",     "L1 DT eff (probe=upper);probe #eta;fired",            "l1dt_eta_up",       "l1dt_fired_up",       L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+        {"h2_l1dt_eff_probeLower_eta",     "L1 DT eff (probe=lower);probe #eta;fired",            "l1dt_eta_low",      "l1dt_fired_low",      L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+        {"h2_l1dt_eff_comb_eta_acc",       "L1 DT eff (both hemispheres, acc.);probe #eta;fired", "l1dt_eta_comb_acc", "l1dt_fired_comb_acc", L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+        {"h2_l1dt_eff_probeUpper_eta_acc", "L1 DT eff (probe=upper, acc.);probe #eta;fired",      "l1dt_eta_up_acc",   "l1dt_fired_up_acc",   L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+        {"h2_l1dt_eff_probeLower_eta_acc", "L1 DT eff (probe=lower, acc.);probe #eta;fired",      "l1dt_eta_low_acc",  "l1dt_fired_low_acc",  L1DT_NETA, L1DT_ETAMIN, L1DT_ETAMAX},
+    };
+    for (auto& b : l1dt_books_ang) {
+        l1dt_hists.push_back(df_l1dt.Histo2D(
+            ROOT::RDF::TH2DModel(b.name, b.title, b.nb, b.lo, b.hi, 2, -0.5, 1.5),
+            b.xcol, b.fcol));
+    }
 
     // ============================================================
     // Trigger efficiency at pre-trigger level (beginning of cutflow)
@@ -804,6 +1008,10 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
     for (auto& h : trigeff_subleading_final) h->Write();
     // bothlegs final histograms (OR of leading and subleading)
     for (auto& h : trigeff_bothlegs_final) h->Write();
+
+    // L1 DT Local Trigger tag-and-probe 2D (probe pT vs fired) histograms
+    // plot_trigger_study.py builds the per-pT-bin TEfficiency from these
+    for (auto& h : l1dt_hists) h->Write();
 
     f->Close();
     delete f;

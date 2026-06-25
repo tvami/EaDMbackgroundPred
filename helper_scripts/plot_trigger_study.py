@@ -14,6 +14,7 @@ import os
 import glob
 import re
 import array
+import math
 from tqdm import tqdm
 
 # Flat efficiency offset for background MC samples with low efficiency
@@ -238,6 +239,9 @@ def create_label_from_filename(filename, include_object=True, include_region=Tru
         dataset = dataset.replace("-CosmicTP", "")
         dataset = dataset.replace("_v3", "")
         dataset = dataset.replace("_v4", "")
+        # strip the trailing ntuple version (e.g. _v5.0.0) and the crab tag (_v5a)
+        dataset = re.sub(r'_v\d+\.\d+\.\d+$', '', dataset)
+        dataset = dataset.replace("_v5a", "").replace("-v5a", "")
         dataset = dataset.replace("sr_", "")
         dataset = dataset.replace("vr_", "")
         dataset = dataset.replace("CosmicToMu_Par-", "")
@@ -412,110 +416,46 @@ def plot_1d_overlay(root_files, hist_name, output_base, output_dir, region="", o
         del canvas
 
 
-def plot_2d_profile_overlay(root_files, hist_name, output_base, output_dir, region="", obj_type=""):
-    """Create ProfileX overlay plot for 2D histograms (trigger efficiency)"""
+def plot_2d_teff_overlay(root_files, hist_name, output_base, output_dir, region="", obj_type=""):
+    """Overlay TEfficiency (trigger fired vs kinematic) across samples.
 
-    # Color palette
+    The 2D histograms store kinematic (x) vs trigger decision (y=0/1); this builds a
+    Clopper-Pearson TEfficiency from the pass/fail slices, replacing the former
+    ProfileX/TProfile approach (which only gave the mean with binomial-variance errors).
+    """
     colors = [
         ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta,
         ROOT.kCyan+1, ROOT.kOrange, ROOT.kViolet, ROOT.kTeal-1, ROOT.kPink+1,
         ROOT.kAzure+7, ROOT.kSpring-7, ROOT.kYellow+2
     ]
 
-    profiles = []
+    rebin = 10 if "_pt_" in hist_name else 2
+    effs = []
     labels = []
-
     for i, root_file in enumerate(root_files):
         try:
             tfile = ROOT.TFile.Open(root_file)
         except (OSError, RuntimeError) as e:
             print(f"Warning: Could not open {root_file}: {e}")
             continue
-
         if not tfile or tfile.IsZombie():
             print(f"Warning: Zombie file {root_file}")
             continue
-
         h2 = tfile.Get(hist_name)
-        if not h2:
+        if not h2 or h2.GetEntries() == 0:
             tfile.Close()
             continue
-
-        # Rebin X-axis for smoother profile (less for eta/phi, more for pt)
-        h2_rebinned = h2.Clone(f"{hist_name}_rebin_{i}")
-        if "_pt_" in hist_name:
-            h2_rebinned.RebinX(10)
-        else:
-            h2_rebinned.RebinX(2)
-
-        # Create ProfileX and convert to TH1D so we can scale if needed
-        prof_tmp = h2_rebinned.ProfileX(f"prof_{hist_name}_{i}")
-        prof = ROOT.TH1D(f"h1_prof_{hist_name}_{i}", prof_tmp.GetTitle(),
-                         prof_tmp.GetNbinsX(),
-                         prof_tmp.GetXaxis().GetXmin(),
-                         prof_tmp.GetXaxis().GetXmax())
-        for b in range(0, prof_tmp.GetNbinsX() + 2):
-            prof.SetBinContent(b, prof_tmp.GetBinContent(b))
-            prof.SetBinError(b, prof_tmp.GetBinError(b))
-        prof.SetDirectory(0)
-
-        # Apply flat efficiency offset if configured for this sample
-        eff_offset = get_efficiency_offset(root_file)
-        if eff_offset != 0.0:
-            for b in range(1, prof.GetNbinsX() + 1):
-                prof.SetBinContent(b, min(prof.GetBinContent(b) + eff_offset, 1.0))
-
-        # Set style
-        color = colors[i % len(colors)]
-        prof.SetLineColor(color)
-        prof.SetLineWidth(2)
-        prof.SetMarkerColor(color)
-        prof.SetMarkerSize(0.8)
-        # Marker & line style by category:
-        #   e2 <=10TeV: solid line, full circle (20)
-        #   e2  >10TeV: dashed line, full square (21)
-        #   e6 <=10TeV: dotted line, full triangle-up (22)
-        #   e6  >10TeV: dash-dot line, full triangle-down (23)
-        #   Data: marker=20, line style by year
-        minp_match = re.search(r'MinP-(\d+)', root_file)
-        is_e6 = 'SurfaceDepth-e6' in root_file
-        minp_val = int(minp_match.group(1)) if minp_match else 0
-        if is_e6 and minp_val > 10000:
-            prof.SetLineStyle(4)
-            prof.SetMarkerStyle(23)
-        elif is_e6:
-            prof.SetLineStyle(3)
-            prof.SetMarkerStyle(22)
-        elif minp_match and minp_val > 10000:
-            prof.SetLineStyle(2)
-            prof.SetMarkerStyle(21)
-        elif minp_match:
-            prof.SetMarkerStyle(20)
-        elif 'Run2025' in root_file:
-            prof.SetLineStyle(4)
-            prof.SetMarkerStyle(20)
-        elif 'Run2024' in root_file:
-            prof.SetLineStyle(3)
-            prof.SetMarkerStyle(20)
-        elif 'Run2023' in root_file:
-            prof.SetLineStyle(2)
-            prof.SetMarkerStyle(20)
-        else:
-            prof.SetMarkerStyle(20)
-
-        profiles.append(prof)
+        eff = build_teff_from_h2(h2, f"{hist_name}_eff_{i}", rebin=rebin)
+        _style_by_filename(eff, root_file, colors[i % len(colors)])
+        effs.append(eff)
         labels.append(create_label_from_filename(root_file, include_object=False, include_region=False))
-
         tfile.Close()
 
-    if not profiles:
+    if not effs:
         print(f"No valid 2D histograms found for {hist_name}")
         return
 
-    # Determine axis titles from histogram name
     x_title = ""
-    y_title = "Trigger Efficiency"
-
     if "_eta_" in hist_name:
         x_title = "#eta"
     elif "_phi_" in hist_name:
@@ -523,15 +463,13 @@ def plot_2d_profile_overlay(root_files, hist_name, output_base, output_dir, regi
     elif "_pt_" in hist_name:
         x_title = "p_{T} [GeV]"
 
-    n_entries = len(profiles)
+    n_entries = len(effs)
     max_legend_entries = 45
     region_label = 'pre-SR' if region.upper() == 'SR' else region.upper()
 
-    # Create canvas
-    canvas = ROOT.TCanvas(f"c_prof_{hist_name}", f"c_prof_{hist_name}", 800, 800)
+    canvas = ROOT.TCanvas(f"c_teff_{hist_name}", f"c_teff_{hist_name}", 800, 800)
     canvas.cd()
 
-    # Create legend - matching cutflow_overlay style
     legend = ROOT.TLegend(0.19, 0.60, 0.9, 0.9)
     if region and obj_type:
         legend.SetHeader(f"Region: {region_label}, Object: {obj_type}")
@@ -540,21 +478,24 @@ def plot_2d_profile_overlay(root_files, hist_name, output_base, output_dir, regi
     legend.SetBorderSize(0)
     legend.SetNColumns(3)
 
-    # Draw profiles - extend Y axis to make room for legend
-    for i, prof in enumerate(profiles):
+    # Draw TEfficiencies - extend Y axis to make room for the legend
+    for i, eff in enumerate(effs):
         if i == 0:
-            prof.SetMaximum(2.3)
-            prof.SetMinimum(0.0)
-            prof.GetXaxis().SetTitle(x_title)
-            prof.GetYaxis().SetTitle(y_title)
-            if "_pt_" in hist_name:
-                prof.GetXaxis().SetNdivisions(510)
-                prof.GetXaxis().SetLabelSize(0.03)
-            prof.Draw("E")
+            eff.SetTitle(f";{x_title};Trigger efficiency")
+            eff.Draw("AP")
+            ROOT.gPad.Update()
+            g = eff.GetPaintedGraph()
+            if g:
+                g.GetYaxis().SetRangeUser(0.0, 1.5)
+                if "_pt_" in hist_name:
+                    g.GetXaxis().SetNdivisions(510)
+                    g.GetXaxis().SetLabelSize(0.03)
+            ROOT.gPad.Update()
         else:
-            prof.Draw("E SAME")
+            eff.SetTitle("")
+            eff.Draw("P SAME")
         if i < max_legend_entries:
-            legend.AddEntry(prof, labels[i], "lep")
+            legend.AddEntry(eff, labels[i], "lep")
 
     if n_entries > max_legend_entries:
         legend.AddEntry(ROOT.nullptr, f"... + {n_entries - max_legend_entries} more", "")
@@ -562,8 +503,7 @@ def plot_2d_profile_overlay(root_files, hist_name, output_base, output_dir, regi
     legend.Draw()
     addCMSText(canvas, lumi_text="Cosmics", extra_text="Work in Progress")
 
-    # Save
-    output_path = os.path.join(output_dir, f"trig_study_profile_{hist_name}")
+    output_path = os.path.join(output_dir, f"trig_study_teff_{hist_name}")
     canvas.SaveAs(output_path + ".png")
     canvas.SaveAs(output_path + ".pdf")
     canvas.Update()
@@ -635,48 +575,29 @@ def plot_trigger_efficiency_comparison(root_files, output_dir):
                 for stage in stages:
                     # Construct histogram name
                     hist_name = f"h2_trigeff_{var}_{stage}_{trigger}"
-                    
-                    h2 = tfile.Get(hist_name)
-                    if not h2:
-                        continue
-                    
-                    # Rebin X-axis (less for eta/phi, more for pt)
-                    h2_rebinned = h2.Clone(f"{hist_name}_rebin")
-                    if var == "pt":
-                        h2_rebinned.RebinX(10)
-                    else:
-                        h2_rebinned.RebinX(2)
-                    
-                    # Create ProfileX and convert to TH1D so we can scale if needed
-                    prof_tmp = h2_rebinned.ProfileX(f"prof_{hist_name}")
-                    prof = ROOT.TH1D(f"h1_prof_{hist_name}", prof_tmp.GetTitle(),
-                                     prof_tmp.GetNbinsX(),
-                                     prof_tmp.GetXaxis().GetXmin(),
-                                     prof_tmp.GetXaxis().GetXmax())
-                    for b in range(0, prof_tmp.GetNbinsX() + 2):
-                        prof.SetBinContent(b, prof_tmp.GetBinContent(b))
-                        prof.SetBinError(b, prof_tmp.GetBinError(b))
-                    prof.SetDirectory(0)
 
-                    # Apply flat efficiency offset if configured
-                    eff_offset = get_efficiency_offset(root_file)
-                    if eff_offset != 0.0:
-                        for b in range(1, prof.GetNbinsX() + 1):
-                            prof.SetBinContent(b, min(prof.GetBinContent(b) + eff_offset, 1.0))
+                    h2 = tfile.Get(hist_name)
+                    if not h2 or h2.GetEntries() == 0:
+                        continue
+
+                    # Build a Clopper-Pearson TEfficiency from the pass/fail 2D histogram
+                    # (rebin less for eta/phi, more for pt)
+                    rebin = 10 if var == "pt" else 2
+                    eff = build_teff_from_h2(h2, f"{hist_name}_eff", rebin=rebin)
 
                     # Set style
                     color = stage_colors[stage]
-                    prof.SetLineColor(color)
-                    prof.SetLineWidth(2)
-                    prof.SetMarkerColor(color)
-                    prof.SetMarkerStyle(20)
-                    prof.SetMarkerSize(0.8)
-                    
-                    profiles.append((prof, stage))
-                
+                    eff.SetLineColor(color)
+                    eff.SetLineWidth(2)
+                    eff.SetMarkerColor(color)
+                    eff.SetMarkerStyle(20)
+                    eff.SetMarkerSize(0.8)
+
+                    profiles.append((eff, stage))
+
                 if not profiles:
                     continue
-                
+
                 # Determine axis title
                 x_title = ""
                 if var == "eta":
@@ -685,22 +606,24 @@ def plot_trigger_efficiency_comparison(root_files, output_dir):
                     x_title = "#phi"
                 elif var == "pt":
                     x_title = "p_{T} [GeV]"
-                
-                # Draw profiles - extend Y axis to make room for legend
-                for i, (prof, stage) in enumerate(profiles):
+
+                # Draw TEfficiencies - extend Y axis to make room for legend
+                for i, (eff, stage) in enumerate(profiles):
                     if i == 0:
-                        prof.SetMaximum(2.3)
-                        prof.SetMinimum(0.0)
-                        prof.GetXaxis().SetTitle(x_title)
-                        prof.GetYaxis().SetTitle("Trigger eff.")
-                        prof.SetTitle("")
-                        if var == "pt":
-                            prof.GetXaxis().SetNdivisions(510)
-                            prof.GetXaxis().SetLabelSize(0.03)
-                        prof.Draw("E")
+                        eff.SetTitle(f";{x_title};Trigger eff.")
+                        eff.Draw("AP")
+                        ROOT.gPad.Update()
+                        g = eff.GetPaintedGraph()
+                        if g:
+                            g.GetYaxis().SetRangeUser(0.0, 1.5)
+                            if var == "pt":
+                                g.GetXaxis().SetNdivisions(510)
+                                g.GetXaxis().SetLabelSize(0.03)
+                        ROOT.gPad.Update()
                     else:
-                        prof.Draw("E SAME")
-                    legend.AddEntry(prof, stage_labels[stage], "lep")
+                        eff.SetTitle("")
+                        eff.Draw("P SAME")
+                    legend.AddEntry(eff, stage_labels[stage], "lep")
                 
                 legend.Draw()
                 addCMSText(canvas, lumi_text="Cosmics", extra_text="Work in Progress")
@@ -781,15 +704,12 @@ def plot_trigger_efficiency_vs_minp(root_files, output_dir, region="", obj_type=
             prev_bin = hist.GetBinContent(n_bins - 1)
             last_bin = hist.GetBinContent(n_bins)
 
-            if prev_bin > 0:
-                trigger_efficiency = last_bin / prev_bin
-            else:
-                trigger_efficiency = 0
+            eff, elo, ehi = binom_eff(last_bin, prev_bin)
 
             if group_key not in trigger_data_by_group:
                 trigger_data_by_group[group_key] = []
 
-            trigger_data_by_group[group_key].append((minp, trigger_efficiency))
+            trigger_data_by_group[group_key].append((minp, eff, elo, ehi))
 
             tfile.Close()
 
@@ -825,8 +745,12 @@ def plot_trigger_efficiency_vs_minp(root_files, output_dir, region="", obj_type=
 
             x_array = array.array('d', [point[0] for point in data])
             y_array = array.array('d', [point[1] for point in data])
+            exl = array.array('d', [0.0] * n_points)
+            exh = array.array('d', [0.0] * n_points)
+            eyl = array.array('d', [point[2] for point in data])
+            eyh = array.array('d', [point[3] for point in data])
 
-            graph = ROOT.TGraph(n_points, x_array, y_array)
+            graph = ROOT.TGraphAsymmErrors(n_points, x_array, y_array, exl, exh, eyl, eyh)
 
             color = colors[i % len(colors)]
             marker = markers[i % len(markers)]
@@ -898,11 +822,11 @@ def plot_trigger_efficiency_vs_minp(root_files, output_dir, region="", obj_type=
             prev_bin = hist.GetBinContent(n_bins - 1)
             last_bin = hist.GetBinContent(n_bins)
 
-            eff = last_bin / prev_bin if prev_bin > 0 else 0
+            eff, elo, ehi = binom_eff(last_bin, prev_bin)
 
             if group_key not in all_stage_data[hist_name]:
                 all_stage_data[hist_name][group_key] = []
-            all_stage_data[hist_name][group_key].append((minp, eff))
+            all_stage_data[hist_name][group_key].append((minp, eff, elo, ehi))
 
             tfile.Close()
 
@@ -949,8 +873,12 @@ def plot_trigger_efficiency_vs_minp(root_files, output_dir, region="", obj_type=
 
             x_array = array.array('d', [point[0] for point in data])
             y_array = array.array('d', [point[1] for point in data])
+            exl = array.array('d', [0.0] * n_points)
+            exh = array.array('d', [0.0] * n_points)
+            eyl = array.array('d', [point[2] for point in data])
+            eyh = array.array('d', [point[3] for point in data])
 
-            graph = ROOT.TGraph(n_points, x_array, y_array)
+            graph = ROOT.TGraphAsymmErrors(n_points, x_array, y_array, exl, exh, eyl, eyh)
 
             color = colors_stage[hist_name]
             graph.SetLineColor(color)
@@ -988,6 +916,319 @@ def plot_trigger_efficiency_vs_minp(root_files, output_dir, region="", obj_type=
             canvas.Update()
             canvas.Close()
             del canvas
+
+
+def _style_by_filename(obj, root_file, color):
+    """Apply the standard marker/line style of this study based on the sample filename.
+
+    Mirrors the convention used by plot_1d_overlay / plot_2d_teff_overlay so the
+    L1 DT efficiency overlays match the rest of the trigger study plots.
+    """
+    obj.SetLineColor(color)
+    obj.SetLineWidth(2)
+    obj.SetMarkerColor(color)
+    obj.SetMarkerSize(0.9)
+    minp_match = re.search(r'MinP-(\d+)', root_file)
+    is_e6 = 'SurfaceDepth-e6' in root_file
+    minp_val = int(minp_match.group(1)) if minp_match else 0
+    if is_e6 and minp_val > 10000:
+        obj.SetLineStyle(4); obj.SetMarkerStyle(23)
+    elif is_e6:
+        obj.SetLineStyle(3); obj.SetMarkerStyle(22)
+    elif minp_match and minp_val > 10000:
+        obj.SetLineStyle(2); obj.SetMarkerStyle(21)
+    elif minp_match:
+        obj.SetMarkerStyle(20)
+    elif 'Run2025' in root_file:
+        obj.SetLineStyle(4); obj.SetMarkerStyle(20)
+    elif 'Run2024' in root_file:
+        obj.SetLineStyle(3); obj.SetMarkerStyle(20)
+    elif 'Run2023' in root_file:
+        obj.SetLineStyle(2); obj.SetMarkerStyle(20)
+    else:
+        obj.SetMarkerStyle(20)
+
+
+def build_teff_from_h2(h2, name, rebin=1, fold_overflow=False):
+    """Build a per-x-bin TEfficiency from a 2D (x vs fired 0/1) histogram.
+
+    The y axis encodes the trigger decision: y bin 1 = [-0.5, 0.5] -> not fired (fail),
+    y bin 2 = [0.5, 1.5] -> fired (pass). total = projection over both y bins,
+    passed = the fired slice. Uses Clopper-Pearson (kFCP) intervals.
+
+    rebin         : RebinX factor applied before projecting (coarser, smoother bins).
+    fold_overflow : merge the x under/overflow into the first/last visible bin so entries
+                    beyond the axis range (e.g. high-momentum cosmics) are not dropped.
+    """
+    h = h2.Clone(name + "_clone")
+    h.SetDirectory(0)
+    if rebin and rebin > 1:
+        h.RebinX(rebin)
+    total = h.ProjectionX(name + "_tot", 1, 2)
+    passed = h.ProjectionX(name + "_pas", 2, 2)
+    total.SetDirectory(0)
+    passed.SetDirectory(0)
+    if fold_overflow:
+        for hh in (total, passed):
+            n = hh.GetNbinsX()
+            hh.SetBinContent(1, hh.GetBinContent(1) + hh.GetBinContent(0))      # underflow -> first
+            hh.SetBinContent(n, hh.GetBinContent(n) + hh.GetBinContent(n + 1))  # overflow -> last
+            hh.SetBinContent(0, 0.0)
+            hh.SetBinContent(n + 1, 0.0)
+    # guard against any pass>total from rounding (shouldn't happen with integer fills)
+    for b in range(0, total.GetNbinsX() + 2):
+        if passed.GetBinContent(b) > total.GetBinContent(b):
+            passed.SetBinContent(b, total.GetBinContent(b))
+    eff = ROOT.TEfficiency(passed, total)
+    eff.SetStatisticOption(ROOT.TEfficiency.kFCP)  # Clopper-Pearson
+    eff.SetName(name)
+    return eff
+
+
+def build_l1dt_teff(h2, name, fold_overflow=True):
+    """L1 DT (probe pT vs fired) TEfficiency. Variable-bin x, overflow folded by default
+    so high-momentum cosmics (pT > top edge) stay in the last bin (matches FWLite counts).
+    """
+    return build_teff_from_h2(h2, name, rebin=1, fold_overflow=fold_overflow)
+
+
+def l1dt_axis_props(hist_name):
+    """Return (x_title, logx, fold_overflow) for an L1 DT 2D histogram from the probe
+    variable encoded in its name. pT histos (no _phi/_eta infix) use a log x-axis with
+    the top bin overflow-folded; the _phi/_eta variants are linear, fixed-range, no fold.
+    """
+    base = hist_name[:-4] if hist_name.endswith("_acc") else hist_name
+    if base.endswith("_phi"):
+        return "probe muon #phi", False, False
+    if base.endswith("_eta"):
+        return "probe muon #eta", False, False
+    return "probe muon p_{T} [GeV]", True, True
+
+
+def binom_eff(passed, total, level=0.6827):
+    """Return (efficiency, err_low, err_high) for passed/total with Clopper-Pearson
+    (binomial) intervals, matching the kFCP statistic option used by the TEfficiency plots.
+    """
+    if total <= 0:
+        return 0.0, 0.0, 0.0
+    p = passed / total
+    ti, pi = int(round(total)), int(round(min(passed, total)))
+    lo = ROOT.TEfficiency.ClopperPearson(ti, pi, level, False)
+    hi = ROOT.TEfficiency.ClopperPearson(ti, pi, level, True)
+    return p, max(0.0, p - lo), max(0.0, hi - p)
+
+
+def plot_l1dt_efficiency_overlay(root_files, hist_name, output_dir, region="", obj_type=""):
+    """Overlay the per-hemisphere L1 DT trigger efficiency across samples.
+
+    Reads the 2D (probe pT vs fired) histogram `hist_name` from each ROOT file,
+    builds a Clopper-Pearson TEfficiency vs probe pT, and overlays them (data vs MC,
+    or multiple data eras / signal points) on a log-x axis.
+    """
+    colors = [
+        ROOT.kBlue, ROOT.kRed, ROOT.kGreen+2, ROOT.kMagenta,
+        ROOT.kCyan+1, ROOT.kOrange, ROOT.kViolet, ROOT.kTeal-1, ROOT.kPink+1,
+        ROOT.kAzure+7, ROOT.kSpring-7, ROOT.kYellow+2
+    ]
+
+    x_title, logx, fold = l1dt_axis_props(hist_name)
+
+    effs = []
+    labels = []
+    for i, root_file in enumerate(root_files):
+        try:
+            tfile = ROOT.TFile.Open(root_file)
+        except (OSError, RuntimeError) as e:
+            print(f"Warning: Could not open {root_file}: {e}")
+            continue
+        if not tfile or tfile.IsZombie():
+            print(f"Warning: Zombie file {root_file}")
+            continue
+
+        h2 = tfile.Get(hist_name)
+        if not h2 or h2.GetEntries() == 0:
+            tfile.Close()
+            continue
+
+        eff = build_l1dt_teff(h2, f"{hist_name}_eff_{i}", fold_overflow=fold)
+        _style_by_filename(eff, root_file, colors[i % len(colors)])
+        effs.append(eff)
+        labels.append(create_label_from_filename(root_file, include_object=False, include_region=False))
+        tfile.Close()
+
+    if not effs:
+        print(f"No valid L1 DT histograms found for {hist_name}")
+        return
+
+    n_entries = len(effs)
+    max_legend_entries = 45
+    region_label = 'pre-SR' if region.upper() == 'SR' else region.upper()
+
+    canvas = ROOT.TCanvas(f"c_l1dt_{hist_name}", f"c_l1dt_{hist_name}", 800, 800)
+    canvas.cd()
+    canvas.SetLogx(logx)
+    canvas.SetGridy(True)
+
+    legend = ROOT.TLegend(0.19, 0.60, 0.9, 0.9)
+    if region and obj_type:
+        legend.SetHeader(f"Region: {region_label}, Object: {obj_type}")
+    legend.SetTextSize(0.015)
+    legend.SetFillStyle(0)
+    legend.SetBorderSize(0)
+    legend.SetNColumns(3)
+
+    for i, eff in enumerate(effs):
+        if i == 0:
+            # axis titles via the TEfficiency title string (reliable for the painted frame)
+            eff.SetTitle(f";{x_title};L1 DT efficiency")
+            eff.Draw("AP")
+            ROOT.gPad.Update()
+            g = eff.GetPaintedGraph()
+            if g:
+                g.GetYaxis().SetRangeUser(0.0, 1.3)
+                # decade-only log labels (10, 10^2, 10^3 ...), as in the DT paper Fig. 12
+            ROOT.gPad.Update()
+        else:
+            eff.SetTitle("")
+            eff.Draw("P SAME")
+        if i < max_legend_entries:
+            legend.AddEntry(eff, labels[i], "lep")
+
+    if n_entries > max_legend_entries:
+        legend.AddEntry(ROOT.nullptr, f"... + {n_entries - max_legend_entries} more", "")
+
+    legend.Draw()
+    addCMSText(canvas, lumi_text="Cosmics", extra_text="Work in Progress")
+
+    output_path = os.path.join(output_dir, f"trig_study_{hist_name}")
+    canvas.SaveAs(output_path + ".png")
+    canvas.SaveAs(output_path + ".pdf")
+    canvas.Update()
+    canvas.Close()
+    del canvas
+
+
+def _sum_l1dt_h2(files, hist_name):
+    """Sum an L1 DT 2D (probe pT vs fired) histogram across a list of ROOT files."""
+    total = None
+    for path in files:
+        try:
+            tf = ROOT.TFile.Open(path)
+        except (OSError, RuntimeError):
+            continue
+        if not tf or tf.IsZombie():
+            continue
+        h = tf.Get(hist_name)
+        if h:
+            if total is None:
+                total = h.Clone(hist_name + "_sum")
+                total.SetDirectory(0)
+            else:
+                total.Add(h)
+        tf.Close()
+    return total
+
+
+def plot_l1dt_data_mc_ratio(data_files, mc_files, hist_name, output_dir,
+                            rightlabel="Cosmics", region="", obj_type=""):
+    """CMS-style two-pad Data/MC comparison of the L1 DT efficiency.
+
+    Sums the (probe pT vs fired) 2D histogram `hist_name` over all data files and over
+    all MC files, builds a Clopper-Pearson TEfficiency for each, and draws the
+    efficiency overlay (top) with the Data/MC ratio (bottom). Mirrors draw_cms_ratio
+    from test/L1TriggerEfficiency.py.
+    """
+    hd = _sum_l1dt_h2(data_files, hist_name)
+    hm = _sum_l1dt_h2(mc_files, hist_name)
+    if not hd or not hm or hd.GetEntries() == 0 or hm.GetEntries() == 0:
+        print(f"Data/MC ratio: missing or empty histograms for {hist_name}")
+        return
+
+    x_title, logx, fold = l1dt_axis_props(hist_name)
+    eff_data = build_l1dt_teff(hd, hist_name + "_data", fold_overflow=fold)
+    eff_mc = build_l1dt_teff(hm, hist_name + "_mc", fold_overflow=fold)
+
+    xmin = hd.GetXaxis().GetBinLowEdge(1)
+    xmax = hd.GetXaxis().GetBinUpEdge(hd.GetNbinsX())
+
+    c = ROOT.TCanvas("c_ratio_" + hist_name, "c", 700, 700)
+    p1 = ROOT.TPad("p1_" + hist_name, "p1", 0, 0.31, 1, 1.0)
+    p1.SetBottomMargin(0.02); p1.SetLeftMargin(0.13); p1.SetRightMargin(0.04)
+    p1.SetTopMargin(0.07); p1.SetTicks(1, 1); p1.SetLogx(logx); p1.SetGridy(); p1.Draw()
+    p2 = ROOT.TPad("p2_" + hist_name, "p2", 0, 0.0, 1, 0.31)
+    p2.SetTopMargin(0.03); p2.SetBottomMargin(0.37); p2.SetLeftMargin(0.13); p2.SetRightMargin(0.04)
+    p2.SetTicks(1, 1); p2.SetLogx(logx); p2.SetGridy(); p2.Draw()
+
+    # ---- top pad: efficiencies (data black, MC red) ----
+    p1.cd()
+    for e, col, mk in ((eff_data, ROOT.kBlack, 20), (eff_mc, ROOT.kRed, 24)):
+        e.SetLineColor(col); e.SetMarkerColor(col); e.SetMarkerStyle(mk); e.SetMarkerSize(1.0)
+    eff_data.SetTitle("")
+    eff_data.Draw("AP"); ROOT.gPad.Update()
+    gd = eff_data.GetPaintedGraph()
+    if gd:
+        gd.GetYaxis().SetRangeUser(0.0, 1.08)
+        gd.GetXaxis().SetLimits(xmin, xmax)
+        gd.GetYaxis().SetTitle("L1 DT efficiency")
+        gd.GetYaxis().SetTitleSize(0.055); gd.GetYaxis().SetTitleOffset(1.10); gd.GetYaxis().SetLabelSize(0.048)
+        gd.GetXaxis().SetLabelSize(0.0); gd.GetXaxis().SetTitleSize(0.0)
+    eff_mc.Draw("P SAME"); ROOT.gPad.Update()
+
+    legd = ROOT.TLegend(0.55, 0.18, 0.92, 0.42)
+    legd.SetBorderSize(0); legd.SetFillStyle(0); legd.SetTextSize(0.05)
+    if region and obj_type:
+        region_label = 'pre-SR' if region.upper() == 'SR' else region.upper()
+        legd.SetHeader(f"{region_label}, {obj_type}")
+    legd.AddEntry(eff_data, "Data", "lp")
+    legd.AddEntry(eff_mc, "MC", "lp")
+    legd.Draw()
+
+    # CMS label (top-left of the upper pad)
+    t = p1.GetTopMargin(); l = p1.GetLeftMargin(); r = p1.GetRightMargin()
+    lat = ROOT.TLatex(); lat.SetNDC(); lat.SetTextAngle(0)
+    lat.SetTextFont(61); lat.SetTextSize(0.75 * t); lat.SetTextAlign(11)
+    lat.DrawLatex(l, 1 - 0.8 * t, "CMS")
+    lat.SetTextFont(52); lat.SetTextSize(0.6 * t)
+    lat.DrawLatex(l + 0.10, 1 - 0.8 * t, "Work in Progress")
+    lat.SetTextFont(42); lat.SetTextSize(0.6 * t); lat.SetTextAlign(31)
+    lat.DrawLatex(1 - r, 1 - 0.8 * t, rightlabel)
+
+    # ---- bottom pad: Data/MC ratio ----
+    p2.cd()
+    htot = eff_data.GetTotalHistogram()
+    n = htot.GetNbinsX()
+    rat = ROOT.TGraphAsymmErrors(); k = 0
+    for i in range(1, n + 1):
+        td = eff_data.GetTotalHistogram().GetBinContent(i)
+        tm = eff_mc.GetTotalHistogram().GetBinContent(i)
+        if td == 0 or tm == 0:
+            continue
+        ed = eff_data.GetEfficiency(i); em = eff_mc.GetEfficiency(i)
+        if ed == 0 or em == 0:
+            continue
+        rr = ed / em
+        relh = math.hypot(eff_data.GetEfficiencyErrorUp(i) / ed, eff_mc.GetEfficiencyErrorUp(i) / em)
+        rell = math.hypot(eff_data.GetEfficiencyErrorLow(i) / ed, eff_mc.GetEfficiencyErrorLow(i) / em)
+        x = htot.GetBinCenter(i)
+        xl = x - htot.GetBinLowEdge(i)
+        xh = htot.GetBinLowEdge(i + 1) - x
+        rat.SetPoint(k, x, rr); rat.SetPointError(k, xl, xh, rr * rell, rr * relh); k += 1
+    rat.SetMarkerStyle(20); rat.SetMarkerColor(ROOT.kBlack); rat.SetLineColor(ROOT.kBlack)
+    rat.SetTitle(""); rat.Draw("AP"); ROOT.gPad.Update()
+    ax = rat.GetXaxis(); ay = rat.GetYaxis()
+    ax.SetLimits(xmin, xmax); ax.SetTitle(x_title)
+    ax.SetTitleSize(0.13); ax.SetLabelSize(0.11); ax.SetTitleOffset(1.15)  # decade-only log labels
+    ay.SetRangeUser(0.5, 1.5); ay.SetTitle("Data / MC"); ay.SetNdivisions(505)
+    ay.SetTitleSize(0.12); ay.SetLabelSize(0.10); ay.SetTitleOffset(0.45)
+    line = ROOT.TLine(xmin, 1.0, xmax, 1.0)
+    line.SetLineStyle(2); line.SetLineColor(ROOT.kRed); line.Draw()
+    rat.Draw("P SAME")
+
+    output_path = os.path.join(output_dir, f"trig_study_{hist_name}_dataMC_ratio")
+    c.SaveAs(output_path + ".png")
+    c.SaveAs(output_path + ".pdf")
+    c.Close()
+    del c
 
 
 def plot_all_trigger_studies(input_pattern, output_dir="figures/trigger_study", region="", obj_type="", sample_label=""):
@@ -1072,10 +1313,15 @@ def plot_all_trigger_studies(input_pattern, output_dir="figures/trigger_study", 
     for hist_name in tqdm(hist_1d, desc="1D histograms", leave=False):
         plot_1d_overlay(root_files, hist_name, "trig_study", output_dir, region=region, obj_type=obj_type)
     
-    # Plot 2D histogram ProfileX overlays (only L1SingleMuCosmics)
-    hist_2d_cosmics = [h for h in hist_2d if h.endswith("_L1SingleMuCosmics")]
-    for hist_name in tqdm(hist_2d_cosmics, desc="2D ProfileX", leave=False):
-        plot_2d_profile_overlay(root_files, hist_name, "trig_study", output_dir, region=region, obj_type=obj_type)
+    # L1 DT tag-and-probe efficiency overlays (2D probe pT vs fired -> TEfficiency)
+    hist_l1dt = [h for h in hist_2d if h.startswith("h2_l1dt_")]
+    for hist_name in tqdm(hist_l1dt, desc="L1 DT TEff", leave=False):
+        plot_l1dt_efficiency_overlay(root_files, hist_name, output_dir, region=region, obj_type=obj_type)
+
+    # Plot 2D trigger-efficiency TEfficiency overlays (only L1SingleMuCosmics, excluding L1 DT histos)
+    hist_2d_cosmics = [h for h in hist_2d if h.endswith("_L1SingleMuCosmics") and not h.startswith("h2_l1dt_")]
+    for hist_name in tqdm(hist_2d_cosmics, desc="2D TEff", leave=False):
+        plot_2d_teff_overlay(root_files, hist_name, "trig_study", output_dir, region=region, obj_type=obj_type)
     
     # Create trigger efficiency comparison plots (pretrig vs quality_pretrig vs final)
     plot_trigger_efficiency_comparison(root_files, output_dir)
@@ -1120,3 +1366,37 @@ if __name__ == "__main__":
 
         # Run the plotting function
         plot_all_trigger_studies(input_dir, output_subdir, region=region, obj_type=obj_type, sample_label=sample_label)
+
+    # ---- L1 DT Data vs BkgMC efficiency + ratio (cross-sample) ----
+    # Produced once per (region, object) when both a Data and a BkgMC dir have files.
+    label_to_base = {lbl: bd for bd, lbl in base_dirs.items()}
+    data_base = label_to_base.get("Data")
+    mc_base = label_to_base.get("BkgMC")
+    l1dt_ratio_hists = [
+        "h2_l1dt_eff_comb", "h2_l1dt_eff_comb_acc",
+        "h2_l1dt_eff_probeUpper", "h2_l1dt_eff_probeLower",
+        "h2_l1dt_eff_probeUpper_acc", "h2_l1dt_eff_probeLower_acc",
+        # probe-leg phi
+        "h2_l1dt_eff_comb_phi", "h2_l1dt_eff_comb_phi_acc",
+        "h2_l1dt_eff_probeUpper_phi", "h2_l1dt_eff_probeLower_phi",
+        "h2_l1dt_eff_probeUpper_phi_acc", "h2_l1dt_eff_probeLower_phi_acc",
+        # probe-leg eta
+        "h2_l1dt_eff_comb_eta", "h2_l1dt_eff_comb_eta_acc",
+        "h2_l1dt_eff_probeUpper_eta", "h2_l1dt_eff_probeLower_eta",
+        "h2_l1dt_eff_probeUpper_eta_acc", "h2_l1dt_eff_probeLower_eta_acc",
+    ]
+    if data_base and mc_base:
+        ratio_combos = []
+        for region in regions:
+            for obj_type in object_types:
+                data_files = glob.glob(os.path.join(data_base, region, obj_type, "trigger_study_*.root"))
+                mc_files = glob.glob(os.path.join(mc_base, region, obj_type, "trigger_study_*.root"))
+                if data_files and mc_files:
+                    ratio_combos.append((region, obj_type, data_files, mc_files))
+        for region, obj_type, data_files, mc_files in tqdm(ratio_combos, desc="L1 DT Data/MC"):
+            ratio_outdir = os.path.join(output_dir, "DataMC", region, obj_type)
+            os.makedirs(ratio_outdir, exist_ok=True)
+            for hist_name in l1dt_ratio_hists:
+                rlabel = "Cosmics (acc.)" if hist_name.endswith("_acc") else "Cosmics"
+                plot_l1dt_data_mc_ratio(data_files, mc_files, hist_name, ratio_outdir,
+                                        rightlabel=rlabel, region=region, obj_type=obj_type)

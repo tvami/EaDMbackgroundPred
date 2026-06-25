@@ -383,7 +383,7 @@ class CondorRunner():
 
         if self.singularity_image:
             # Ship the analysis source dirs alongside the working-area tarball so combine
-            # can be compiled in the fresh CMSSW (mirrors the working condor_2DA_SR.cfg).
+            # can be compiled in the fresh CMSSW (mirrors the working step7_condor_2DA_SR.cfg).
             cmssw_src = os.environ['CMSSW_BASE']+'/src'
             # Everything (working area + analysis source dirs) ships inside the single static
             # pkg tarball built at submit time; see _make_pkg_tarball. We deliberately do NOT
@@ -393,7 +393,7 @@ class CondorRunner():
             input_files = self.pkg_tarball_path
             out_id = '%s_output'%self.name
             # Resolve the grid proxy: honor X509_USER_PROXY if set, else the standard
-            # /tmp/x509up_u<uid> location (matches the working condor_2DA_SR.cfg). Run
+            # /tmp/x509up_u<uid> location (matches the working step7_condor_2DA_SR.cfg). Run
             # `voms-proxy-init -voms cms` first or condor_submit can't read it.
             proxy_path = os.environ.get('X509_USER_PROXY') or '/tmp/x509up_u%d'%os.getuid()
             if not os.path.exists(proxy_path):

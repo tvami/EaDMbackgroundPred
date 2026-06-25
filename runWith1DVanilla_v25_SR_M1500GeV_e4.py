@@ -10,7 +10,7 @@ from optparse import OptionParser
 parser = OptionParser(usage="Usage: python %prog workingArea config.json")
 
 workingArea = sys.argv[1]
-configJSON = "config_Binningv10_Inputv25_SR_M3000GeV_e4.json" # sys.argv[2]
+configJSON = "config_Binningv10_Inputv25_SR_M1500GeV_e4.json" # sys.argv[2]
 
 # Helper function to get region names
 def _get_other_region_names(pass_reg_name):
@@ -270,7 +270,7 @@ def test_FTest(poly1, poly2, signal=''):
 if __name__ == "__main__":
     make_workspace()
 
-    signal_areas = ["Signal_M3000GeV_e4_SR"] * 3
+    signal_areas = ["Signal_M1500GeV_e4_SR"] * 3
     # tf_types = ['2x0', '1x0', '0x0']
     tf_types = ['2x0']
 
@@ -296,4 +296,4 @@ if __name__ == "__main__":
       plot_GOF(signal,tf_type,condor=useCondor)
       os.system("cp " + workingArea + "/base.root " + workingArea + "/" + signal + f"-{tf_type}_area/.")
       open(workingArea + "/" + signal + f"-{tf_type}_area/done", 'w').close()
-    test_FTest('1x0','2x0',"Signal_M3000GeV_e4_SR")
+    test_FTest('1x0','2x0',"Signal_M1500GeV_e4_SR")

@@ -927,29 +927,99 @@ def _reduced_corr_matrix(fit_result, varsToIgnore=[], varsOfInterest=[], thresho
 
     return out, out_txt
 
-def plot_correlation_matrix(varsToIgnore, threshold=0, corrText=False):
+def plot_correlation_matrix(varsToIgnore, threshold=0, corrText=False, cmsText='Internal', lumiText=''):
+    '''Plot the post-fit correlation matrix for each successful fit (b-only, s+b).
+
+    Reads fitDiagnosticsTest.root in the current directory and writes a CMS-styled
+    correlation_matrix.{png,pdf,txt} into plots_fit_<fittag>/. The bin-by-bin nuisances
+    are usually passed via varsToIgnore so only the TF parameters, the POI, and the
+    named systematics remain.
+
+    Args:
+        varsToIgnore (list): Parameter names to drop from the matrix.
+        threshold (float, optional): Skip rows whose off-diagonal correlations are all
+            below this absolute value. Defaults to 0.
+        corrText (bool, optional): Overlay the numerical correlation values. Defaults to False.
+        cmsText (str, optional): Sublabel drawn after 'CMS'. Defaults to 'Internal'.
+        lumiText (str, optional): Text drawn at the top right (e.g. luminosity/energy).
+            Defaults to '' (nothing drawn).
+    '''
+    from array import array
+
+    ROOT.gROOT.SetBatch(True)
+    ROOT.gStyle.SetOptStat(False)
+    ROOT.gStyle.SetOptTitle(False)
+    # Symmetric blue-white-red diverging palette so zero correlation maps to white
+    stops = array('d', [0.00, 0.50, 1.00])
+    red   = array('d', [0.00, 1.00, 1.00])
+    green = array('d', [0.00, 1.00, 0.00])
+    blue  = array('d', [1.00, 1.00, 0.00])
+    ROOT.TColor.CreateGradientColorTable(3, stops, red, green, blue, 255)
+    ROOT.gStyle.SetNumberContours(255)
+    ROOT.gStyle.SetPaintTextFormat('.2f')
+
     fit_result_file = ROOT.TFile.Open('fitDiagnosticsTest.root')
     for fittag in _get_good_fit_results(fit_result_file):
         fit_result = fit_result_file.Get("fit_"+fittag)
-        if hasattr(fit_result,'correlationMatrix'):
-            corrMtrx, corrTxt = _reduced_corr_matrix(fit_result, varsToIgnore=varsToIgnore, threshold=threshold)
-            corrMtrxCan = ROOT.TCanvas('c','c',1400,1000)
-            corrMtrxCan.cd()
-            corrMtrxCan.SetBottomMargin(0.22)
-            corrMtrxCan.SetLeftMargin(0.17)
-            corrMtrxCan.SetTopMargin(0.06)
-
-            corrMtrx.GetXaxis().SetLabelSize(0.01)
-            corrMtrx.GetYaxis().SetLabelSize(0.01)
-            corrMtrx.Draw('colz text' if corrText else 'colz')
-            corrMtrxCan.Print('plots_fit_%s/correlation_matrix.png'%fittag,'png')
-            corrMtrxCan.Print('plots_fit_%s/correlation_matrix.pdf'%fittag,'pdf')
-
-            with open('plots_fit_%s/correlation_matrix.txt'%fittag,'w') as corrTxtFile:
-                corrTxtFile.write(corrTxt)
-
-        else:
+        if not hasattr(fit_result,'correlationMatrix'):
             warnings.warn('Not able to produce correlation matrix.',RuntimeWarning)
+            continue
+
+        corrMtrx, corrTxt = _reduced_corr_matrix(fit_result, varsToIgnore=varsToIgnore, threshold=threshold)
+
+        # Shorten the axis labels for readability (drop the long common prefixes)
+        for axis in (corrMtrx.GetXaxis(), corrMtrx.GetYaxis()):
+            for b in range(1, axis.GetNbins()+1):
+                lab = axis.GetBinLabel(b)
+                lab = lab.replace('CMS_EXO26004_Background_', '').replace('CMS_EXO26004_', '')
+                axis.SetBinLabel(b, lab)
+
+        nbins = corrMtrx.GetXaxis().GetNbins()
+        # Scale label size with the number of bins so labels stay legible but don't overlap
+        labSize = min(0.03, 0.45/max(nbins,1))
+
+        corrMtrxCan = ROOT.TCanvas('c_corr_'+fittag,'c_corr_'+fittag,1000,900)
+        corrMtrxCan.SetBottomMargin(0.20)
+        corrMtrxCan.SetLeftMargin(0.15)
+        corrMtrxCan.SetRightMargin(0.20)
+        corrMtrxCan.SetTopMargin(0.08)
+
+        corrMtrx.SetTitle('')
+        corrMtrx.SetMinimum(-1)
+        corrMtrx.SetMaximum(+1)
+        corrMtrx.GetXaxis().SetLabelSize(labSize)
+        corrMtrx.GetYaxis().SetLabelSize(labSize)
+        corrMtrx.GetXaxis().LabelsOption('v')  # vertical x labels so long names don't overlap
+        corrMtrx.GetZaxis().SetTitle('Correlation')
+        corrMtrx.GetZaxis().SetTitleOffset(1.10)
+        corrMtrx.GetZaxis().SetTitleSize(0.04)
+        corrMtrx.GetZaxis().SetLabelSize(0.035)
+        corrMtrx.SetMarkerColor(ROOT.kBlack)
+        corrMtrx.SetMarkerSize(0.9)
+        corrMtrx.Draw('colz text' if corrText else 'colz')
+
+        # CMS Internal label (matches the GoF / TF / F-test plots)
+        latex = ROOT.TLatex()
+        latex.SetNDC()
+        latex.SetTextAlign(11)
+        latex.SetTextFont(62)
+        latex.SetTextSize(0.05)
+        latex.DrawLatex(0.15,0.93,"CMS")
+        latex.SetTextFont(52)
+        latex.SetTextSize(0.04)
+        latex.DrawLatex(0.26,0.93,cmsText)
+        if lumiText:
+            latex.SetTextFont(42)
+            latex.SetTextAlign(31)
+            latex.SetTextSize(0.04)
+            latex.DrawLatex(0.80,0.93,lumiText)
+
+        corrMtrxCan.RedrawAxis()
+        corrMtrxCan.Print('plots_fit_%s/correlation_matrix.png'%fittag,'png')
+        corrMtrxCan.Print('plots_fit_%s/correlation_matrix.pdf'%fittag,'pdf')
+
+        with open('plots_fit_%s/correlation_matrix.txt'%fittag,'w') as corrTxtFile:
+            corrTxtFile.write(corrTxt)
 
     fit_result_file.Close()
 
