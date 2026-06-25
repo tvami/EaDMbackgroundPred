@@ -507,7 +507,10 @@ class TwoDAlphabet:
                 '-d '+gof_input,
                 '--algo=saturated',
                 mask_opt,
-                '' if not freezeSignal else '--fixedSignalStrength %s'%freezeSignal,
+                # NB: distinguish 0 from False/None -- freezeSignal=0 must freeze r at 0 (background-only
+                # GoF), but `not 0` is True, so the old truthiness check silently dropped the flag and
+                # let r float, making the saturated GoF depend on the signal template.
+                '' if freezeSignal is False or freezeSignal is None else '--fixedSignalStrength %s'%freezeSignal,
                 '-n _gof_data', '-v %s'%verbosity, extra
             ]
 
@@ -634,39 +637,72 @@ class TwoDAlphabet:
                     )
                     condor.submit()
                 
-    def Impacts(self, subtag, rMin=-15, rMax=15, cardOrW='initialFitWorkspace.root --snapshotName initialFit', defMinStrat=0, extra=''):
-        # param_str = '' if setParams == {} else '--setParameters '+','.join(['%s=%s'%(p,v) for p,v in setParams.items()])
+    def Impacts(self, subtag, cardOrW='card.txt', blind=True, expectSignal=1,
+                rMin=None, rMax=None, name=None, setParams={}, extra='', initialExtra=''):
+        '''Run nuisance-parameter impacts via the combineTool 3-step flow
+        (initial fit of r -> per-parameter fits -> collect + plot).
+
+        Three modes, selected by `blind`/`expectSignal`:
+          * blind=True,  expectSignal=1 -> Asimov S+B   (-t -1 --expectSignal 1), default name 't1'
+          * blind=True,  expectSignal=0 -> Asimov bkg   (-t -1 --expectSignal 0), default name 't0'
+          * blind=False                 -> unblinded fit to real data,            default name 'unblind1'
+
+        The full set of nuisances is profiled via `--allPars`.
+
+        Args:
+            subtag (str): Nested directory holding the card (e.g. "Signal_..._SR-2x0_area").
+            cardOrW (str): Datacard ('.txt' -> text2workspace.py -> '.root') or an existing workspace.
+            blind (bool): Run on an Asimov toy (-t -1) if True, else fit real data.
+            expectSignal (float): Asimov signal strength used when blind=True.
+            rMin (float): Lower r bound. Defaults to -10 (blind) or 0 (unblinded).
+            rMax (float): Optional upper r bound.
+            name (str): combine -n tag and impacts json/plot suffix. Derived from the mode if None.
+            setParams (dict): Parameters seeded on the initial fit via --setParameters.
+            extra (str): Extra options appended to every combineTool call.
+            initialExtra (str): Extra options appended ONLY to the initial POI fit (step 1).
+                Use e.g. '--robustFit 1' here to stabilise the headline r uncertainty without
+                passing --robustFit to the per-parameter fits (which can make combineTool drop
+                a nuisance from the collected json with "insufficient number of entries").
+        '''
+        if name is None:
+            name = 'unblind1' if not blind else ('t0' if expectSignal == 0 else 't1')
+        if rMin is None:
+            rMin = 0 if not blind else -10
+
         with cd(self.tag+'/'+subtag):
-            subset = LoadLedger('')
-            impact_nuis_str = '--named='+','.join(subset.GetAllSystematics())
+            # Build a workspace from the datacard if needed
             if cardOrW.endswith('.txt'):
-                execute_cmd('text2workspace.py -b %s -o prefitWorkspace.root --channel-masks --X-no-jmax'%cardOrW)
-                card_or_w = 'prefitWorkspace.root'
+                execute_cmd('text2workspace.py %s'%cardOrW)
+                card_or_w = cardOrW.replace('.txt', '.root')
             else:
                 card_or_w = cardOrW
 
-            base_opts = [
-                '-M Impacts', '--rMin %s'%rMin,
-                '--rMax %s'%rMax, '-d %s'%card_or_w,
-                '--cminDefaultMinimizerStrategy {} -m 0'.format(defMinStrat),
-                impact_nuis_str, #extra, #param_str,
-                '-t 500 --bypassFrequentistFit' if True else ''
-            ]
-            # Remove old runs if they exist
-            execute_cmd('rm *_paramFit_*.root *_initialFit_*.root')
-            # Step 1
-            execute_cmd('combineTool.py %s --doInitialFit'%(' '.join(base_opts)))
-            # Dumb hack - combineTool --doFits will go looking for the wrong file if you run on a toy
-            _combineTool_impacts_fix('higgsCombine_initialFit_Test.MultiDimFit.mH0.root')
-            
-            # Step 2
-            execute_cmd('combineTool.py %s --doFits'%(' '.join(base_opts)))
-            # Dumb hack - combineTool next step will go looking for the wrong file if you run on a toy
-            _combineTool_impacts_fix('higgsCombine_paramFit_Test_*.MultiDimFit.mH0.root')
+            toy_str = '' if (not blind or '-t ' in extra) else '-t -1 --expectSignal %s'%expectSignal
+            rmax_str = '' if rMax is None else '--rMax %s'%rMax
+            param_str = '' if not setParams else '--setParameters '+','.join('%s=%s'%(p,v) for p,v in setParams.items())
 
-            # Grab the output
-            execute_cmd('combineTool.py %s -o impacts.json'%(' '.join(base_opts)))
-            execute_cmd('plotImpacts.py -i impacts.json -o impacts')
+            # Options shared by every combineTool call
+            common = ['-M Impacts', '-d %s'%card_or_w, '-m 1', '-n %s'%name, extra]
+
+            # Remove old runs if they exist
+            execute_cmd('rm -f *_paramFit_*.root *_initialFit_*.root')
+
+            # Step 1: initial fit of r (seed rpf params here if provided)
+            execute_cmd('combineTool.py %s'%' '.join(
+                common + [toy_str, '--rMin %s'%rMin, rmax_str, '--doInitialFit --allPars', param_str, initialExtra]))
+
+            # Step 2: per-parameter fits
+            # param_str must be repeated here: each combineTool call with -t -1 regenerates its own
+            # Asimov, so without the seed the per-parameter fits (which drive the impacts) would
+            # rebuild the Asimov at the default rpf values instead of the seeded best-fit ones.
+            execute_cmd('combineTool.py %s'%' '.join(
+                common + [toy_str, '--rMin %s'%rMin, rmax_str, '--doFits', param_str, '-o impacts_%s.json'%name]))
+
+            # Step 3: collect the results into the json
+            execute_cmd('combineTool.py %s'%' '.join(common + ['-o impacts_%s.json'%name]))
+
+            # Step 4: plot
+            execute_cmd('plotImpacts.py -i impacts_%s.json -o impacts_%s'%(name, name))
 
 class Ledger():
     def __init__(self, df):

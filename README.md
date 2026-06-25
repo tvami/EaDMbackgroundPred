@@ -30,26 +30,38 @@ cmsenv
 source twoD-env/bin/activate
 ```
 
+**OS note (uaf):** the uaf nodes run el8, which is what this `CMSSW_14_1_0_pre4` / `SCRAM_ARCH=el8`
+release was built for. If you land on a node where el8 is not available (e.g. an el9 host — `scram`
+will warn `trying to use SCRAM architecture 'el8' on host with operating system 'el9'`), run inside
+the el8 singularity container. Pass the command after `--`:
+```
+cmssw-el8 -- bash -c 'cd /path/to/CMSSW_14_1_0_pre4/src && eval `scram runtime -sh` && source twoD-env/bin/activate && <your command>'
+```
+Note `cmssw-el8 <cmd>` (without `--`) misparses the first token as a container image — always use `--`.
+
+**All `combine`-based commands below assume the el8 environment** — on an el9 host wrap them in
+`cmssw-el8 -- bash -c '...'` (see the "OS note (uaf)" above).
+
 ## Example running (NOTE: Use same X, Y, - between all scripts)
 ```
 python3 runWith1DVanilla_vY_-R.py rpf1x0_BinningvX_InputvY_-R_Unblind config_BinningvX_InputvY_-R_Unblind.json
 ```
 
-## Run files (Binningv9 / Inputv25)
+## Run files (Binningv10 / Inputv25)
 Each run file pairs with the config of the same suffix and runs the full chain for that region:
 build the workspace, fit each TF order, make the fit/transfer-factor plots, run the
 goodness-of-fit on condor (then harvest + plot it), and run the 1x0-vs-2x0 F-test.
 
 | Run file | Config | Signal | Region cut |
 |---|---|---|---|
-| `runWith1DVanilla_v25_SR_BkgMC.py` | `config_Binningv9_Inputv25_SR_BkgMC.json` | `Signal_M3000GeV_e4_SR` | SR, "data" = cosmics BkgMC |
-| `runWith1DVanilla_v25_SR_M3000GeV_e4.py` | `config_Binningv9_Inputv25_SR_M3000GeV_e4.json` | `Signal_M3000GeV_e4_SR` | SR, RNNScore >= 0.9999 |
-| `runWith1DVanilla_v25_VR1_M3000GeV_e4.py` | `config_Binningv9_Inputv25_VR1_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR1` | VR1, 0.45 <= RNNScore < 0.9999 |
+| `runWith1DVanilla_v25_SR_BkgMC.py` | `config_Binningv10_Inputv25_SR_BkgMC.json` | `Signal_M3000GeV_e4_SR` | SR, "data" = cosmics BkgMC |
+| `runWith1DVanilla_v25_SR_M3000GeV_e4.py` | `config_Binningv10_Inputv25_SR_M3000GeV_e4.json` | `Signal_M3000GeV_e4_SR` | SR, RNNScore >= 0.9999 |
+| `runWith1DVanilla_v25_VR1_M3000GeV_e4.py` | `config_Binningv10_Inputv25_VR1_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR1` | VR1, 0.45 <= RNNScore < 0.9999 |
 | `runWith1DVanilla_v25_VR2_M3000GeV_e4.py` | `config_Binningv9alt_Inputv25_VR2_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR2` | VR2, pT < 200 GeV (alt binning), RNNScore >= 0.9999 |
 
 Each takes the working-area name as its first argument, e.g.:
 ```
-python3 runWith1DVanilla_v25_VR1_M3000GeV_e4.py rpfmult_Binningv9_Inputv25_VR1_M3000GeV_e4
+python3 runWith1DVanilla_v25_VR1_M3000GeV_e4.py rpfmult_Binningv10_Inputv25_VR1_M3000GeV_e4
 ```
 The GoF is submitted to condor (T2_US_UCSD, rhel8 image); `wait_for_condor` blocks until the
 jobs finish, then the toys are harvested and plotted. A valid grid proxy is required first
@@ -63,18 +75,18 @@ Goodness-of-fit plot (`gof_plot.{png,pdf}` + `gof_results.txt` in the fit area).
 Use `condor=True` if the toys are condor output tarballs (`*_gof_toys_output_*.tgz`),
 or `condor=False` for a single local toy file:
 ```
-python3 -c "from TwoDAlphabet import plot; plot.plot_gof('rpfmult_Binningv9_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area', condor=True)"
+python3 -c "from TwoDAlphabet import plot; plot.plot_gof('rpfmult_Binningv10_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area', condor=True)"
 ```
 
 Transfer-factor plot (`transfer_func.{png,pdf}`, from the b-only postfit pass/fail ratio):
 ```
-python3 -c "from TwoDAlphabet import plot; plot.plot_transfer_funcs('rpfmult_Binningv9_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area')"
+python3 -c "from TwoDAlphabet import plot; plot.plot_transfer_funcs('rpfmult_Binningv10_Inputv25_SR_BkgMC','Signal_M3000GeV_e4_SR-2x0_area')"
 ```
 
 F-test plot (`ftest_<poly1>_vs_<poly2>_notoys.{png,pdf}`). The leading `sys.argv` is only
 needed because the run script reads the working area from `sys.argv[1]` at import:
 ```
-python3 -c "import sys; sys.argv=['x','rpfmult_Binningv9_Inputv25_SR_BkgMC','config_Binningv9_Inputv25_SR_BkgMC.json']; import runWith1DVanilla_v25_SR_BkgMC as m; m.test_FTest('1x0','2x0','Signal_M3000GeV_e4_SR')"
+python3 -c "import sys; sys.argv=['x','rpfmult_Binningv10_Inputv25_SR_BkgMC','config_Binningv10_Inputv25_SR_BkgMC.json']; import runWith1DVanilla_v25_SR_BkgMC as m; m.test_FTest('1x0','2x0','Signal_M3000GeV_e4_SR')"
 ```
 
 ## Histogram Versions
@@ -127,6 +139,20 @@ python3 -c "import sys; sys.argv=['x','rpfmult_Binningv9_Inputv25_SR_BkgMC','con
 - v24: Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic
  - v25:  Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic but binning such that the overflow is included
 
+## Skimmed Ntuple Versions
+
+Versioning convention (in effect from now on): **`vX.Y.Z`** where
+- **X** = ntuple version (the underlying v4 ntuples)
+- **Y** = skimming version
+- **Z** = small changes / re-running with a different RNN / just re-running the `skimmed_ntuple_processing` script
+
+- v4.0.11: v4 ntuples skimmed to be v4.0 (also called v4.0.9 before a good naming convention was established).
+  Uses the RNN retraining that excluded some of the not-well-modelled regions.
+- v5.0.0: New v5 input ntuples (raw inputs under `Cosmics/*v5a`). Adds a `bField > 0.1 T` (magnet-on)
+  requirement as the first cutflow step in `skim_ntuples.C`, before the trigger, and keeps the new
+  `bField` branch in the skimmed output. `NTUPLE_VERSION` is now embedded in the skimmed filenames
+  (`skimmed_..._v5.0.0[_jobN].root`).
+
 ## Binning Versions
 
 - v7: SR/VR1 BINS = [200, 252, 452, 800, 1296, 1941, 2733, 3674, 4763, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
@@ -141,7 +167,7 @@ python3 -c "import sys; sys.argv=['x','rpfmult_Binningv9_Inputv25_SR_BkgMC','con
 
 This will make the inputs using the `generate_condor_inputs.py` file:
  - `input_2DA_SR.txt`: contains binning / SR / blind specific template JSON, called `config_Binningv8_InputTemplate_SR_Blind.json`, the mass point and the TF
- - `condor_2DA_SR.cfg` quees from `input_2DA_SR.txt` to condor, note the directory name is hardcoded here, e.g. `rpf2x0_Binningv8_Inputv23_SR`
+ - `step7_condor_2DA_SR.cfg` quees from `input_2DA_SR.txt` to condor, note the directory name is hardcoded here, e.g. `rpf2x0_Binningv8_Inputv23_SR`
 - Condor then will run `run_2DA_SR_batch.sh`, note the directory name is hardcoded here too, e.g. `rpf2x0_Binningv8_Inputv23_SR` together wtih `histograms_for_2DAlphabet_v23`, this sets up the env in the condor node, and runs run_single_signal_2DA.py
 - `run_single_signal_2DA.py` is a templated single signal running version
 
@@ -150,6 +176,32 @@ This will make the inputs using the `generate_condor_inputs.py` file:
 - SR (Signal Region): pT > 200 GeV, RNNScore >= 0.9999
 - VR1 (Validation Region 1): pT > 200 GeV, 0.45 <= RNNScore < 0.9999
 - VR2 (Validation Region 2): pT < 200 GeV, RNNScore >= 0.9999 --> with "alt" binning
+
+## Conventions and gotchas
+
+### Mass convention (`M<N>`)
+The `M<N>GeV` in sample/signal names (e.g. `Signal_M3000GeV_e4_SR`) is the **muon pT**, which is
+**half** of the DM particle mass: each DM particle decays to two muons that split its mass evenly.
+So `M3000` means a **6000 GeV DM** particle producing two 3000 GeV muons. The fit/templates are
+always in terms of the (per-muon) pT, hence the factor of two relative to the physical DM mass.
+
+### Vendored frameworks vs. analysis code
+`2DAlphabet/`, `CombineHarvester/`, and `HiggsAnalysis/` are vendored frameworks, not analysis code.
+2DAlphabet is a local `setup.py develop` fork, so edits under `2DAlphabet/TwoDAlphabet/` take effect
+live. Modified variants `twoDalphabetMod.py` / `alphawrapMod.py` / `binningMod.py` sit next to the
+originals — the current run scripts import the **non-`Mod`** modules
+(`from TwoDAlphabet.twoDalphabet import ...`); the `Mod` files are experimental. Check the imports
+before assuming which is in use.
+
+### Blinding flags (`blindedFitNA` inverts the meaning)
+In the config `OPTIONS`, `blindedFit: ["pass"]` / `blindedPlots: ["pass"]` **blind** the pass region.
+The `...NA` variant `blindedFitNA: ["pass"]` means the region is **UNblinded** (the `NA` suffix
+inverts the meaning). Blinding logic lives in `2DAlphabet/TwoDAlphabet/twoDalphabet.py`.
+
+### Run-script arguments
+Each `runWith1DVanilla_*.py` takes the **working-area directory name as `sys.argv[1]`**, but the
+config JSON is **hardcoded inside the script** (`configJSON = ...` near the top), not passed on the
+command line — despite the older "Example running" snippet above showing a second argument.
 
 ## Complete Analysis Pipeline
 
@@ -197,7 +249,7 @@ root -l -b -q 'skim_ntuples.C("matched_muon", "vr2", "/path/to/raw/ntuples/")'
 - Uses `run_skim_batch.sh` as the wrapper script
 - Submit via condor with parameters: `object`, `region`, `base_dir`
 ```bash
-condor_submit condor_skim.cfg
+condor_submit step2_condor_skim.cfg
 ```
 
 **Output:** `skimmed_{collection}_{region}_{dataset}.root` files
@@ -256,7 +308,7 @@ python3 skimmed_ntuple_processing_script.py \
 - Input list: `input_ntuples_v4.0.9.txt`
 - Submit jobs for each region (sr, vr1, vr2)
 ```bash
-condor_submit condor_ntuple_processing.cfg
+condor_submit step6_condor_ntuple_processing.cfg
 ```
 
 **Output:**
@@ -292,6 +344,69 @@ source twoD-env/bin/activate
    - Data: `EaDM_Run3_Cosmics_Data_All_{SR/VR1/VR2}.root`
    - Signal: `EaDM_Signal_M{mass}GeV_{SR/VR1/VR2}.root`
    - BkgMC: `EaDM_CosmicMC_Data_{SR/VR1/VR2}.root`, `EaDM_NeutrinoMC_Data_{SR/VR1/VR2}.root`
+
+## Systematics and post-fit validation (GoF, pulls, correlation matrix, impacts)
+
+These are the diagnostics produced/consulted after the fit (step 7) and before limits (step 8).
+Most are generated automatically by `runWith1DVanilla_v25_*.py`; the impacts are a separate script.
+
+### Systematics
+Only the **signal** carries named nuisances; the background is data-driven (transfer function), so
+its "nuisances" are the TF parameters and the free-floating fail-region bin yields, not unit-Gaussian
+priors. The four signal systematics (defined in each `config_*.json`, prefixed `CMS_EXO26004_`):
+
+| Nuisance | Type | Meaning |
+|---|---|---|
+| `CMS_EXO26004_livetime` | lnN (`CODE 0`, `VAL 1.05`) | 5% flat normalization (detector livetime) |
+| `CMS_EXO26004_pT` | shape (up/down templates) | pT-scale, `pTsyst` |
+| `CMS_EXO26004_t0` | shape | cosmic timing `t0syst` |
+| `CMS_EXO26004_RNN` | shape | bootstrapping-based RNN-score syst (added in v24/v25) |
+
+### Goodness-of-fit
+Run inside step 7 (`--algo=saturated`, 5000 toys, on condor). Outputs in the `*_area` dir:
+`gof_plot.{png,pdf}` and `gof_results.txt` (test statistic, toys, **p-value**). A low p-value
+(≲0.05) means the background model describes the data poorly for that point. Re-plot from existing
+toys with the `plot.plot_gof(...)` one-liner under "Re-plotting the GoF" above (fast, no proxy).
+
+### Nuisance pulls and correlation matrix
+`StdPlots` (the `plot_fit` step) reads `fitDiagnosticsTest.root` and writes:
+- `nuisance_pulls.{pdf,root}` — post-fit pulls.
+- `plots_fit_b/` and `plots_fit_s/` `correlation_matrix.{png,pdf,txt}` — b-only and s+b post-fit
+  correlations. The bin-by-bin fail yields are dropped, leaving the TF params, the named systs, and
+  the POI. The `.txt` lists every pair, e.g. `..._rpf_2x0_par1:..._rpf_2x0_par0 = -0.62`.
+
+Regenerate the correlation matrix standalone (reads the existing fit, fast, no proxy):
+```
+python3 helper_scripts/run_corr_matrix.py rpfmult_Binningv10_Inputv25_SR_M3000GeV_e4 Signal_M3000GeV_e4_SR-2x0_area
+```
+After editing the config (e.g. renaming nuisances), `helper_scripts/refit_and_plots.py` re-runs the
+fit on the regenerated card and remakes the pulls + correlation matrices (edit its hardcoded
+`workingArea`/`signal` first).
+
+### Impacts
+Separate per-mass script: `runImpacts_v25_SR_<MASS>.py <workingArea> [--regen]`. Pass `--regen` to
+rebuild `base.root`+`card.txt` from the JSON first (needed after editing the config); omit it to
+re-run impacts on the existing card. Example:
+```
+  python3 runImpacts_v25_SR_M3000GeV_e4.py rpfmult_Binningv10_Inputv25_SR_M3000GeV_e4I
+```
+It runs three modes (the `__main__` selects which): `t1` = blinded Asimov with signal injected
+(`-t -1 --expectSignal 1`), `t0` = blinded Asimov background-only (`--expectSignal 0`), and an
+optional unblinded fit to data. Outputs `impacts_t{0,1}.{json,pdf}` in the `*_area` dir.
+
+**Seeding:** the background TF parameters are seeded into the impact fits from
+`rpf_params_*_<tf>_fitb.txt` (the b-only best fit) via `--setParameters`, so the Asimov is built at
+the data-driven background rather than the parametric defaults. This seed must be passed to **both**
+the `--doInitialFit` and `--doFits` steps of `TwoDAlphabet.Impacts` (each `-t -1` call regenerates
+its own Asimov); a fix to add it to `--doFits` lives in `2DAlphabet/TwoDAlphabet/twoDalphabet.py`.
+
+**Reading the plot:** rank by `impact_r`, not by the listed parameter value. The
+`..._Background_fail_*_bin_*` entries show huge "pulls" (hundreds–hundreds-of-thousands) because they
+are free-floating fail-region **yields in event units**, not σ pulls — only their `impact_r` is
+meaningful. The signal sensitivity is typically driven by the TF parameters (`rpf_2x0_par0/1/2`) with
+`pT` and `RNN` the leading experimental systematics. Note `rpf_2x0_par2` is bounded at its `0.0`
+upper constraint, so its impact is one-sided. For a signal whose pT falls in the blinded `pass_SIG`/
+`pass_HIGH` bins (very high mass), `r` is unconstrained and the impacts reflect only TF extrapolation.
 
 ### 8: Run Limits
 ```

@@ -29,7 +29,7 @@
             "LOC": "path/FILE:HIST"
         },
         "SIGNAME": {
-            "SYSTEMATICS":["lumi","RNN","pT","t0"],
+            "SYSTEMATICS":["CMS_EXO26004_livetime","CMS_EXO26004_RNN","CMS_EXO26004_pT","CMS_EXO26004_t0"],
             "COLOR": "red",
             "SCALE": 1.0,
             "TYPE": "SIGNAL",
@@ -38,23 +38,23 @@
         }
     },
     "SYSTEMATICS": {
-        "lumi": {
+        "CMS_EXO26004_livetime": {
                 "CODE": 0,
                 "VAL": 1.05
         },
-        "pT": {
+        "CMS_EXO26004_pT": {
             "ALIAS": "pTsyst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
         },
-        "t0": {
+        "CMS_EXO26004_t0": {
             "ALIAS": "t0syst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",
             "SIGMA": 1.0
         },
-        "RNN": {
+        "CMS_EXO26004_RNN": {
             "ALIAS": "RNNsyst",
             "UP": "path/FILE:HIST_UP",
             "DOWN": "path/FILE:HIST_DOWN",

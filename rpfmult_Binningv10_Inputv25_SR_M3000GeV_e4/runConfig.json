@@ -76,10 +76,10 @@
       "NAME": "SIGNAME",
       "SCALE": 1.0,
       "SYSTEMATICS": [
-        "lumi",
-        "RNN",
-        "pT",
-        "t0"
+        "CMS_EXO26004_livetime",
+        "CMS_EXO26004_RNN",
+        "CMS_EXO26004_pT",
+        "CMS_EXO26004_t0"
       ],
       "TITLE": "DM signal",
       "TYPE": "SIGNAL",
@@ -112,23 +112,23 @@
     }
   },
   "SYSTEMATICS": {
-    "RNN": {
+    "CMS_EXO26004_RNN": {
       "ALIAS": "RNNsyst",
       "DOWN": "./histograms_for_2DAlphabet_v25/EaDM_$process.root:h$region_$syst_down",
       "SIGMA": 1.0,
       "UP": "./histograms_for_2DAlphabet_v25/EaDM_$process.root:h$region_$syst_up"
     },
-    "lumi": {
+    "CMS_EXO26004_livetime": {
       "CODE": 0,
       "VAL": 1.05
     },
-    "pT": {
+    "CMS_EXO26004_pT": {
       "ALIAS": "pTsyst",
       "DOWN": "./histograms_for_2DAlphabet_v25/EaDM_$process.root:h$region_$syst_down",
       "SIGMA": 1.0,
       "UP": "./histograms_for_2DAlphabet_v25/EaDM_$process.root:h$region_$syst_up"
     },
-    "t0": {
+    "CMS_EXO26004_t0": {
       "ALIAS": "t0syst",
       "DOWN": "./histograms_for_2DAlphabet_v25/EaDM_$process.root:h$region_$syst_down",
       "SIGMA": 1.0,

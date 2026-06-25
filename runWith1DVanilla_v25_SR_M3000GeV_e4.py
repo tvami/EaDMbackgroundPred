@@ -271,7 +271,8 @@ if __name__ == "__main__":
     make_workspace()
 
     signal_areas = ["Signal_M3000GeV_e4_SR"] * 3
-    tf_types = ['2x0', '1x0', '0x0']
+    # tf_types = ['2x0', '1x0', '0x0']
+    tf_types = ['2x0']
 
     for signal, tf_type in zip(signal_areas,tf_types) :
       fitPassed = False
