@@ -23,7 +23,7 @@ args = parser.parse_args()
 # =========================
 # Configuration constants
 # =========================
-PT_MAX_CLIP = 6000.0  # Maximum pT value for clipping (GeV)
+PT_MAX_CLIP = 7000.0  # Maximum pT value for clipping (GeV)
 N_SEG_CLIP = 199       # Maximum segment count for clipping
 
 # =========================
@@ -33,9 +33,9 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 if args.runType != '2DAInput':
     # Path to trained RNN weights (transferred by condor to current directory)
     # checkpoint_path = './rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
-    # checkpoint_path = './rnn_v5_188k_final_weights.ckpt'
     # checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
-    checkpoint_path = './rnn_retrain_weights_june2026_privateCosmicMC.ckpt'
+    # checkpoint_path = './rnn_retrain_weights_june2026_privateCosmicMC.ckpt'  # v5.0.1 RNN
+    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'  # v5.0.2 RNN
 
     # Define model architecture (must match training architecture exactly)
     model = Sequential([
@@ -162,10 +162,14 @@ if args.runType == 'Process' or args.runType == 'Both':
         else:
             rnn_scores = np.empty((0, 1))
 
-        if args.sampleType == "Data":
+        # Data and BkgMC take the fast, nominal-only path: BkgMC serves as pseudo-data
+        # templates (NeutrinoMC/CosmicMC) and the background is data-driven, so its t0 and
+        # 100x bootstrap RNN-syst variations are unused. Skipping them avoids the ~12h/job
+        # bootstrap cost on the large merged BkgMC sample. (Signal still runs the full path.)
+        if args.sampleType in ("Data", "BkgMC"):
             # =========================
             # Safety Checks & Diagnostics
-            # =========================        
+            # =========================
 
             print("\n==============================")
             print("Safety Checks & Diagnostics")
@@ -619,12 +623,23 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                     "RNNScore")
                 rnn_score_hist.Scale(1 / rnn_score_hist.Integral())
 
-        # Extract era info from input filename for output naming
-        # e.g., "skimmed_matched_muon_sr_Ntuplizer-Cosmics_All_v4.root" -> "All"
-        # e.g., "skimmed_matched_muon_sr_Ntuplizer-Cosmics_Run2022B-CosmicTP-PromptReco-v1_v4.root" -> "Run2022B"
+        # Extract an era+version suffix from the input filename for output naming.
+        # The PromptReco version is always included so multi-version eras (e.g.
+        # Run2022D-v2/-v3, Commissioning2023-v1/-v2) and the Commissioning eras do
+        # not collide onto one RECREATE'd output file (silent overwrite).
+        # e.g. "..._Ntuplizer-Cosmics_Run2023B-CosmicTP-PromptReco-v1_v5a..."       -> "_Run2023Bv1"
+        # e.g. "..._Ntuplizer-Cosmics_Commissioning2023-CosmicTP-PromptReco-v2_..." -> "_Commissioning2023v2"
+        # e.g. "..._Ntuplizer-Cosmics_All_v4.root"                                  -> "_All"
         input_basename = Path(args.inputFile).stem
-        era_match = re.search(r'Ntuplizer-Cosmics_(Run\d{4}[A-Z]|All)', input_basename)
-        era_suffix = f"_{era_match.group(1)}" if era_match else ""
+        era_match = re.search(
+            r'Ntuplizer-Cosmics_(Run\d{4}[A-Z]|Commissioning\d{4})-\w+-PromptReco-(v\d+)',
+            input_basename)
+        if era_match:
+            era_suffix = f"_{era_match.group(1)}{era_match.group(2)}"
+        elif re.search(r'Ntuplizer-Cosmics_All', input_basename):
+            era_suffix = "_All"
+        else:
+            era_suffix = ""
         
         # Write all histograms to output ROOT file for use as 2DAlphabet inputs
         output_filename = f"EaDM_Run3_Cosmics_Data{era_suffix}_{args.region.upper()}.root"
@@ -680,6 +695,19 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 .Define("pT_max", "ROOT::VecOps::Max(muon_fromGenTrack_Pt[quality_mask])")        # Highest pT among quality muons
                 .Define("pT_max_clipped", f"std::min(pT_max, {PT_MAX_CLIP})")                     # Clip pT to stay within histogram range
                 .Define("n_Seg_clipped", f"std::min(n_Seg, {N_SEG_CLIP})")                        # Clip segment count to stay within histogram range
+                # Per-pT-bin trigger SF relative uncertainty (sf_err/sf) from the last 4 bins of
+                # trig_study_h2_l1dt_eff_probeUpper_dataMC_ratio_eraspread_SF.json. The SR/VR1 cut is
+                # pT > 200, so only the >=200 bins are ever populated there; the <200 value covers VR2.
+                # The top bin (500-1000) is overflow-inclusive, so pT >= 500 all use its uncertainty.
+                .Define(
+                    "trig_sf_relerr",
+                    "pT_max < 200 ? 0.013681 : "
+                    "(pT_max < 300 ? 0.015802 : "
+                    "(pT_max < 500 ? 0.018211 : "
+                    "0.021639))"
+                )
+                .Define("trig_weight_up",   "1.0 + trig_sf_relerr")   # vary yields up by the SF uncertainty
+                .Define("trig_weight_down", "1.0 - trig_sf_relerr")   # vary yields down by the SF uncertainty
             )
 
             # Define pT-shifted dataframe for pT scale systematic (upward variation)
@@ -826,6 +854,19 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             fail_t0_down_hist = rnn_t0_down_fail_df.Histo2D(("hfail_t0syst_down", "hfail_t0syst_down; p_{T} (GeV);# of Hits",
                     12500, 0, 12500, 200, 0, 200),
                     pT_var, n_Seg_var)
+            # Trigger SF systematic histograms: nominal pass/fail reweighted per-pT-bin by (1 +- sf_err/sf)
+            pass_trig_up_hist = pass_df.Histo2D(("hpass_trigsyst_up", "hpass_trigsyst_up; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var, "trig_weight_up")
+            fail_trig_up_hist = fail_df.Histo2D(("hfail_trigsyst_up", "hfail_trigsyst_up; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var, "trig_weight_up")
+            pass_trig_down_hist = pass_df.Histo2D(("hpass_trigsyst_down", "hpass_trigsyst_down; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var, "trig_weight_down")
+            fail_trig_down_hist = fail_df.Histo2D(("hfail_trigsyst_down", "hfail_trigsyst_down; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var, "trig_weight_down")
             if args.region == 'vr2':
                 rnn_score_hist = df2.Histo1D(("hist_RNNScore", "hist_RNNScore; RNN Score; Ratio of Events / Bin", 
                     100, 0, 1),
@@ -845,13 +886,13 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 # Normalize signal histograms to 100 events (arbitrary reference cross section)
                 # so that 2DAlphabet can later re-scale by the true signal cross section
                 print("Scaling histograms!")
-                for hist in [pass_hist, fail_hist, pass_pT_up_hist, pass_pT_down_hist, fail_pT_up_hist, fail_pT_down_hist, pass_t0_up_hist, pass_t0_down_hist, fail_t0_up_hist, fail_t0_down_hist, pass_rnn_up_hist, pass_rnn_down_hist, fail_rnn_up_hist, fail_rnn_down_hist]:
+                for hist in [pass_hist, fail_hist, pass_pT_up_hist, pass_pT_down_hist, fail_pT_up_hist, fail_pT_down_hist, pass_t0_up_hist, pass_t0_down_hist, fail_t0_up_hist, fail_t0_down_hist, pass_rnn_up_hist, pass_rnn_down_hist, fail_rnn_up_hist, fail_rnn_down_hist, pass_trig_up_hist, fail_trig_up_hist, pass_trig_down_hist, fail_trig_down_hist]:
                     hist.Scale(100 / cutflow_hist.GetBinContent(1))
 
             # Replace empty bins with a small sentinel value (1e-8) to avoid log(0) issues in 2DAlphabet fits
             for x_bin in range(1, pass_hist.GetNbinsX() + 1):
                 for y_bin in range(1, pass_hist.GetNbinsY() + 1):
-                    for hist in [pass_hist,fail_hist,pass_pT_up_hist,pass_pT_down_hist,fail_pT_up_hist,fail_pT_down_hist,pass_t0_up_hist,pass_t0_down_hist,fail_t0_up_hist,fail_t0_down_hist,pass_rnn_up_hist,pass_rnn_down_hist,fail_rnn_up_hist,fail_rnn_down_hist]:
+                    for hist in [pass_hist,fail_hist,pass_pT_up_hist,pass_pT_down_hist,fail_pT_up_hist,fail_pT_down_hist,pass_t0_up_hist,pass_t0_down_hist,fail_t0_up_hist,fail_t0_down_hist,pass_rnn_up_hist,pass_rnn_down_hist,fail_rnn_up_hist,fail_rnn_down_hist,pass_trig_up_hist,fail_trig_up_hist,pass_trig_down_hist,fail_trig_down_hist]:
                         bin_content = hist.GetBinContent(x_bin, y_bin)
                         if bin_content == 0:
                             hist.SetBinContent(x_bin, y_bin, 1e-08)
@@ -872,5 +913,9 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             pass_rnn_down_hist.Write()
             fail_rnn_up_hist.Write()
             fail_rnn_down_hist.Write()
+            pass_trig_up_hist.Write()
+            pass_trig_down_hist.Write()
+            fail_trig_up_hist.Write()
+            fail_trig_down_hist.Write()
             if args.region == 'vr2': rnn_score_hist.Write()
             root_file.Close()

@@ -11,7 +11,7 @@ twoD = TwoDAlphabet(wa, wa + '/runConfig.json', loadPrevious=True)
 
 # Mirror StdPlots: ignore the bin-by-bin nuisances so the matrix shows the TF params + named systs
 varsToIgnore = twoD.ledger.alphaParams.name[
-    twoD.ledger.alphaParams.name.str.contains(r'_bin_\d+-\d+')
+    twoD.ledger.alphaParams.name.str.contains(r'_bin_\d+_\d+')
 ].to_list()
 print('Ignoring %d bin-by-bin params' % len(varsToIgnore))
 

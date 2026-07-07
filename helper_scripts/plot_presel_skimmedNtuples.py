@@ -8,27 +8,32 @@ ROOT.gROOT.SetBatch(True)
 ROOT.gErrorIgnoreLevel = ROOT.kWarning
 CMS.SetExtraText("Work in Progress")
 
-base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.11'
+# BASE_PATH env override: e.g. raw v5.0.0 skims for non-matched_muon collections (no RNN)
+base_path = os.environ.get('BASE_PATH', '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.2_wRNN')
+# base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.1_wRNN'
+# base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.0.11'
 # base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1'
 # base_path = '/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v4.1.1_wRNN/'
 # base_path = '/home/users/tvami/EarthAsDM/Ntuples_v4.1.1/'
 # base_path = '/home/users/smasanam/EarthAsDMProject/samples/Ntuples_v4.0.7'
 # collections = ['matched_muon', 'track', 'muon', 'tuneP']
-collections = ['matched_muon']
+# COLLECTIONS env override: comma-separated, e.g. COLLECTIONS=track,muon,tuneP
+collections = os.environ.get('COLLECTIONS', 'matched_muon').split(',')
 region = os.environ.get('REGION', 'sr')  # sr, vr1, vr2 (override with REGION env var)
 # Set ONLY_RNN=1 to produce just the RNN-score plot (skips other vars and profile plots)
 ONLY_RNN = os.environ.get('ONLY_RNN', '0') == '1'
 
+# v5.0.1_wRNN filenames: MC/signal carry the "_v5.0.0" version suffix; the data
+# "All" file is the hadd of every per-dataset skim (Run20XX + Commissioning20XX).
 samples_dict = {
-                "Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
-                # "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen.root"],
-                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen.root"],
-                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen.root"],
-                # "2023D Cosmics": ["Data", "Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v2_v4.root"]
-                "Run-3 Cosmics": ["Data", "Ntuplizer-Cosmics_All_v4.root"]
+                "Cosmic Bkg": ["BkgMC", "CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_v5.0.0.root"],
+                "Neutrino Bkg": ["BkgMC", "CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_v5.0.0.root"],
+                "M_{DM} = 2 TeV": ["Signal", "CosmicToMu_Par-MinP-1000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen_v5.0.0.root"],
+                "M_{DM} = 10 TeV": ["Signal", "CosmicToMu_Par-MinP-5000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen_v5.0.0.root"],
+                "M_{DM} = 20 TeV": ["Signal", "CosmicToMu_Par-MinP-10000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen_v5.0.0.root"],
+                "M_{DM} = 180 TeV": ["Signal", "CosmicToMu_Par-MinP-90000-MinTheta-91-MaxTheta-179-SurfaceDepth-e2_cosmuogen_v5.0.0.root"],
+                # "All" data hadd, includes Run20XX and Commissioning20XX datasets
+                "Run-3 Cosmics": ["Data", "Ntuplizer-Cosmics_All_v5a_v5.0.0.root"]
                 }
 
 base_var_dict = {
@@ -169,8 +174,10 @@ def get_cutflow_df(df, collection, region='sr'):
                 f"&& {pt_br} > 0 && {ptErr_br}/({pt_br}*{pt_br}) < 1e-3 "
                 f"&& abs({eta_br}) < 0.9 && {pt_cond}")
         .Define("_cf_pt_masked",
-                f"ROOT::VecOps::Where(_cf_pass, {pt_br}, "
-                f"ROOT::VecOps::RVec<float>({pt_br}.size(), -1.f))")
+                # cast both arms to RVec<double> so Where matches whether the branch is
+                # float (raw skims) or double (wRNN files, promoted by the uproot rewrite)
+                f"ROOT::VecOps::Where(_cf_pass, ROOT::VecOps::RVec<double>({pt_br}), "
+                f"ROOT::VecOps::RVec<double>({pt_br}.size(), -1.))")
         .Define("_cf_best",
                 "_cf_pt_masked.size()>0 ? (int)std::distance("
                 "_cf_pt_masked.begin(), std::max_element("
@@ -191,6 +198,10 @@ for collection in tqdm(collections, desc="Collections"):
     if collection == 'muon': var_dict.update(muon_var_dict)
     if collection == 'matched_muon': var_dict.update(matched_muon_var_dict)
     if collection == 'tuneP': var_dict.update(tuneP_var_dict)
+
+    # RNNScore only exists in matched_muon wRNN files; drop it for other collections
+    if collection != 'matched_muon':
+        var_dict.pop('RNNScore', None)
 
     if ONLY_RNN:
         var_dict = {'RNNScore': base_var_dict['RNNScore']}
@@ -451,7 +462,7 @@ for collection in tqdm(collections, desc="Collections"):
                 pave.SetTextAlign(12)  # left aligned
                 pave.SetTextSize(0.025)
                 pave.AddText(f"Collection = {collection}")
-                pave.AddText("Signal Depth: 0.01 mm")
+                pave.AddText("Signal Depth: 0.1 m")
                 pave.AddText(presel_steps_arr[num])
                 pave.Draw()
                 leg.Draw()
@@ -499,6 +510,8 @@ for collection in tqdm(collections, desc="Collections"):
             #for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
             for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
 
+                if sample not in samples_dict:  # e.g. Neutrino Bkg disabled until reprocessed
+                    continue
                 file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
                 df = ROOT.RDataFrame("tree", f"{file_path}_{samples_dict[sample][1]}")
                 h = 0
@@ -584,7 +597,7 @@ for collection in tqdm(collections, desc="Collections"):
                 pave.SetTextSize(0.025)
                 pave.AddText(base_path[-6:])
                 pave.AddText(f"collection = {collection}")
-                pave.AddText("Depth: 0.01 mm")
+                pave.AddText("Depth: 0.1 m")
                 pave.AddText(presel_steps_arr[num])
                 pave.AddText(sample)
                 pave.Draw()
@@ -624,94 +637,213 @@ for collection in tqdm(collections, desc="Collections"):
             min = var_dict[main_var][2]
             max = var_dict[main_var][3]
 
-            c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-            c.SetLeftMargin(0.2)
-            c.SetRightMargin(0.2)
-            c.SetLogy(True)
+            # Per-region pass/fail boundaries (match bnd_nominal in
+            # skimmed_ntuple_processing_script.py) and blinding policy. Only DATA
+            # is ever blinded; MC (bkg + signal) is always shown in full.
+            #   draw_signal : signal only populates the SR
+            #   blind_above : hide DATA at RNNScore >= this value (None = no blinding)
+            #   fail_cut    : fail/pass boundary for the 2-bin plot
+            #   pass_hi     : upper edge of the pass region (None = 1.0)
+            #   line_vals   : RNNScore values at which to draw a vertical marker
+            #   region_hi : upper RNNScore bound of the region itself; nothing
+            #               (data OR MC) is shown above it (None = up to 1.0)
+            if region == 'sr':
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, 0.9999, 0.9999, None, None
+                line_vals = [0.9999]
+            elif region == 'vr1':
+                # VR1 is the RNN region orthogonal to the SR (RNNScore < 0.9999):
+                # neither data nor MC is shown above 0.9999. Validation region ->
+                # unblinded below. The line marks the 0.45 pass/fail boundary.
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, 0.45, 0.9999, 0.9999
+                line_vals = [0.45]
+            elif region == 'vr2':
+                # VR2 is a validation region (orthogonal to the SR via the pT
+                # cut) -> unblinded.
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, 0.9999, None, None
+                line_vals = [0.9999]
+            else:
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, None, 0.9999, None, None
+                line_vals = [0.9999]
 
-            # define axis ranges
-            hframe = ROOT.TH1F("hframe", "", nbins, min, max)
-            hframe.SetStats(False)
-            hframe.GetXaxis().SetTitle('RNN Score')
-            hframe.GetYaxis().SetTitle(var_dict[main_var][7])
-            hframe.GetXaxis().SetLabelSize(0.04)
-            hframe.GetYaxis().SetLabelSize(0.04)
-            hframe.GetXaxis().SetMaxDigits(3)
-            hframe.GetXaxis().SetNdivisions(510)
-            hframe.Draw()
+            samples_to_draw = ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg"]
+            if draw_signal:
+                samples_to_draw += ["M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]
+            # drop samples disabled in samples_dict (e.g. Neutrino Bkg until reprocessed)
+            samples_to_draw = [s for s in samples_to_draw if s in samples_dict]
 
-            hframe.SetMinimum(5e-5)  # force log Y minimum
-            hframe.SetMaximum(1)     # optional
-
-            leg = ROOT.TLegend(0.525, 0.7, 0.725, 0.9)
-            leg.SetBorderSize(0)
-            leg.SetFillStyle(0)
-            leg.SetTextFont(42)
-
-            color_numerator = 7
-            # for sample in ["2023D Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
-            for sample in ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg", "M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]:
-
-                file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
-                full_path = f"{file_path}_{samples_dict[sample][1]}"
-                if not os.path.exists(full_path):
-                    tqdm.write(f"  WARNING: missing {full_path} - skipping {sample}")
-                    color_numerator -= 1
-                    continue
-                df = ROOT.RDataFrame("tree", full_path)
-                h = 0
-                h = df.Histo1D(
-                        (f"h_RNNScore_{sample}", "", nbins, min, max),
-                        "RNNScore"
-                    )
-
-                garbage_protect_list.append(h)
-                histo = h.GetValue()
-                histo.SetDirectory(0)
-                fold_overflow(histo)
-                if histo.Integral() > 0:
-                    histo.Scale(1/histo.Integral())
-                is_data = samples_dict[sample][0] == "Data"
-                is_cosmic_bkg = sample == "Cosmic Bkg"
-                histo.SetLineColor(ROOT.kBlack if is_data else color_numerator)
-                histo.SetMarkerColor(ROOT.kBlack if is_data else color_numerator)
-                histo.SetMarkerStyle(20)
-                histo.SetMarkerSize(0.6 if is_data else 1.0)
-                histo.SetLineWidth(2)
-                if is_cosmic_bkg:
-                    histo.SetFillColor(color_numerator)
-                    histo.SetFillStyle(3004)
-                if is_data:
-                    histo.Draw("P SAME")
-                    leg.AddEntry(histo, sample, "p")
-                elif is_cosmic_bkg:
-                    histo.Draw("HIST SAME")
-                    leg.AddEntry(histo, sample, "f")
+            # Draw three versions: linear [0,1], the -log10(1-RNNScore) transform
+            # (zooms the high-score tail toward the SR cut, x=4), and a 2-bin
+            # Fail/Pass summary.
+            for rnn_mode in ['lin', 'log', 'twobin']:
+                if rnn_mode == 'log':
+                    # float32 RNNScore resolves S only to ~1e-7 from 1, so real
+                    # values stop near x=7; the S=1.0 pile folds into the top bin.
+                    t_nbins, t_min, t_max = 140, 0.0, 7.0
+                    x_title = '-log_{10}(1 - RNN Score)'
+                    fname_suffix = '_log'
+                elif rnn_mode == 'twobin':
+                    t_nbins, t_min, t_max = 2, 0.0, 2.0
+                    x_title = ''
+                    fname_suffix = '_twobin'
                 else:
-                    histo.Draw("HIST SAME")
-                    leg.AddEntry(histo, sample, "l")
-                color_numerator -= 1
+                    t_nbins, t_min, t_max = nbins, min, max
+                    x_title = 'RNN Score'
+                    fname_suffix = ''
 
-            pave = ROOT.TPaveText(0.23, 0.80, 0.38, 0.90, "NDC")
-            pave.SetFillColor(0)
-            pave.SetBorderSize(0)
-            pave.SetTextAlign(12)  # left aligned
-            pave.SetTextSize(0.025)
-            pave.AddText(f"Collection = {collection}")
-            pave.AddText("Signal Depth: 0 mm")
-            pave.AddText(presel_steps_arr[num])
-            pave.Draw()
-            leg.Draw()
-            
-            # overflow_line = ROOT.TLine(max - bin_width, hframe.GetMinimum(), max - bin_width, hframe.GetMaximum())
-            # overflow_line.SetLineStyle(2)
-            # overflow_line.SetLineColor(ROOT.kGray + 2)
-            # overflow_line.Draw()
+                # Region boundary cap (VR1): the region ends at region_hi, so the
+                # axis stops there (the 2-bin plot already excludes it via pass_hi).
+                if region_hi is not None and rnn_mode != 'twobin':
+                    if rnn_mode == 'log':
+                        t_max = -ROOT.TMath.Log10(1.0 - region_hi)
+                        t_nbins = int(round((t_max - t_min) / 0.05)) or 1
+                    else:
+                        t_max = region_hi
+                        t_nbins = int(round((t_max - t_min) / 0.01)) or 1
 
-            CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
-            os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}.png")
-            c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}.pdf")
+                # RNNScore value -> x position on the current axis (for blinding
+                # bin lookup and vertical lines)
+                def xpos(s):
+                    if rnn_mode == 'log':
+                        sc = s if s < 0.9999999999 else 0.9999999999
+                        return -ROOT.TMath.Log10(1.0 - sc)
+                    return s
+
+                c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+                c.SetLeftMargin(0.2)
+                c.SetRightMargin(0.2)
+                c.SetLogy(True)
+
+                # define axis ranges
+                hframe = ROOT.TH1F("hframe", "", t_nbins, t_min, t_max)
+                hframe.SetStats(False)
+                hframe.GetXaxis().SetTitle(x_title)
+                hframe.GetYaxis().SetTitle(var_dict[main_var][7])
+                hframe.GetXaxis().SetLabelSize(0.04)
+                hframe.GetYaxis().SetLabelSize(0.04)
+                hframe.GetXaxis().SetMaxDigits(3)
+                hframe.GetXaxis().SetNdivisions(510)
+                if rnn_mode == 'twobin':
+                    hframe.GetXaxis().SetBinLabel(1, 'Fail')
+                    hframe.GetXaxis().SetBinLabel(2, 'Pass')
+                    hframe.GetXaxis().SetLabelSize(0.06)
+                hframe.Draw()
+
+                hframe.SetMinimum(5e-5)  # force log Y minimum
+                hframe.SetMaximum(1)     # optional
+
+                leg = ROOT.TLegend(0.525, 0.7, 0.725, 0.9)
+                leg.SetBorderSize(0)
+                leg.SetFillStyle(0)
+                leg.SetTextFont(42)
+
+                color_numerator = 7
+                for sample in samples_to_draw:
+
+                    file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
+                    full_path = f"{file_path}_{samples_dict[sample][1]}"
+                    if not os.path.exists(full_path):
+                        tqdm.write(f"  WARNING: missing {full_path} - skipping {sample}")
+                        color_numerator -= 1
+                        continue
+                    is_data = samples_dict[sample][0] == "Data"
+                    df = ROOT.RDataFrame("tree", full_path)
+                    # restrict the whole plot (data AND MC) to the region
+                    if region_hi is not None:
+                        df = df.Filter(f"RNNScore < {region_hi}")
+
+                    if rnn_mode == 'twobin':
+                        failc = df.Filter(f"RNNScore < {fail_cut}").Count()
+                        if pass_hi is None:
+                            passc = df.Filter(f"RNNScore >= {fail_cut}").Count()
+                        else:
+                            passc = df.Filter(f"RNNScore >= {fail_cut} && RNNScore < {pass_hi}").Count()
+                        fv, pv = float(failc.GetValue()), float(passc.GetValue())
+                        histo = ROOT.TH1F(f"h2_{sample}", "", 2, 0.0, 2.0)
+                        histo.SetDirectory(0)
+                        histo.SetBinContent(1, fv)
+                        histo.SetBinContent(2, pv)
+                        if fv + pv > 0:
+                            histo.Scale(1.0 / (fv + pv))
+                        # blind DATA pass bin
+                        if is_data and blind_above is not None:
+                            histo.SetBinContent(2, 0)
+                    else:
+                        if rnn_mode == 'log':
+                            # clamp just below 1 so log10(1-S) stays finite
+                            df = df.Define("RNNt", "-log10(1.0 - (RNNScore < 0.9999999999 ? RNNScore : 0.9999999999))")
+                            var = "RNNt"
+                        else:
+                            var = "RNNScore"
+                        h = df.Histo1D(
+                                (f"h_RNNScore_{rnn_mode}_{sample}", "", t_nbins, t_min, t_max),
+                                var
+                            )
+                        garbage_protect_list.append(h)
+                        histo = h.GetValue()
+                        histo.SetDirectory(0)
+                        fold_overflow(histo)
+                        if histo.Integral() > 0:
+                            histo.Scale(1/histo.Integral())
+                        # blind DATA in the pass region (zero bins reaching above
+                        # the boundary; normalization is over the full range)
+                        if is_data and blind_above is not None:
+                            xb = xpos(blind_above)
+                            for ib in range(1, histo.GetNbinsX() + 1):
+                                if histo.GetXaxis().GetBinUpEdge(ib) > xb + 1e-9:
+                                    histo.SetBinContent(ib, 0)
+
+                    is_cosmic_bkg = sample == "Cosmic Bkg"
+                    histo.SetLineColor(ROOT.kBlack if is_data else color_numerator)
+                    histo.SetMarkerColor(ROOT.kBlack if is_data else color_numerator)
+                    histo.SetMarkerStyle(20)
+                    histo.SetMarkerSize(0.6 if is_data else 1.0)
+                    histo.SetLineWidth(2)
+                    if is_cosmic_bkg:
+                        histo.SetFillColor(color_numerator)
+                        histo.SetFillStyle(3004)
+                    if is_data:
+                        histo.Draw("P SAME")
+                        leg.AddEntry(histo, sample, "p")
+                    elif is_cosmic_bkg:
+                        histo.Draw("HIST SAME")
+                        leg.AddEntry(histo, sample, "f")
+                    else:
+                        histo.Draw("HIST SAME")
+                        leg.AddEntry(histo, sample, "l")
+                    garbage_protect_list.append(histo)
+                    color_numerator -= 1
+
+                # vertical marker(s) at the pass/blinding boundary (not for 2-bin)
+                if rnn_mode != 'twobin':
+                    for bval in line_vals:
+                        xl = xpos(bval)
+                        ln = ROOT.TLine(xl, hframe.GetMinimum(), xl, hframe.GetMaximum())
+                        ln.SetLineStyle(2)
+                        ln.SetLineColor(ROOT.kGray + 2)
+                        ln.SetLineWidth(2)
+                        ln.Draw()
+                        garbage_protect_list.append(ln)
+
+                pave = ROOT.TPaveText(0.23, 0.78, 0.40, 0.90, "NDC")
+                pave.SetFillColor(0)
+                pave.SetBorderSize(0)
+                pave.SetTextAlign(12)  # left aligned
+                pave.SetTextSize(0.025)
+                pave.AddText(f"Collection = {collection}")
+                pave.AddText(f"Region = {region}")
+                if draw_signal:
+                    pave.AddText("Signal Depth: 0.1 m")  # SurfaceDepth-e2 samples
+                if blind_above is not None:
+                    pave.AddText(f"Data blinded: RNN #geq {blind_above}")
+                pave.Draw()
+                leg.Draw()
+
+                CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+                os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}{fname_suffix}.png")
+                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}{fname_suffix}.pdf")
+                del c
+                del hframe
 
         else: # For variables that are current preselection variables, run all steps (pretrigger, trigger, nminus1, final)
             for num in range(4):
@@ -791,7 +923,7 @@ for collection in tqdm(collections, desc="Collections"):
                 pave.SetTextAlign(12)
                 pave.SetTextSize(0.025)
                 pave.AddText(f"Collection = {collection}")
-                pave.AddText("Depth: 0.01 mm")
+                pave.AddText("Depth: 0.1 m")
                 pave.AddText(presel_steps_arr[num])
                 pave.Draw()
                 leg.Draw()
@@ -1502,8 +1634,10 @@ for collection in tqdm(collections, desc="Collections"):
     c.SetRightMargin(0.08)
     c.SetLogy(True)
 
-    # Read one file first to determine binning and labels (skip bin 1 = "All events")
+    # Read one file first to determine binning and labels. The cutflow starts at the
+    # "Trigger" bin (dropping "All events" and any pre-trigger bins such as "B > 0.1 T").
     cf_nbins_raw = 0
+    cf_start_bin = 2  # fallback if no "Trigger" label is found
     cf_bin_labels = []
     for sample in list(samples_dict.keys()):
         file_path = f'{base_path}/{samples_dict[sample][0]}/{region}/{collection}/skimmed_{collection}_{region}'
@@ -1514,13 +1648,17 @@ for collection in tqdm(collections, desc="Collections"):
         h_cf = f.Get("h_cutflow")
         if h_cf:
             cf_nbins_raw = h_cf.GetNbinsX()
-            for b in range(2, cf_nbins_raw + 1):  # start from bin 2
+            for b in range(1, cf_nbins_raw + 1):
+                if h_cf.GetXaxis().GetBinLabel(b) == "Trigger":
+                    cf_start_bin = b
+                    break
+            for b in range(cf_start_bin, cf_nbins_raw + 1):  # start from the Trigger bin
                 lbl = h_cf.GetXaxis().GetBinLabel(b)
                 cf_bin_labels.append(lbl if lbl else f"Cut {b}")
         f.Close()
         break
 
-    cf_nbins = cf_nbins_raw - 1  # number of bins after dropping "All events"
+    cf_nbins = len(cf_bin_labels)  # number of bins from the Trigger bin onward
 
     if cf_nbins > 0:
         hframe_cf = ROOT.TH1F("hframe_cf", "", cf_nbins, 0.5, cf_nbins + 0.5)
@@ -1556,13 +1694,13 @@ for collection in tqdm(collections, desc="Collections"):
                 f.Close()
                 continue
 
-            # Build a new histogram dropping bin 1, normalised to bin 2 (Trigger)
-            trigger_val = h_cf_raw.GetBinContent(2)
+            # Build a new histogram starting at the Trigger bin, normalised to it
+            trigger_val = h_cf_raw.GetBinContent(cf_start_bin)
             h_cf = ROOT.TH1F(f"h_cf_{sample}", "", cf_nbins, 0.5, cf_nbins + 0.5)
             h_cf.SetDirectory(0)
-            for b in range(2, cf_nbins_raw + 1):
+            for b in range(cf_start_bin, cf_nbins_raw + 1):
                 val = h_cf_raw.GetBinContent(b) / trigger_val if trigger_val > 0 else 0
-                h_cf.SetBinContent(b - 1, val)
+                h_cf.SetBinContent(b - cf_start_bin + 1, val)
             f.Close()
 
             is_data = samples_dict[sample][0] == "Data"
@@ -1620,9 +1758,9 @@ for collection in tqdm(collections, desc="Collections"):
             if not h_cf:
                 f.Close()
                 continue
-            trigger_bin = h_cf.GetBinContent(2)  # Trigger bin
+            trigger_bin = h_cf.GetBinContent(cf_start_bin)  # Trigger bin
             effs = []
-            for b in range(2, cf_nbins_raw + 1):  # skip bin 1 ("All events")
+            for b in range(cf_start_bin, cf_nbins_raw + 1):  # start at the Trigger bin
                 if trigger_bin > 0:
                     effs.append(h_cf.GetBinContent(b) / trigger_bin * 100.0)
                 else:
@@ -1708,7 +1846,7 @@ for collection in tqdm(collections, desc="Collections"):
         lines.append(r"    \hline")
         lines.append(r"  \end{tabular}")
         lines.append(f"  \\caption{{Cumulative cut efficiencies for the {latex_escape(collection)} collection "
-                     f"in the {'pre-SR' if region == 'sr' else region.upper()} region, normalised to the first cutflow bin.}}")
+                     f"in the {'pre-SR' if region == 'sr' else region.upper()} region, normalised to the Trigger bin.}}")
         lines.append(f"  \\label{{tab:cut_efficiency_{collection}_{region}}}")
         lines.append(r"\end{table}")
 

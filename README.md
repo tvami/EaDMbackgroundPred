@@ -63,6 +63,21 @@ Each takes the working-area name as its first argument, e.g.:
 ```
 python3 runWith1DVanilla_v25_VR1_M3000GeV_e4.py rpfmult_Binningv10_Inputv25_VR1_M3000GeV_e4
 ```
+
+### Current run files (Binningv13 / Inputv28)
+Same structure, pointed at `histograms_for_2DAlphabet_v28` (skimmed ntuples v5.0.4_wRNN) with the
+overflow moved to 7001 GeV (v5.0.4 clips pT at 7000, so the tail piles at 7000 instead of 10000). VR2
+keeps the `Binningv9alt` binning; the config JSON is hardcoded in each script's `configJSON = ...`.
+
+| Run file | Config | Signal | Region cut |
+|---|---|---|---|
+| `runWith1DVanilla_v28_SR_BkgMC.py` | `config_Binningv13_Inputv28_SR_BkgMC.json` | `Signal_M3000GeV_e4_SR` | SR, "data" = cosmics BkgMC |
+| `runWith1DVanilla_v28_SR_M3000GeV_e4.py` | `config_Binningv13_Inputv28_SR_M3000GeV_e4.json` | `Signal_M3000GeV_e4_SR` | SR, RNNScore >= 0.9999 |
+| `runWith1DVanilla_v28_VR1_M3000GeV_e4.py` | `config_Binningv13_Inputv28_VR1_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR1` | VR1, 0.45 <= RNNScore < 0.9999 |
+| `runWith1DVanilla_v28_VR2_M3000GeV_e4.py` | `config_Binningv9alt_Inputv28_VR2_M3000GeV_e4.json` | `Signal_M3000GeV_e4_VR2` | VR2, pT < 200 GeV (alt binning), RNNScore >= 0.9999 |
+
+The previous version (Binningv12 / Inputv27, skimmed v5.0.3_wRNN, overflow at 10001) uses the
+`runWith1DVanilla_v27_*` / `config_Binningv12_Inputv27_*` files.
 The GoF is submitted to condor (T2_US_UCSD, rhel8 image); `wait_for_condor` blocks until the
 jobs finish, then the toys are harvested and plotted. A valid grid proxy is required first
 (`voms-proxy-init -voms cms`); set `useCondor = False` in `__main__` to run the toys locally instead.
@@ -88,6 +103,60 @@ needed because the run script reads the working area from `sys.argv[1]` at impor
 ```
 python3 -c "import sys; sys.argv=['x','rpfmult_Binningv10_Inputv25_SR_BkgMC','config_Binningv10_Inputv25_SR_BkgMC.json']; import runWith1DVanilla_v25_SR_BkgMC as m; m.test_FTest('1x0','2x0','Signal_M3000GeV_e4_SR')"
 ```
+
+## Bumping to a new Input / Binning version (runbook)
+
+This is the exact procedure for turning a fresh set of skimmed ntuples into a runnable 2DAlphabet
+setup (worked example: skimmed `v5.0.3_wRNN` → **Input v27**, **Binning v12**). "Input v<N>" is the
+histogram-dir version; "Binning v<M>" is the analysis binning — the two are bumped independently.
+
+1. **Get the skimmed ntuples + 2DA histograms onto ceph.** Run step 6 (process skimmed ntuples). Its
+   condor wrapper writes the per-era `2DA/EaDM_*.root` straight to
+   `/ceph/.../Ntuples/Ntuples_v<X.Y.Z>_wRNN/`; for any jobs that returned locally,
+   `helper_scripts/organizeSkimmedNtuples.sh <X.Y.Z>` moves them there too. Add a bullet for `<X.Y.Z>`
+   under **Skimmed Ntuple Versions** below.
+
+2. **Build the histogram dir (step 6c).** `histograms_for_2DAlphabet_v<N>/` is what the configs point at:
+   ```bash
+   python3 collect_and_merge_histograms.py --version v<N> \
+       --source-base /ceph/.../Ntuples/Ntuples_v<X.Y.Z>_wRNN
+   ```
+   Add a bullet for `v<N>` under **Histogram Versions**.
+
+3. **Decide the binning.** If the analysis binning is unchanged, reuse the existing `Binningv<M>` name.
+   If you change it (e.g. moved the overflow), pick the next `v<M>` and record it under **Binning
+   Versions**. Region → binning convention:
+   - **SR**, **SR_BkgMC**, and **VR1** → one shared `Binningv<M>` (unified from v12 onward, incl. the
+     narrow overflow bin `[…,OVF-1,OVF]`). Before v12 these were split into `Binningv<M>b` (SR, with the
+     overflow bin) and `Binningv<M>a` (VR1, single wide last bin); v11 and earlier keep that a/b split.
+   - **VR2** → `Binningv9alt` (low-pT alt binning `[10,…,200]`, essentially never changes).
+
+4. **Make the four config JSONs** by copying the previous version's and editing only:
+   - `GLOBAL.path` → `./histograms_for_2DAlphabet_v<N>`
+   - `BINNING.default.X.BINS` if the binning changed (keep `SIGSTART`/`SIGEND` — these set the blinding
+     boundary; the last `BINS` edge must be ≤ 12500, the fine-hist x-range).
+   - Leave per-region `GLOBAL.SIGNAME`, `data_obs.ALIAS`/`TITLE`, systematics, and `OPTIONS` as-is
+     (note SR_BkgMC uses `data_obs.ALIAS = BkgMC_M4GeV_SR` and the `...NA` blinding flags = UNblinded).
+   ```bash
+   # e.g. SR M3000: config_Binningv11b_Inputv26_SR_M3000GeV_e4.json
+   #            ->  config_Binningv12_Inputv27_SR_M3000GeV_e4.json
+   ```
+   Names follow `config_Binningv<M>[alt]_Inputv<N>_<REGION>_<SIGNAL|BkgMC>.json` (SR/VR1 share the
+   unified `Binningv<M>` from v12 on; `alt` = VR2; the pre-v12 `a`/`b` suffixes are historical).
+
+5. **Make the four run scripts** by copying the previous `runWith1DVanilla_v<N-1>_*.py` to
+   `runWith1DVanilla_v<N>_*.py` and repointing the **hardcoded** `configJSON = "..."` near the top of
+   each to the matching config from step 4 (nothing else changes). Update the "Current run files" table.
+
+6. **Smoke-test one workspace build** (no fit, no proxy) — catches out-of-range `BINS` / hist-name
+   mismatches before you burn a condor cycle:
+   ```bash
+   python3 -c "import sys; sys.argv=['x','SMOKETEST']; import runWith1DVanilla_v<N>_SR_M3000GeV_e4 as m; m.make_workspace()"
+   rm -rf SMOKETEST
+   ```
+
+7. **Run the chain** per region (see "Current run files"), e.g.
+   `python3 runWith1DVanilla_v<N>_SR_M3000GeV_e4.py rpfmult_Binningv<M>_Inputv<N>_SR_M3000GeV_e4`.
 
 ## Histogram Versions
 
@@ -138,13 +207,23 @@ python3 -c "import sys; sys.argv=['x','rpfmult_Binningv10_Inputv25_SR_BkgMC','co
 - v23: Run-3 Cosmics w/ skimmed ntuples v4.0.9 but reduced range and new preselection applied correctly
 - v24: Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic
  - v25:  Run-3 Cosmics w/ skimmed ntuples v4.0.9_wRNN_v4, adding bootstrapping-based RNN systematic but binning such that the overflow is included
+ - v26: Run-3 Cosmics, finer high-pT binning (Binningv11a/v11b, overflow bin at 6000/6001) and the signal nuisances renamed to the `CMS_EXO26004_*` convention.
+ - v27: Run-3 Cosmics w/ skimmed ntuples v5.0.3_wRNN, whose pT range was extended to 10 TeV (v5.0.2 was too strict), so the high-pT tail that used to pile into the overflow now lands in its own bins → Binningv12 (overflow moved to 10001 GeV). Built with `collect_and_merge_histograms.py --source-base .../Ntuples_v5.0.3_wRNN` (see below) so the Commissioning20XX data eras are now merged into `EaDM_Run3_Cosmics_Data_All_*` (the old `Run202*`-only glob silently dropped them).
+ - v28: Run-3 Cosmics w/ skimmed ntuples v5.0.4_wRNN (same RNN as v5.0.2/3; the only change is `PT_MAX_CLIP` in `skimmed_ntuple_processing_script.py` lowered 10000→7000 GeV, so the high-pT tail now piles at 7000 instead of 10000). Paired with **Binningv13**, which moves the overflow edge 10001→7001 to sit just above the new clip. Built with `collect_and_merge_histograms.py --version v28 --source-base /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.4_wRNN`.
+
+> **Building the histogram dir.** `collect_and_merge_histograms.py -v <ver> [-s SOURCE_BASE]` collects the
+> step-6 `2DA/EaDM_*.root` trees into `histograms_for_2DAlphabet_<ver>/`, merging the per-era data files
+> into `EaDM_Run3_Cosmics_Data_All_{SR,VR1,VR2}.root`. `-s/--source-base` points at the tree base
+> (defaults to local `helper_scripts/`); after `organizeSkimmedNtuples.sh` has moved the trees to ceph,
+> pass the `.../Ntuples_vX.Y.Z_wRNN` path. The data merge now includes **all** eras (Run202* and
+> Commissioning20XX).
 
 ## Skimmed Ntuple Versions
 
 Versioning convention (in effect from now on): **`vX.Y.Z`** where
 - **X** = ntuple version (the underlying v4 ntuples)
-- **Y** = skimming version
-- **Z** = small changes / re-running with a different RNN / just re-running the `skimmed_ntuple_processing` script
+- **Y** = skimming version (changes in the cutflow [re-run the  `step2_condor_skim.cfg` / `skim_ntuples.C`])
+- **Z** = small changes / re-running with a different RNN / just re-running the `step6_condor_ntuple_processing.cfg` /  `skimmed_ntuple_processing` script
 
 - v4.0.11: v4 ntuples skimmed to be v4.0 (also called v4.0.9 before a good naming convention was established).
   Uses the RNN retraining that excluded some of the not-well-modelled regions.
@@ -152,6 +231,34 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
   requirement as the first cutflow step in `skim_ntuples.C`, before the trigger, and keeps the new
   `bField` branch in the skimmed output. `NTUPLE_VERSION` is now embedded in the skimmed filenames
   (`skimmed_..._v5.0.0[_jobN].root`).
+  - **Note:** v5.0.0 unintentionally merged in the commissioning data (the `Ntuplizer-Cosmics_Commissioning20XX`
+    entries in `input_ntuples_v5.0.0.txt`). This is kept on purpose from v5.0.1 onward.
+- v5.0.1: Re-run of the `step6_condor_ntuple_processing.cfg` / `skimmed_ntuple_processing` step on the
+  v5.0.0 skims (no cutflow change), using RNN training
+  `rnn_retrain_weights_june2026_privateCosmicMC.ckpt`. Commissioning data is retained (now intentionally).
+  Processed (wRNN) outputs land in `/ceph/.../Ntuples/Ntuples_v5.0.1_wRNN/` (organize the local condor
+  returns with `helper_scripts/organizeSkimmedNtuples.sh 5.0.1`). Bump the `Z` for each subsequent RNN
+  re-run (v5.0.2_wRNN, ...).
+- v5.0.2: Same as v5.0.1 (re-run of `step6` on the v5.0.0 skims, commissioning retained) but using the
+  older RNN training `rnn_v5_188k_final_weights.ckpt` instead. The RNN choice is set in two places, with
+  the previous (v5.0.1) `rnn_retrain_weights_june2026_privateCosmicMC.ckpt` kept commented out in both:
+  `checkpoint_path` in `helper_scripts/skimmed_ntuple_processing_script.py` and `transfer_input_files` in
+  `helper_scripts/step6_condor_ntuple_processing.cfg`. Organize with
+  `helper_scripts/organizeSkimmedNtuples.sh 5.0.2` (outputs in `Ntuples_v5.0.2_wRNN/`).
+- v5.0.3: Re-run of `step6` on the v5.0.0 skims, commissioning retained, using the **same** RNN as v5.0.2
+  (`rnn_v5_188k_final_weights.ckpt`). The change vs v5.0.2 is that the **pT range was extended to 10 TeV**
+  (v5.0.2 was too strict): the high-pT tail that v5.0.2 piled into the overflow now lands in its own
+  bins, which is why the analysis binning grows the extra edges (Binningv12, overflow at 10001) while the
+  total event count is unchanged from v26 (same events, just binned correctly — e.g. the ~1193 SR fail
+  events in [6000,10001) are no longer dumped at the 6001 overflow). Organized with
+  `helper_scripts/organizeSkimmedNtuples.sh 5.0.3` (this is now the `DEFAULT_VERSION`), outputs in
+  `/ceph/.../Ntuples/Ntuples_v5.0.3_wRNN/`. Feeds histogram version v27.
+- v5.0.4: Re-run of `step6` on the v5.0.0 skims, commissioning retained, using the **same** RNN as
+  v5.0.2/v5.0.3 (`rnn_v5_188k_final_weights.ckpt`). The only change vs v5.0.3 is that the pT clipping
+  bound `PT_MAX_CLIP` in `helper_scripts/skimmed_ntuple_processing_script.py` was lowered from 10000 to
+  **7000 GeV**: `pT_max` (and its up/down variants) is now `std::min(pT_max, 7000)` before filling, so
+  the high-pT tail piles up at 7000 instead of 10000. `N_SEG_CLIP` is unchanged. Organize with
+  `helper_scripts/organizeSkimmedNtuples.sh 5.0.4` (outputs in `Ntuples_v5.0.4_wRNN/`).
 
 ## Binning Versions
 
@@ -159,6 +266,43 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
 - v8: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6000], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 - v9: SR/VR1 BINS = [200, 350, 726, 1329, 2157, 3212, 4267, 6001], VR2 alt BINS = [10, 19, 34, 55, 82, 115, 155, 200]
 - v10: SR/VR1 BINS = [200, 350, 726, 1027, 1329, 2157, 3212, 4267, 6001] -- the v9 third bin [726,1329] is split at 1027, giving 4 unblinded SR bins (pT < 1329) instead of 3 while keeping the same blinding boundary (SIGSTART 1329, so [1329,2157] stays blinded)
+- v11: finer high-pT binning on top of v10. Two sub-variants:
+  - v11a (VR1): BINS = [200, 350, 726, 1027, 1329, 1743, 2157, 2685, 3212, 3740, 4267, 5134, 6001] -- last bin [5134,6001] is a single wide bin.
+  - v11b (SR): BINS = [200, 350, 726, 1027, 1329, 1743, 2157, 2685, 3212, 3740, 4267, 5134, 6000, 6001] -- same as v11a plus a narrow overflow bin [6000,6001] that collects everything at/above 6000.
+- v12: **SR and VR1 share one unified binning** (no more a/b split — both use `Binningv12`). Relative to
+  v11: range extended to 10001 GeV (the underlying fine histograms span 0-12500 in 1 GeV bins, so this is
+  in range); the 2nd bin [350,726] split at its midpoint 538 (equal ~188-wide halves); and the high-pT
+  tail uses round 4000/5000/6500 edges with a wide [6500,10001] last bin.
+  - BINS = [200, 350, 538, 726, 1027, 1329, 1743, 2157, 2685, 3212, 3740, 4000, 5000, 6500, 10001].
+  - **Why these tail edges (VR1 pass pulls):** the pass region has ~100x fewer events than fail. With the
+    earlier 4267/5134/7000 edges the sparse pass events happened to group into two low bins at 4-7 TeV
+    (p/f ~0.030 vs a ~0.045 plateau), which a smooth transfer function can't carve out → a coherent band
+    of large negative VR1 pass pulls (−3σ). This "dip" was largely a **bin-edge artifact**: regrouping the
+    same events with 4000/5000/6500 edges gives a **flat** high-pT ratio (~0.036-0.040, see
+    `vr1_passfail_ratio_Binningv12.png`) that the TF fits smoothly. The last bin [6500,10001] also absorbs
+    the ≥10 TeV pile of mismeasured cosmics (real feature, cosmic pT is effectively unbounded), so there
+    is **no separate overflow bin**. Note SR pass is empty/blinded above ~1.3 TeV, so the tail granularity
+    only affects high-mass signal templates, not the SR background fit.
+- v13: v12 retuned for the v5.0.4 skims (which clip pT at `PT_MAX_CLIP` = 7000 GeV, so the whole high-pT
+  tail piles at exactly 7000). Changes vs v12:
+  (1) the last bin is a **tight pile-only overflow `[6900, 7001]`** — raised from 6500/10001 so it isolates
+  the ~7000 clip pile (~956 of the old last bin's 1032 VR1-fail events were the pile) instead of mixing pile
+  with real spectrum; the 7001 upper edge sits just above the 7000 clip, per the v9 "edge just above
+  physical reach" convention.
+  (2) the real tail below the overflow is **fine** (`…, 3740, 4500, 5500, 6900`) so the Events/bin profile
+  falls monotonically (SR fail 533→465→335→319; a coarse tail let a wide bin hold more raw counts than the
+  narrower bin before it — a bin-width artifact). This was chosen over a coarse tail even though the fine
+  tail gives VR1 a ~−2σ pass-pull band, because that band is **shape-driven, not a binning artifact**: the
+  p/f peaks at bin 9 [2685,3212]=0.053 then falls and the pile bin sits above the trend, so a smooth TF
+  leaves the band regardless of tail granularity (verified — `2x0`, relaxed-bound `2x0`, and additive-x²
+  `2x0old` all converge to the same curve/band; fitted par2=−0.84 is not railed against its −0.9 bound).
+  Coarsening the tail therefore buys VR1 nothing, while the fine tail cleans up the SR fail plot (whose
+  pass is blinded/empty in the tail → no pull cost) and gives finer high-mass signal templates. SR and VR1
+  share this one unified binning (no a/b split).
+  - BINS = [200, 350, 538, 726, 1027, 1329, 1743, 2157, 2685, 3212, 3740, 4500, 5500, 6900, 7001].
+  - **SR blinding:** `SIGSTART` = 1027 (was 1329) → SR blinds from bin 5 [1027,1329] up; TF fit on the 4
+    LOW bins [200,1027). `SIGEND` = 2157. VR1 stays unblinded.
+- VR2 keeps the alt binning (`Binningv9alt`) unchanged across all of the above: BINS = [10, 19, 34, 55, 82, 115, 155, 200].
 
 ## Running on condor
 ```
@@ -196,7 +340,20 @@ before assuming which is in use.
 ### Blinding flags (`blindedFitNA` inverts the meaning)
 In the config `OPTIONS`, `blindedFit: ["pass"]` / `blindedPlots: ["pass"]` **blind** the pass region.
 The `...NA` variant `blindedFitNA: ["pass"]` means the region is **UNblinded** (the `NA` suffix
-inverts the meaning). Blinding logic lives in `2DAlphabet/TwoDAlphabet/twoDalphabet.py`.
+inverts the meaning — it's an inert/unrecognized key, so `blindedFit` stays at its empty default).
+Blinding logic lives in `2DAlphabet/TwoDAlphabet/twoDalphabet.py`. `blindedFit` masks channels from the
+**likelihood** (the region is still built and plotted); `blindedPlots` blinds them in the **plots** only —
+so `blindedFit` **without** `blindedPlots` = "exclude from the fit but still show it".
+
+### Masking a single sub-region from the fit (`blindedFitSubregions`)
+`blindedFit` masks the x-axis sub-regions listed in `blindedFitSubregions` (default `["SIG","HIGH"]`, i.e.
+everything at/above `SIGSTART`). Set `blindedFitSubregions: ["HIGH"]` to mask **only** the HIGH sub-region
+(bins at/above `SIGEND`). Combined with an `SIGEND` placed so `HIGH` is exactly the last bin, this
+excludes just the overflow bin from the likelihood while keeping it plotted. **VR1 uses this** to drop the
+~7000 clip-pile overflow bin from its fit/GoF without hiding it: `SIGEND = 6900` → `HIGH = [6900,7001]`,
+`blindedFit: ["pass"]` + `blindedFitSubregions: ["HIGH"]`, `blindedPlotsNA` (plots shown). Implemented in
+`twoDalphabet.py` (the mask-string sites in `_runMLfit` and the GoF, threaded from the new option; the
+default preserves the old SIG+HIGH behavior, so SR is unaffected).
 
 ### Run-script arguments
 Each `runWith1DVanilla_*.py` takes the **working-area directory name as `sys.argv[1]`**, but the
@@ -315,6 +472,53 @@ condor_submit step6_condor_ntuple_processing.cfg
 - RNN-scored files: `./output/{sample_type}/{region}/{collection}/*.root`
 - 2DAlphabet inputs: `./output/{sample_type}/{region}/{collection}/2DA/EaDM_*_{REGION}.root`
 
+**Where the outputs physically end up (important — this tripped up the v27 build):**
+`run_ntuple_processing_batch.sh` copies each job's `./output/.../2DA/*.root` **straight to ceph** at
+`/ceph/.../Ntuples/Ntuples_v${ntuple_version}_wRNN/{sample}/{region}/{collection}/2DA/` if that path is
+writable. Jobs whose output instead returned locally (into `helper_scripts/{Data,BkgMC,Signal}/...`) are
+moved to the **same** ceph tree by `helper_scripts/organizeSkimmedNtuples.sh <version>` (rsync with
+`--remove-source-files`, so the local copies are gone afterwards — this is why `helper_scripts/Data`
+etc. look empty once you've organized). Net effect: after step 6 the per-era 2DA histograms live under
+`Ntuples_vX.Y.Z_wRNN/`, **not** locally. The next step pulls them back into a local histogram dir.
+
+Each per-era 2DA histogram (`hpass`/`hfail` and the `_pTsyst/_t0syst/_trigsyst/_RNNsyst_up/down`
+shape variations) is a fine `TH2` spanning **0–12500 GeV in 1 GeV bins** on the x (pT) axis. 2DAlphabet
+rebins these to the coarse analysis `BINS` at fit time, so any `BINS` edge you put in a config must be
+≤ 12500 (e.g. the v12 overflow edge 10001 is in range).
+
+### 6b. Preselection / cutflow plots (optional)
+
+Overlay the preselection variables and the RNN score from the skimmed ntuples:
+- `plot_presel_skimmedNtuples.py` — overlays samples (data vs. bkg vs. signal).
+- `plot_presel_skimmedNtuples_perYear.py` — overlays **data split by year**: prompt-reco
+  Cosmics (Run2022–2025) as solid lines and each Commissioning year (2021–2025) dashed in
+  its own color. Reads `Ntuples_v5.0.1_wRNN/`. Env: `REGION=sr|vr1|vr2`, `ONLY_RNN=1`,
+  `BASE_PATH=...`. Output under `figures/presel_perYear_skimmedNtuples/<collection>/`.
+  ```bash
+  cd helper_scripts
+  for r in sr vr1 vr2; do REGION=$r python3 plot_presel_skimmedNtuples_perYear.py; done
+  ```
+
+> **Run these with plain `cmsenv` only — do NOT `source twoD-env/bin/activate` first.** The
+> `twoD-env` venv shadows the `cmsstyle` (and `mplhep`) packages, so the import fails inside it;
+> they are available from the bare CMSSW/scram Python.
+
+### 6c. Build the 2DAlphabet histogram input directory
+Collect the per-era ceph 2DA histograms into the local `histograms_for_2DAlphabet_<ver>/` directory that
+the configs' `GLOBAL.path` points at. This is a separate, fast step (just copies + `hadd`), run from
+`src/` with `cmsenv` active (needs `hadd`):
+```bash
+python3 collect_and_merge_histograms.py --version v27 \
+    --source-base /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.3_wRNN
+```
+- `--source-base` is the tree base holding `Data/`, `BkgMC/`, `Signal/` (each `<region>/matched_muon/2DA/`).
+  Omit it to collect from the local `helper_scripts/` trees (the pre-ceph default).
+- Per-era data files (`EaDM_Run3_Cosmics_Data_<era>_{SR,VR1,VR2}.root`) are `hadd`-merged into
+  `EaDM_Run3_Cosmics_Data_All_{SR,VR1,VR2}.root`; the per-era inputs are tucked into `unmerged/`.
+  The merge includes **all** eras — both `Run202*` prompt-reco and `Commissioning20XX`. (Earlier the
+  glob was `Run202*` only, which silently dropped the commissioning eras; fixed so they are included.)
+- `Signal` files are copied as-is; `BkgMC` files are copied with `EaDM_Signal_` → `EaDM_BkgMC_` renaming.
+
 ### 7. Run 2DAlphabet (statistical analysis)
 
 ```bash
@@ -357,7 +561,7 @@ priors. The four signal systematics (defined in each `config_*.json`, prefixed `
 
 | Nuisance | Type | Meaning |
 |---|---|---|
-| `CMS_EXO26004_livetime` | lnN (`CODE 0`, `VAL 1.05`) | 5% flat normalization (detector livetime) |
+| `CMS_EXO26004_livetime` | lnN (`CODE 0`, `VAL 1.012`) | 1.2% flat normalization (detector livetime) |
 | `CMS_EXO26004_pT` | shape (up/down templates) | pT-scale, `pTsyst` |
 | `CMS_EXO26004_t0` | shape | cosmic timing `t0syst` |
 | `CMS_EXO26004_RNN` | shape | bootstrapping-based RNN-score syst (added in v24/v25) |

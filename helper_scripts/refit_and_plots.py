@@ -26,7 +26,7 @@ while not fitPassed:
 # Regenerate the pull plot and the (CMS-styled) correlation matrices with the new names
 twoD = TwoDAlphabet(wa, '{}/runConfig.json'.format(wa), loadPrevious=True)
 varsToIgnore = twoD.ledger.alphaParams.name[
-    twoD.ledger.alphaParams.name.str.contains(r'_bin_\d+-\d+')
+    twoD.ledger.alphaParams.name.str.contains(r'_bin_\d+_\d+')
 ].to_list()
 with cd('{}/{}'.format(wa, subtag)):
     plot.nuis_pulls()

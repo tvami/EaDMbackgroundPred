@@ -337,7 +337,7 @@ class TwoDAlphabet:
             plot.nuis_pulls()
             plot.save_post_fit_parametric_vals()
             plot.plot_correlation_matrix( # Ignore nuisance parameters that are bins
-                varsToIgnore=self.ledger.alphaParams.name[self.ledger.alphaParams.name.str.contains('_bin_\d+-\d+')].to_list(),
+                varsToIgnore=self.ledger.alphaParams.name[self.ledger.alphaParams.name.str.contains('_bin_\d+_\d+')].to_list(),
                 threshold=0, # change this to reduce the size of the correlation matrix to only those variables with correlations above a threshold
         corrText=False # change this if you want the correlation matrix to write the number values to each grid square (often there are too many parameters and looks ugly/useless)
             )
@@ -670,7 +670,7 @@ class Ledger():
         return systs.tolist()
 
     def GetAlphaSystematics(self):
-        return self.alphaParams.loc[~self.alphaParams.name.str.contains('_bin_\d+-\d+')].name.unique().tolist()
+        return self.alphaParams.loc[~self.alphaParams.name.str.contains('_bin_\d+_\d+')].name.unique().tolist()
 
     def GetAllSystematics(self):
         return self.GetShapeSystematics()+self.GetAlphaSystematics()

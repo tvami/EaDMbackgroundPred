@@ -2,6 +2,8 @@
 """
 Script to collect, merge, and organize 2DAlphabet histograms
 Usage: python collect_and_merge_histograms.py --version v23
+       python collect_and_merge_histograms.py --version v27 \
+           --source-base /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.3_wRNN
 """
 
 import os
@@ -24,6 +26,11 @@ def main():
     # Parse arguments
     parser = argparse.ArgumentParser(description='Collect and merge 2DAlphabet histograms')
     parser.add_argument('-v', '--version', required=True, help='Version string (e.g., v23)')
+    parser.add_argument('-s', '--source-base', default=None,
+                        help='Base dir holding the Data/BkgMC/Signal step-6 trees '
+                             '(each with <region>/matched_muon/2DA/). Defaults to the '
+                             'local helper_scripts dir. Use e.g. a '
+                             '/ceph/.../Ntuples_vX.Y.Z_wRNN path to collect from ceph.')
     args = parser.parse_args()
 
     version = args.version
@@ -39,10 +46,16 @@ def main():
         helper_scripts_dir = "helper_scripts"
         output_dir = f"histograms_for_2DAlphabet_{version}"
 
+    # Where the Data/BkgMC/Signal step-6 trees live. Defaults to the local
+    # helper_scripts dir, but can point at ceph (e.g. Ntuples_vX.Y.Z_wRNN) once
+    # organizeSkimmedNtuples.sh has moved the outputs there.
+    source_base = args.source_base if args.source_base else helper_scripts_dir
+
     print(f"========================================")
     print(f"Collecting histograms for version {version}")
     print(f"Working directory: {os.getcwd()}")
     print(f"Helper scripts dir: {helper_scripts_dir}")
+    print(f"Source base: {source_base}")
     print(f"========================================\n")
 
     # Create output directory
@@ -53,24 +66,20 @@ def main():
     # Step 1: Move Data files
     # ================================
     print("\n=== Step 1: Moving Data files ===")
-    data_patterns = [
-        f"{helper_scripts_dir}/Data/sr/matched_muon/2DA/EaDM_Run3_Cosmics_Data_Run202*",
-        f"{helper_scripts_dir}/Data/vr1/matched_muon/2DA/EaDM_Run3_Cosmics_Data_Run202*",
-        f"{helper_scripts_dir}/Data/vr2/matched_muon/2DA/EaDM_Run3_Cosmics_Data_Run202*",
-    ]
+    # Match every per-era data file (Run202* prompt-reco AND Commissioning20XX);
+    # the earlier "Run202*" glob silently dropped the commissioning eras, which
+    # are kept on purpose from v5.0.1 onward. The merged "_All_" file is only
+    # produced in the output dir, so it is never picked up here as a source.
+    cmd = f"find {source_base}/Data -path '*/matched_muon/2DA/EaDM_Run3_Cosmics_Data_*' -type f 2>/dev/null"
+    result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+    files = result.stdout.strip().split('\n')
 
-    for pattern in data_patterns:
-        # Use find to get matching files
-        cmd = f"find {helper_scripts_dir}/Data -path '*/matched_muon/2DA/EaDM_Run3_Cosmics_Data_Run202*' -type f 2>/dev/null"
-        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
-        files = result.stdout.strip().split('\n')
-
-        for file in files:
-            if file and os.path.exists(file):
-                basename = os.path.basename(file)
-                dest = os.path.join(output_dir, basename)
-                print(f"  Copying {file} -> {dest}")
-                shutil.copy2(file, dest)
+    for file in files:
+        if file and os.path.exists(file):
+            basename = os.path.basename(file)
+            dest = os.path.join(output_dir, basename)
+            print(f"  Copying {file} -> {dest}")
+            shutil.copy2(file, dest)
 
     # ================================
     # Step 2: Merge Data files with hadd
@@ -125,9 +134,9 @@ def main():
 
     # Move BkgMC files from sr, vr1, vr2
     bkgmc_paths = [
-        f"{helper_scripts_dir}/BkgMC/sr/matched_muon/2DA",
-        f"{helper_scripts_dir}/BkgMC/vr1/matched_muon/2DA",
-        f"{helper_scripts_dir}/BkgMC/vr2/matched_muon/2DA",
+        f"{source_base}/BkgMC/sr/matched_muon/2DA",
+        f"{source_base}/BkgMC/vr1/matched_muon/2DA",
+        f"{source_base}/BkgMC/vr2/matched_muon/2DA",
     ]
 
     for bkgmc_path in bkgmc_paths:
@@ -158,9 +167,9 @@ def main():
     # ================================
     print("\n=== Step 7: Copying Signal files ===")
     signal_paths = [
-        f"{helper_scripts_dir}/Signal/sr/matched_muon/2DA",
-        f"{helper_scripts_dir}/Signal/vr1/matched_muon/2DA",
-        f"{helper_scripts_dir}/Signal/vr2/matched_muon/2DA",
+        f"{source_base}/Signal/sr/matched_muon/2DA",
+        f"{source_base}/Signal/vr1/matched_muon/2DA",
+        f"{source_base}/Signal/vr2/matched_muon/2DA",
     ]
 
     for signal_path in signal_paths:

@@ -115,6 +115,11 @@ class TwoDAlphabet:
             help='List of regions in which to blind plots of x-axis SIG. Does not blind fit.')
         parser.add_argument('blindedFit', default=[], type=str, nargs='*',
             help='List of regions in which to blind fit of x-axis SIG. Does not blind plots.')
+        parser.add_argument('blindedFitSubregions', default=['SIG','HIGH'], type=str, nargs='*',
+            help="Which x-axis sub-regions blindedFit masks from the fit. Defaults to ['SIG','HIGH'] "
+                 "(everything at/above SIGSTART). Set to ['HIGH'] to mask only the HIGH sub-region "
+                 "(bins at/above SIGEND) -- e.g. to exclude an overflow bin from the likelihood while "
+                 "keeping it in the plots (blindedPlots stays off).")
         # Plotting
         parser.add_argument('haddSignals', default=True, type=bool, nargs='?',
             help='Combine signals into one histogram for the sake of plotting. Still treated as separate in fit. Defaults to True.')
@@ -317,7 +322,8 @@ class TwoDAlphabet:
             _runMLfit(
                 cardOrW=cardOrW,
                 blinding=self.options.blindedFit,
-                verbosity=verbosity, 
+                blindSubregions=getattr(self.options, 'blindedFitSubregions', ['SIG','HIGH']),
+                verbosity=verbosity,
                 rMin=rMin, rMax=rMax,
                 setParams=setParams,
                 usePreviousFit=usePreviousFit,
@@ -376,7 +382,7 @@ class TwoDAlphabet:
             plot.nuis_pulls(vtol=vtol, stol=stol, vtol2=vtol2, stol2=stol2, regex=regex)
             plot.save_post_fit_parametric_vals()
             plot.plot_correlation_matrix( # Ignore nuisance parameters that are bins
-                varsToIgnore=self.ledger.alphaParams.name[self.ledger.alphaParams.name.str.contains('_bin_\d+-\d+')].to_list(),
+                varsToIgnore=self.ledger.alphaParams.name[self.ledger.alphaParams.name.str.contains('_bin_\d+_\d+')].to_list(),
                 threshold=corrthresh,
                 corrText=False
             )
@@ -467,7 +473,7 @@ class TwoDAlphabet:
 
         for i in range(allVars.getSize()):
             var = allVars[i]
-            if 'mask_' in var.GetName() and ('_SIG_' or '_HIGH_') in var.GetName():
+            if 'mask_' in var.GetName() and ('_SIG_' in var.GetName() or '_HIGH_' in var.GetName()):
                 if var.getValV() == 1:
                     masked_regions.append(var.GetName())
         f.Close()
@@ -497,7 +503,8 @@ class TwoDAlphabet:
         with cd(run_dir):
             print(os.getcwd())
             if len(blinding) > 0:
-                masks = ['mask_%s_%s=1'%(r,suffix) for r in blinding for suffix in ['SIG','HIGH']]
+                subregions = getattr(self.options, 'blindedFitSubregions', ['SIG','HIGH'])
+                masks = ['mask_%s_%s=1'%(r,suffix) for r in blinding for suffix in subregions]
                 mask_opt = '--setParameters '+','.join(masks)
                 gof_input = 'gof_workspace.root'
                 execute_cmd('text2workspace.py -b {0} -o {1} --channel-masks --X-no-jmax'.format(card_or_w, gof_input))
@@ -769,7 +776,7 @@ class Ledger():
         return systs.tolist()
 
     def GetAlphaSystematics(self):
-        return self.alphaParams.loc[~self.alphaParams.name.str.contains('_bin_\d+-\d+')].name.unique().tolist()
+        return self.alphaParams.loc[~self.alphaParams.name.str.contains('_bin_\d+_\d+')].name.unique().tolist()
 
     def GetAllSystematics(self):
         return self.GetShapeSystematics()+self.GetAlphaSystematics()
@@ -916,7 +923,11 @@ def MakeCard(ledger, subtag, workspaceDir):
     for syst,syst_group in ledger.df.groupby(by='variation',sort=True):
         if syst == 'nominal': continue
         syst_type = syst_group.iloc[0].syst_type
-        syst_lines[syst] = '{0:20} {1:20} '.format(syst, syst_type)
+        # 2DAlphabet stores shape systematics internally as "shapes" (also used as a
+        # DataFrame column name), but the Combine datacard keyword is the singular "shape".
+        # text2workspace tolerates "shapes"; CombineHarvester's ParseDatacard does not.
+        card_type = 'shape' if syst_type == 'shapes' else syst_type
+        syst_lines[syst] = '{0:20} {1:20} '.format(syst, card_type)
 
     # Work with template bkgs first
     for pair, group in ledger.df.groupby(['process','region']):
@@ -969,13 +980,13 @@ def MakeCard(ledger, subtag, workspaceDir):
     # Mark floating values as flatParams                 #
     # We float just the rpf params and the failing bins. #
     ######################################################
-    for param in ledger.alphaParams.itertuples():
+    for param in ledger.alphaParams.drop_duplicates(subset='name').itertuples():
         card_new.write('{0:40} {1}\n'.format(param.name, param.constraint))
     
     card_new.close()
     ledger.Save(subtag)
 
-def _runMLfit(cardOrW, blinding, verbosity, rMin, rMax, setParams, usePreviousFit=False, defMinStrat=0, extra=''):
+def _runMLfit(cardOrW, blinding, verbosity, rMin, rMax, setParams, usePreviousFit=False, defMinStrat=0, extra='', blindSubregions=['SIG','HIGH']):
     '''
     defMinStrat (int): sets the cminDefaultMinimizerStrategy option for the ML fit
     0: speed    (evaluate function less often)
@@ -987,7 +998,7 @@ def _runMLfit(cardOrW, blinding, verbosity, rMin, rMax, setParams, usePreviousFi
         raise RuntimeError("Invalid cminDefaultMinimizerStrategy passed ({}) - please ensure that defMinStrat = 0, 1, or 2".format(defMinStrat))
     if usePreviousFit: param_options = ''
     else:              param_options = '--text2workspace "--channel-masks" '
-    params_to_set = ','.join(['mask_%s_%s=1'%(r,suffix) for r in blinding for suffix in ['SIG', 'HIGH']]+['%s=%s'%(p,v) for p,v in setParams.items()]+['r=1'])
+    params_to_set = ','.join(['mask_%s_%s=1'%(r,suffix) for r in blinding for suffix in blindSubregions]+['%s=%s'%(p,v) for p,v in setParams.items()]+['r=1'])
     param_options += '--setParameters '+params_to_set
 
     fit_cmd = 'combine -M FitDiagnostics {card_or_w} {param_options} --saveWorkspace --cminDefaultMinimizerStrategy {defMinStrat} --rMin {rmin} --rMax {rmax} -v {verbosity} {extra}'

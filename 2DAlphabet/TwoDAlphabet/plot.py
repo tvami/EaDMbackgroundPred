@@ -620,6 +620,7 @@ def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='
     sigmas[sigmas==0.0] = 1e-5 # avoid division by zero 
     pulls =  dataMinusBkg/sigmas
     rax.bar(bin_centers,pulls, width=widths, color='gray')
+    rax.axhline(0.0, color='black', linestyle='--', linewidth=0.8, zorder=3) # reference line at 0 pull
     rax.set_ylim(-3,3)
     rax.set_ylabel(r'$\frac{Data-Bkg}{\sigma}$')
     axisTitle = binning.xtitle if projn == 'x' else binning.ytitle

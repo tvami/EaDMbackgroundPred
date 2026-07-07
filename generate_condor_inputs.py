@@ -74,14 +74,14 @@ def generate_input_file(signal_names, template_config, output_file, tf_type="2x0
 
 if __name__ == "__main__":
     # Configuration - EDIT THESE FOR YOUR ANALYSIS
-    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v25"
+    HISTOGRAM_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/histograms_for_2DAlphabet_v28"
     BASE_DIR = "/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src"
 
     # Configuration for each region
     configs = [
         {
             "name": "SR",
-            "template": f"{BASE_DIR}/config_Binningv9_InputTemplate_SR_Blind.json",
+            "template": f"{BASE_DIR}/config_Binningv13_InputTemplate_SR_Blind.json",
             "output": f"{BASE_DIR}/input_2DA_SR.txt",
             "pattern": "_SR.root"
         },

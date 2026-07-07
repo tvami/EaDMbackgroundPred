@@ -40,13 +40,13 @@ mv 2DAlphabet $rel/src/
 # Also move the scripts we'll need later
 echo -e "\n[4b] Moving scripts, config, and histogram files to CMSSW/src"
 mv run_single_signal_2DA.py $rel/src/
-mv config_Binningv9_InputTemplate_SR_Blind.json $rel/src/
+mv config_Binningv13_InputTemplate_SR_Blind.json $rel/src/
 
 # Move histogram directory
 echo -e "\n[4c] Moving histogram directory to CMSSW/src"
-mv histograms_for_2DAlphabet_v25 $rel/src/
+mv histograms_for_2DAlphabet_v28 $rel/src/
 echo "Histogram directory contents:"
-ls -lh $rel/src/histograms_for_2DAlphabet_v25/ | head -10
+ls -lh $rel/src/histograms_for_2DAlphabet_v28/ | head -10
 
 # cd into CMSSW and do cmsenv
 echo -e "\n[5] cd $rel/src/"
@@ -97,13 +97,13 @@ workingArea="rpf2x0_${signal}"
 
 # Histogram directory should already be here from earlier move
 echo -e "\n[1] Checking histogram directory"
-if [ ! -d "histograms_for_2DAlphabet_v25" ]; then
+if [ ! -d "histograms_for_2DAlphabet_v28" ]; then
     echo "ERROR: histogram directory not found!"
     ls -la
     exit 1
 fi
 echo "Histogram files:"
-ls -lh histograms_for_2DAlphabet_v25/ | grep -E "(${signal}|Data_SR)" || echo "WARNING: Expected files not found"
+ls -lh histograms_for_2DAlphabet_v28/ | grep -E "(${signal}|Data_SR)" || echo "WARNING: Expected files not found"
 
 # Create job-specific config by replacing SIGNAME_PLACEHOLDER
 echo -e "\n[2] Creating job-specific config for $signal"
@@ -120,7 +120,7 @@ python3 run_single_signal_2DA.py "$workingArea" "$config_file" "$signal" "$tf_ty
 echo -e "\n[4] Preparing output for transfer"
 
 # Create parent directory structure unconditionally (so Condor always has something to transfer)
-parent_dir="rpf2x0_Binningv10_Inputv25_SR_Blind"
+parent_dir="rpf2x0_Binningv13_Inputv28_SR_Blind"
 echo "Creating parent directory: $baseDir/$parent_dir"
 mkdir -p "$baseDir/$parent_dir"
 
