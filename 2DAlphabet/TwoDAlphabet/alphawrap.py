@@ -69,7 +69,7 @@ class Generic2D(object):
             new_cat_name = name+'_'+cat
             for ybin in range(1,len(self.binning.ybinList)):
                 for xbin in range(1,len(self.binning.xbinByCat[cat])):
-                    new_bin_name   = '%s_bin_%s-%s'%(new_cat_name,xbin,ybin)
+                    new_bin_name   = '%s_bin_%s_%s'%(new_cat_name,xbin,ybin)
                     self_bin_name  = new_bin_name.replace(new_cat_name, self.name+'_'+cat)
                     other_bin_name = new_bin_name.replace(new_cat_name, other.name+'_'+cat)
                     out.binVars[new_bin_name] = RooFormulaVar(
@@ -148,7 +148,7 @@ class Generic2D(object):
             self.binArgLists[cat] = RooArgList()
             for ybin in range(1,len(self.binning.ybinList)):
                 for xbin in range(1,len(self.binning.xbinByCat[cat])):
-                    bin_name   = '%s_bin_%s-%s'%(cat_name,xbin,ybin)
+                    bin_name   = '%s_bin_%s_%s'%(cat_name,xbin,ybin)
                     self.binArgLists[cat].add(self.binVars[bin_name])
 
             out_rph[cat] = RooParametricHist2D(
@@ -191,7 +191,7 @@ class Generic2D(object):
         '''
         if c == '': # using a global xbin that needs to be translated
             xbin, c = self.binning.xcatFromGlobal(xbin)
-        formula_name = '%s_bin_%s-%s'%(self.name+'_'+c,xbin,ybin)
+        formula_name = '%s_bin_%s_%s'%(self.name+'_'+c,xbin,ybin)
         return self.binVars[formula_name]
             
 
@@ -234,7 +234,7 @@ class ParametricFunction(Generic2D):
             cat_name = name+'_'+cat
             for ybin in range(1,len(self.binning.ybinList)):
                 for xbin in range(1,len(self.binning.xbinByCat[cat])):
-                    bin_name = '%s_bin_%s-%s'%(cat_name,xbin,ybin)
+                    bin_name = '%s_bin_%s_%s'%(cat_name,xbin,ybin)
                     xConst,yConst = self.mappedBinCenter(xbin,ybin,cat)
                     if forcePositive: final_formula = "max(1e-9,%s)"%(self._replaceXY(xConst,yConst))
                     else:             final_formula = self._replaceXY(xConst,yConst)
@@ -376,7 +376,7 @@ class SemiParametricFunction(ParametricFunction,Generic2D):
             for ybin in range(1,cat_hist.GetNbinsY()+1):
                 for xbin in range(1,cat_hist.GetNbinsX()+1):
                     content = cat_hist.GetBinContent(xbin,ybin)
-                    bin_name = '%s_bin_%s-%s'%(cat_name,xbin,ybin)
+                    bin_name = '%s_bin_%s_%s'%(cat_name,xbin,ybin)
                     if(content<funcCeiling):
                         xConst,yConst = self.mappedBinCenter(xbin,ybin,cat)
                         if forcePositive: 
@@ -412,7 +412,7 @@ class BinnedDistribution(Generic2D):
             cat_hist = copy_hist_with_new_bins(cat_name,'X',inhist,self.binning.xbinByCat[cat])
             for ybin in range(1,cat_hist.GetNbinsY()+1):
                 for xbin in range(1,cat_hist.GetNbinsX()+1):
-                    bin_name = '%s_bin_%s-%s'%(cat_name,xbin,ybin)
+                    bin_name = '%s_bin_%s_%s'%(cat_name,xbin,ybin)
                     if constant or self._nSurroundingZeros(cat_hist,xbin,ybin) > 7:
                         self.binVars[bin_name] = RooConstVar(bin_name, bin_name, cat_hist.GetBinContent(xbin,ybin))
                     else:
@@ -459,7 +459,7 @@ class BinnedDistribution(Generic2D):
             cat_hist_down = copy_hist_with_new_bins(down_shape.GetName()+'_'+cat,'X', down_shape, self.binning.xbinByCat[cat])
             for ybin in range(1,cat_hist_up.GetNbinsY()+1):
                 for xbin in range(1,cat_hist_up.GetNbinsX()+1):
-                    bin_name = '%s_%s_bin_%s-%s'%(cat_name,nuis_name,xbin,ybin)
+                    bin_name = '%s_%s_bin_%s_%s'%(cat_name,nuis_name,xbin,ybin)
                     self.binVar[bin_name] = singleBinInterp( # change to singleBinInterpQuad to change interpolation method
                                                 bin_name, self.getBinVar(xbin,ybin,cat), nuisance_par,
                                                 cat_hist_up.GetBinContent(xbin,ybin),
