@@ -1,0 +1,151 @@
+{
+  "BINNING": {
+    "default": {
+      "X": {
+        "BINS": [
+          200,
+          350,
+          538,
+          726,
+          1027,
+          1329,
+          1743,
+          2157,
+          2685,
+          3212,
+          3740,
+          4500,
+          5500,
+          6900,
+          7001
+        ],
+        "BINSv3": [
+          0,
+          50,
+          140,
+          270,
+          440,
+          650,
+          900,
+          1190,
+          1520,
+          1890,
+          2300,
+          2750,
+          3240,
+          3770,
+          4340,
+          5000
+        ],
+        "MAXna": 5500,
+        "MINna": 500,
+        "NAME": "pT",
+        "NBINSna": 50,
+        "SIGEND": 2157,
+        "SIGSTART": 1027,
+        "TITLE": "p_{T}"
+      },
+      "Y": {
+        "MAX": 200,
+        "MIN": 1,
+        "NAME": "N",
+        "NBINS": 1,
+        "TITLE": "N"
+      }
+    }
+  },
+  "GLOBAL": {
+    "FILE": "EaDM_$process.root",
+    "HIST": "h$region",
+    "HIST_DOWN": "h$region_$syst_down",
+    "HIST_UP": "h$region_$syst_up",
+    "SIGNAME": [
+      "Signal_M22500GeV_SR"
+    ],
+    "path": "./histograms_for_2DAlphabet_v28"
+  },
+  "NAME": "EaDM",
+  "OPTIONS": {
+    "blindedFit": [
+      "pass"
+    ],
+    "blindedPlots": [
+      "pass"
+    ],
+    "plotEvtsPerUnitVolt": true,
+    "plotTemplateComparisons": true
+  },
+  "PROCESSES": {
+    "SIGNAME": {
+      "COLOR": "red",
+      "LOC": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region",
+      "NAME": "SIGNAME",
+      "SCALE": 1.0,
+      "SYSTEMATICS": [
+        "CMS_EXO26004_livetime",
+        "CMS_EXO26004_RNN",
+        "CMS_EXO26004_pT",
+        "CMS_EXO26004_t0",
+        "CMS_EXO26004_trig"
+      ],
+      "TITLE": "DM signal",
+      "TYPE": "SIGNAL",
+      "VARIATION": "nominal"
+    },
+    "data_obs": {
+      "ALIAS": "Run3_Cosmics_Data_All_SR",
+      "COLOR": "black",
+      "LOC": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region",
+      "NAME": "data_obs",
+      "SCALE": 1,
+      "SYSTEMATICS": [],
+      "TITLE": "Run-3 Cosmics",
+      "TYPE": "DATA",
+      "VARIATION": "nominal"
+    }
+  },
+  "REGIONS": {
+    "fail": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    },
+    "pass": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    }
+  },
+  "SYSTEMATICS": {
+    "CMS_EXO26004_RNN": {
+      "ALIAS": "RNNsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_down",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_up"
+    },
+    "CMS_EXO26004_livetime": {
+      "CODE": 0,
+      "VAL": 1.012
+    },
+    "CMS_EXO26004_pT": {
+      "ALIAS": "pTsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_down",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_up"
+    },
+    "CMS_EXO26004_t0": {
+      "ALIAS": "t0syst",
+      "DOWN": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_down",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_up"
+    },
+    "CMS_EXO26004_trig": {
+      "ALIAS": "trigsyst",
+      "DOWN": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_down",
+      "SIGMA": 1.0,
+      "UP": "./histograms_for_2DAlphabet_v28/EaDM_$process.root:h$region_$syst_up"
+    }
+  }
+}
