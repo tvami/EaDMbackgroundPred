@@ -613,10 +613,16 @@ upper constraint, so its impact is one-sided. For a signal whose pT falls in the
 `pass_HIGH` bins (very high mass), `r` is unconstrained and the impacts reflect only TF extrapolation.
 
 ### 8: Run Limits
-```
-python3 helper_scripts/CalcSigRatesCentralMC.py # run only if you updated directory or masspoints
-python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py -L "Run 3 Cosmics" --outdir OUTDIR -s signals_pfbnd_9999_ep_variable_ma_245_alpha_max_17mnthNorm_rate_Vol.txt 
-python3 helper_scripts/plotExcludedMassVsEp_2D.py
-```
-- Note: After running `set_limit.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`  
+This sections guides you on how to create 1D/2D limit plots from the 2DA computed limits. LIMITDIR is name of the 2DA directory where `higgsCombineTest.AsymptoticLimits.mH120.root` for each mass is located.
 
+You may need to run `pip/conda/whatever install pyarrow` for the following to work. 
+
+```
+./helper_scripts/run_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME
+### Gives you the 3 commands below and runs the 2 below
+python3 helper_scripts/limitRateInputScript.py -d e0 -l LIMITDIR
+python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py --outdir exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_Limit -s exp_lim/signal_LIMITDIR_alpha_max.txt -l MONTHS_OF_LIVETIME
+###
+python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVETIME
+```
+- IMPORTANT NOTE: After running `set_limit.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`. You wil need to play with bounds of x1/y1/x2/y2 to get limits to appear.
