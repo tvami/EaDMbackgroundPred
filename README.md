@@ -620,11 +620,12 @@ You may need to run `pip/conda/whatever install pyarrow` for the following to wo
 You WILL need to download the files located [here](https://drive.google.com/drive/folders/1Pn10mJrzeFBAhp00yWmnPprDYWYmvgky?usp=share_link) and save them to `helper_scripts/parquet_files` for the below to work.
 
 ```
-./helper_scripts/run_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME
-### Gives you the 3 commands below and runs the 2 below
+./helper_scripts/partial_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME
+```
+This will fill out the following three commands and run the first 2 as well.
+```
 python3 helper_scripts/limitRateInputScript.py -d e0 -l LIMITDIR
 python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py --outdir exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_Limit -s exp_lim/signal_LIMITDIR_alpha_max.txt -l MONTHS_OF_LIVETIME
-###
 python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVETIME
 ```
-- IMPORTANT NOTE: After running `set_limit.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`. You wil need to play with bounds of x1/y1/x2/y2 to get limits to appear.
+- IMPORTANT NOTE: After running `partial_limit_pipeline.sh or set_limit_general_modified_alphaMax_volumeLimits.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`. You wil need to play with bounds of x1/y1/x2/y2 to get limits to appear.
