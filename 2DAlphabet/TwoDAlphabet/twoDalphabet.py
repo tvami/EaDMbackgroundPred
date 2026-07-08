@@ -562,7 +562,12 @@ class TwoDAlphabet:
                     eosRootfileTarball=eosRootfiles,
                     remakeEnv=makeEnv,
                     singularityImage=singularityImage,
-                    desiredSites=desiredSites
+                    desiredSites=desiredSites,
+                    # GoF toy jobs are light: the ~300 MB input tarball extracts to ~1.5 GB and a
+                    # 1D combine GoF needs little RAM, so drop below the CondorRunner defaults
+                    # (6000 MB / 10 GB) to match slots faster. Limit/sigInj keep the larger defaults.
+                    requestMemory=2000,
+                    requestDisk='3GB'
                 )
                 condor.submit()
 
