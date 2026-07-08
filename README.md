@@ -613,9 +613,11 @@ upper constraint, so its impact is one-sided. For a signal whose pT falls in the
 `pass_HIGH` bins (very high mass), `r` is unconstrained and the impacts reflect only TF extrapolation.
 
 ### 8: Run Limits
-This sections guides you on how to create 1D/2D limit plots from the 2DA computed limits. LIMITDIR is name of the 2DA directory where `higgsCombineTest.AsymptoticLimits.mH120.root` for each mass is located.
+This sections guides you on how to create 1D/2D limit plots from the 2DA computed limits. LIMITDIR is name of the 2DA directory where `higgsCombineTest.AsymptoticLimits.mH120.root` for each mass is located. MONTHS_OF_LIVETIME is self-explanatory.
 
 You may need to run `pip/conda/whatever install pyarrow` for the following to work. 
+
+You WILL need to download the files located [here](https://drive.google.com/drive/folders/1Pn10mJrzeFBAhp00yWmnPprDYWYmvgky?usp=share_link) and save them to `helper_scripts/parquet_files` for the below to work.
 
 ```
 ./helper_scripts/run_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME
