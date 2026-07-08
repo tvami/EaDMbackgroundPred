@@ -19,7 +19,7 @@ gROOT.SetBatch(kTRUE)
 parser = OptionParser()
 
 parser.add_option('-L', '--lumiLabel',metavar='F', type='string', action='store',
-                default   =   '2023D Cosmics',
+                default   =   'Run 3 Cosmics',
                 dest      =   'lumiLabel',
                 help      =   'Top right label of limit plot')
 parser.add_option('-s', '--signals', metavar='FILE', type='string', action='store',
@@ -85,7 +85,7 @@ if options.num_rate == 0: num_rate = len(labels)
 else: num_rate = options.num_rate
 
 # Dictionary that has proportions of each depth as a function of candidate mass
-props_dict = np.load('props_dict.npy', allow_pickle=True).item()
+props_dict = np.load('exp_lim/props_dict.npy', allow_pickle=True).item()
 def add_e(path, tag='e3'):
     # Insert after the mass token (e.g. M800GeV)
     path = re.sub(r'(M\d+GeV)', rf'\1_{tag}', path)
@@ -133,10 +133,7 @@ for theory_xsecs in total_theory_xsec_list:
 
         # Check if e3, e4, e5, and e6 depths are present, otherwise skip masspoint
         print('Processing ' + this_name + ' with mass ' + str(this_mass) + ' and xsec ' + str(this_xsec))
-        if not os.path.exists(this_name+'/higgsCombineTest.AsymptoticLimits.mH120.root'): 
-            print(f'File not found')
-            continue
-        elif not os.path.exists(add_e(this_name, 'e3')+'/higgsCombineTest.AsymptoticLimits.mH120.root'):
+        if not os.path.exists(add_e(this_name, 'e3')+'/higgsCombineTest.AsymptoticLimits.mH120.root'):
             print(f'File not found')
             continue
         elif not os.path.exists(add_e(this_name, 'e4')+'/higgsCombineTest.AsymptoticLimits.mH120.root'):
@@ -150,8 +147,6 @@ for theory_xsecs in total_theory_xsec_list:
             continue
         
         # Open limits
-        zeroDepth_output = TFile.Open(this_name+'/higgsCombineTest.AsymptoticLimits.mH120.root')
-        zeroDepth_tree = zeroDepth_output.Get('limit')
         e3_output = TFile.Open(add_e(this_name, 'e3')+'/higgsCombineTest.AsymptoticLimits.mH120.root')
         e3_tree = e3_output.Get('limit')
         e4_output = TFile.Open(add_e(this_name, 'e4')+'/higgsCombineTest.AsymptoticLimits.mH120.root')
@@ -167,8 +162,7 @@ for theory_xsecs in total_theory_xsec_list:
         else: continue
         x_mass.append(this_mass)
         # Grab the cross section limits (y axis)
-        for ievent in range(int(zeroDepth_tree.GetEntries())):
-            zeroDepth_tree.GetEntry(ievent)
+        for ievent in range(int(e3_tree.GetEntries())):
             e3_tree.GetEntry(ievent)
             e4_tree.GetEntry(ievent)
             e5_tree.GetEntry(ievent)
@@ -179,27 +173,27 @@ for theory_xsecs in total_theory_xsec_list:
             
             # Using zeroDepth_tree.quantileExpected to append lim_quantity to the correct list
             # Nominal expected
-            if zeroDepth_tree.quantileExpected == 0.5:
+            if e3_tree.quantileExpected == 0.5:
                 y_mclimit.append(lim_quantity*this_xsec)
             # -1 sigma expected
-            if round(zeroDepth_tree.quantileExpected,2) == 0.16:
+            if round(e3_tree.quantileExpected,2) == 0.16:
                 y_mclimitlow68.append(lim_quantity*this_xsec)
             # +1 sigma expected
-            if round(zeroDepth_tree.quantileExpected,2) == 0.84:
+            if round(e3_tree.quantileExpected,2) == 0.84:
                 y_mclimitup68.append(lim_quantity*this_xsec)
             # -2 sigma expected
-            if round(zeroDepth_tree.quantileExpected,3) == 0.025:
+            if round(e3_tree.quantileExpected,3) == 0.025:
                 y_mclimitlow95.append(lim_quantity*this_xsec)
             # +2 sigma expected
-            if round(zeroDepth_tree.quantileExpected,3) == 0.975:
+            if round(e3_tree.quantileExpected,3) == 0.975:
                 y_mclimitup95.append(lim_quantity*this_xsec)
             if (debug > 0) : print("For " + str(this_mass) + " mc_limit is " +str(y_mclimit))
             # Observed (plot only if unblinded)
-            if zeroDepth_tree.quantileExpected == -1:
+            if e3_tree.quantileExpected == -1:
                 if not options.blind:
                     if (debug > 0) : print('DEBUG : appending to y_limit')
-                    if (debug > 0) : print('appending: {} to y_limit'.format(zeroDepth_tree.limit*this_xsec))
-                    y_limit.append(zeroDepth_tree.limit*this_xsec)
+                    if (debug > 0) : print(f'appending: {e3_tree.limit*this_xsec} to y_limit')
+                    y_limit.append(e3_tree.limit*this_xsec)
                 else:
                     y_limit.append(0.0)
         print(y_mclimit, x_mass)

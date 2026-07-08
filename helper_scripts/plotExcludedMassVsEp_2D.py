@@ -23,19 +23,27 @@ from matplotlib import rcParams
 from matplotlib.font_manager import FontProperties
 from matplotlib.patches import Patch
 from matplotlib.path import Path
+import argparse
+
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('-l','--limit_directory', action='store', dest='limit_directory', help='Limit directory')
+parser.add_argument('-L','--livetime', action='store', dest='livetime', help='Livetime')
+args = parser.parse_args()
+
+limit_directory = args.limit_directory
+livetime = args.livetime
 
 # ── GLOBAL PLOT SETTINGS ────────────────────────────────────────────────────
 pd.set_option('display.max_columns', None)
 plt.rcParams.update({'font.size': 15})
 cms_fp = FontProperties(family="sans-serif", weight="bold")
-y_axis = 'lifetime' # Can be either lifetime or epsilon
+y_axis = 'epsilon' # Can be either lifetime or epsilon
 
 # ── LOAD DATA ────────────────────────────────────────────────────────────────
 # Parquet file contains signal rates for muons, electrons, and combined,
 # over a grid of (mx, epsilon, ma) with thermal and max coupling scenarios.
 df = pd.read_parquet(
-    '/Users/sanjitmasanam/Documents/CodingProjects/CMS/t0timing_chamber_study/'
-    'rates_muons_electrons_both_alphas_MX_1TeV_to_100TeV_special_granularity_fewer_columns.parquet'
+    'helper_scripts/parquet_files/rates_muons_electrons_both_alphas_MX_1TeV_to_100TeV_special_granularity_fewer_columns.parquet'
 )
 
 # ── EXCLUSION BOUNDARY ARRAYS ────────────────────────────────────────────────
@@ -44,18 +52,16 @@ df = pd.read_parquet(
 # Suffix _closed = the upper/inner edge of the exclusion band (upper limit w.r.t mass).
 # No suffix    = the outer/lower edge of the exclusion band (lower limit w.r.t mass).
 
-max_exp_lim_Run3_e0_closed = [-1, -1, -1, -1, -1, -1, -1, -1, 6.924391665054693, 10.124944014543727, 13.570668894842978, 16.797999814022926, 19.842984928482345, 22.736043353900126, 25.503389253343443, 28.16807663007822, 30.75081967426698, 33.27068383182138, 35.74561272759944, 38.19292441076089, 40.9467676243157, 75.70740894444864, 119.09295111172712, 167.15377255407702, 224.10138597491175, 344.43776506803, 498.8756181838581, 722.1171566956488, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
-max_exp_lim_Run3_e0 = [-1, -1, -1, -1, -1, -1, -1, -1, 3.9839680946435196, 3.919900665533535, 3.864564541066366, 3.8170107390531713, 3.7764565061416673, 3.742244463919242, 3.7138133291985524, 3.690676158883672, 3.672405053338485, 3.658619299092049, 3.648976775335615, 3.6431669622185705, 3.640906046500938, 3.764007453400987, 4.234064633522015, 5.635643255693138, 7.290007827541081, 10.595600738047432, 20.474082137290022, 26.327442688335335, 30.258110408645067, 33.100044087740436, 35.25714674872506, 36.95181852743722, 38.317949587272665, 39.441582847728846, 43.4286068239164, 50.159896987093354, 55.52425613973532, 59.909308618009874, 68.22517121402764, 75.11064639408757, 81.6205305628775, 90.73929063890353, 98.35244865416057, 115.01453037427422, 131.58300367921612, 145.4016927552277, 157.13208104367985, 167.23465391465038, 176.04050050392834, 193.22618336010765, 219.72339622367028, 251.74134643168264, 277.73768426088526, 299.2846616022484, 336.54189298614125, 368.655050532336, 396.125841875143, 435.75829782978934, 472.51116023545467, 506.7820346182345, 549.5144740847568, 587.1503097009091, 628.9617782185678, 670.9699257725044, 712.8660208008652, 762.7981705209223, 809.3775663903112, 860.4079776585296, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+max_exp_lim_Run3_e0_closed = [-1, -1, -1, -1, -1, -1, 4.075766174475814, 7.0208910937991496, 9.754337704994178, 13.02058510782105, 16.088806451713907, 18.99881898873988, 21.78444047654749, 24.232960643322578, 27.776917364348265, 31.54549505068178, 35.890076943494115, 40.05543952301649, 43.78331432071806, 47.54637910197799, 51.333544769913246, 93.38250743815976, 142.3870972403895, 199.91323548126118, -1, 505.6783451428702, 753.175973179702, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 195.92416715228578, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]
+max_exp_lim_Run3_e0 = [-1, -1, -1, -1, -1, -1, 4.080693824327244, 3.9338026760399867, 3.807990907243471, 3.7005245051184046, 3.6092049737398066, 3.5322182578755714, 3.4680360315805427, 3.415342544654977, 3.3729884986242795, 3.339956587991074, 3.315336782231504, 3.2983080140793883, 3.2881253552961707, 3.2841094272149145, 3.2856383745698237, 3.5008296050952876, 3.9560360762961384, 5.318226459428389, 6.892245220040129, 8.827960141885349, 13.578655106616603, 17.67705323449303, 20.526539263375664, 22.62643581878428, 24.237892013816175, 26.82438461396933, -1, 34.727525677901355, 39.25643894776288, -1, -1, -1, 61.513257654451564, 68.02154974343438, -1, 81.8898826734672, -1, -1, -1, -1, -1, 133.0942519955711, 142.80810293501978, 167.9532037355094, 194.80191219984133, 222.22722951846217, 248.6452442220054, 276.64636555321607, 306.1779856654853, 336.2377510395079, 367.3383986810539, 399.38941041469684, 434.3576012296976, 470.2624256232411, 508.7612224334917, 550.1883369588918, 586.8481506381686, 627.2575634015221, 668.1694207757315, 707.5107150024302, 756.7397658234562, 801.0463509059826, 851.4082190505871, 897.0931773931546, -1, -1, -1, -1, -1, -1, -1, -1]
 
 # ── EPSILON GRID ─────────────────────────────────────────────────────────────
-# Kinetic-mixing parameter epsilon sampled at 49 points.
-# Two sub-ranges: fine-grained near 4–24e-9, then coarser from 34e-9 to 314e-9.
 eps = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.4e-08, 3.4e-08, 4.4e-08, 5.4e-08, 6.4e-08, 7.4e-08, 8.4e-08, 9.4e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07, 3.28e-07, 3.52e-07, 3.76e-07, 4.00e-07, 4.24e-07, 4.48e-07, 4.72e-07, 4.96e-07, 5.20e-07, 5.44e-07, 5.68e-07, 5.92e-07, 6.16e-07, 6.40e-07, 6.64e-07, 6.88e-07, 7.12e-07, 7.36e-07, 7.60e-07, 7.84e-07, 8.08e-07, 8.32e-07, 8.56e-07, 8.80e-07, 9.04e-07, 9.28e-07, 9.52e-07, 9.76e-07, 1.00e-06]
 
-A = 1.6e-21
-tau = [A * e**(-2) for e in eps]
+A = 1.6e-21 * 3e8
+ctau = [A * e**(-2) for e in eps]
 
-if y_axis == 'lifetime': yAxis = tau
+if y_axis == 'lifetime': yAxis = ctau
 elif y_axis == 'epsilon': yAxis = eps
 
 # ── FLAT THERMAL LIMIT LINE ───────────────────────────────────────────────────
@@ -72,18 +78,48 @@ print(len(max_exp_lim_Run3_e0_closed), len(max_exp_lim_Run3_e0), len(yAxis))
 # Units: m_chi arrays are stored in TeV; multiply by 1000 to convert to GeV.
 # The sentinel value 10000001 closes each curve at the right plot boundary.
 
-x1 = [x * 1000 for x in max_exp_lim_Run3_e0_closed[8:27]] + [10000001]  # outer edge, indices 6-25
-y1 = yAxis[8:28]                                                            # match length: 20 values + sentinel
+def make_boundary(limit_array, y_array, start, stop, right_edge=10000001):
+    """
+    Build one boundary curve from limit_array[start:stop], skipping -1 entries.
+    Appends one right-edge sentinel point at y_array[stop].
+    """
+    idx = np.arange(start, stop)
+    vals = np.asarray(limit_array[start:stop], dtype=float)
+    ys = np.asarray(y_array[start:stop], dtype=float)
 
-x2 = [x * 1000 for x in max_exp_lim_Run3_e0[8:67]] + [10000001]         # inner edge, indices 6-25
-y2 = yAxis[8:68]
+    valid = vals > 0
+
+    x = (vals[valid] * 1000).tolist()
+    y = ys[valid].tolist()
+
+    x.append(right_edge)
+    y.append(y_array[stop])
+
+    return x, y
+
+
+# closed/upper edge: valid indices 6–26, with holes skipped
+x1, y1 = make_boundary(
+    max_exp_lim_Run3_e0_closed,
+    yAxis,
+    start=6,
+    stop=27
+)
+
+# open/lower edge: valid indices 6–69, with holes skipped
+x2, y2 = make_boundary(
+    max_exp_lim_Run3_e0,
+    yAxis,
+    start=6,
+    stop=70
+)
 
 # ── CONTOUR GRID ─────────────────────────────────────────────────────────────
 # A dense log-spaced 2-D grid for evaluating inside/outside of each exclusion
 # polygon. Log spacing ensures uniform visual density on the log-log axes.
 mx_grid  = np.logspace(np.log10(1000),  np.log10(1000000), 2000)   # m_chi in GeV
 if y_axis == 'epsilon': y_grid = np.logspace(np.log10(1e-9),  np.log10(1e-6),   600)   # epsilon
-elif y_axis == 'lifetime': y_grid = np.logspace(np.log10(1e-9),  np.log10(1e-4),   6000)
+elif y_axis == 'lifetime': y_grid = np.logspace(np.log10(1e-1),  np.log10(1e9),   6000)
 MX, yVALS  = np.meshgrid(mx_grid, y_grid)
 
 # ── EXCLUSION REGION REGISTRY ────────────────────────────────────────────────
@@ -157,8 +193,8 @@ for n, ax in enumerate(axs):
         ax.set_ylim(1e-9, 1e-6)
         ax.set_ylabel(r"$\varepsilon$")
     elif y_axis == 'lifetime': 
-        ax.set_ylim(1e-9, 1e-4)
-        ax.set_ylabel(r"$\tau$")
+        ax.set_ylim(1e-1, 1e5)
+        ax.set_ylabel(r"$c\tau$ [m]")
     ax.set_xlabel(r"$m_\chi\;\mathrm{[TeV]}$")
 
     # Panel annotation: model parameters shown in the upper-left corner
@@ -250,8 +286,7 @@ fig.canvas.draw()
 
 bbox = axs[1].get_tightbbox(fig.canvas.get_renderer())
 bbox = bbox.transformed(fig.dpi_scale_trans.inverted())
-
 fig.savefig(
-    "figures/ExcludedMass_mX_ep_explim_Run3VolLim.pdf",
+    f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime}.pdf",
     bbox_inches=bbox
 )
