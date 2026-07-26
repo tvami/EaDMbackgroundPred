@@ -1373,65 +1373,106 @@ def WaitForJobs( listOfJobs ):
 def sign(x):
     return (x > 0) - (x < 0)
 
-def Inter(g1,g2, interpolationType="exp"):
+def Inter(g1,g2, interpolationType="exp", extrapolateBelow=False, xFloor=None):
+    # Dense-sampling crossing finder, interpolating in LOG-LOG space.
+    #
+    # Two problems with the original code are fixed here:
+    #  1. It walked g1's and g2's nodes independently and sign-tested
+    #     (g1_y at g1's x_i) against (g2_y at g2's x_j) -- comparing the curves'
+    #     y at DIFFERENT x. With g1 (coarse ~19-node median) and g2 (theory) on
+    #     different x-grids that test missed real crossings and returned -1
+    #     (e.g. eps=1.54e-07, theory crosses the median near 35 TeV -> -1).
+    #  2. TGraph::Eval interpolates LINEARLY in data space, but the 1D limit
+    #     canvas is log-log (SetLogx+SetLogy). ROOT draws straight *pixel* lines
+    #     between nodes, i.e. a power law between nodes, so the linear crossing
+    #     sits to the right of the drawn one (3.67 vs ~3.4 TeV at eps=2e-08).
+    #
+    # So: sample d(x)=g1(x)-g2(x) on a dense LOG-spaced grid over the x-overlap,
+    # interpolating each graph as a power law between its nodes (linear in
+    # ln x, ln y) -- exactly the curve that gets drawn -- and locate sign changes.
+    #
+    # extrapolateBelow: OFF by default and NOT used in the nominal limit pipeline
+    # (both set_limit_*_alphaMax*.py call Inter without it). It is kept only for
+    # numerical-reach studies: at small eps the recovered crossing is below the
+    # lowest simulated mass, where the excluded region is m < crossing (~0.1 TeV) --
+    # off the standard plot, below the 200 GeV selection, and NOT the lower edge the
+    # window plotter (mask_from_windows) assumes, so it must not feed the 2D plots.
+    #
+    # When True, the search is extended BELOW the lowest
+    # simulated mass so a crossing can be found there. This is needed for the
+    # small-eps rows (e.g. eps=1e-08) where the theory (g2) sits below the
+    # eps-independent expected limit (g1) everywhere IN the simulated grid, so
+    # there is no in-grid crossing and Inter() used to return -1. In that regime
+    # the theory rises toward low mass, so:
+    #   - g1 (the expected limit) is held FLAT at its lowest-mass value y1[0]
+    #     below the lowest simulated mass (we have no simulated limit there);
+    #   - g2 (the theory) is extrapolated as the same power law it is drawn with
+    #     (_evalLL already does log-log extrapolation off the first two nodes).
+    # The crossing of the rising extrapolated theory with the flat limit then
+    # gives the lower intersection at very small mass. xFloor sets how far down
+    # the search goes (defaults to 1/1000 of the lowest node, ample headroom).
+    import bisect
+    def _nodes(g):
+        pts = sorted((g.GetPointX(i), g.GetPointY(i)) for i in range(g.GetN()))
+        return [p[0] for p in pts], [p[1] for p in pts]
+    x1, y1 = _nodes(g1)
+    x2, y2 = _nodes(g2)
+    if len(x1) < 2 or len(x2) < 2:
+        return (-1,-1), (-1,-1)
 
-    listOfCrossingRegions = []
+    def _evalLL(xs, ys, x):
+        # power-law (log-log) interpolation between the two surrounding nodes
+        if x <= xs[0]:
+            i = 0
+        elif x >= xs[-1]:
+            i = len(xs) - 2
+        else:
+            i = min(max(bisect.bisect_right(xs, x) - 1, 0), len(xs) - 2)
+        x0, x1_, y0, y1_ = xs[i], xs[i+1], ys[i], ys[i+1]
+        if x > 0 and x0 > 0 and x1_ > 0 and y0 > 0 and y1_ > 0:
+            t = (math.log(x) - math.log(x0)) / (math.log(x1_) - math.log(x0))
+            return math.exp(math.log(y0) + t*(math.log(y1_) - math.log(y0)))
+        # fallback to linear if anything is non-positive
+        t = (x - x0) / (x1_ - x0)
+        return y0 + t*(y1_ - y0)
 
-    # walk through both graphs looking for crossings.
-    for g1p in range(g1.GetN()-1):
-        g1xi, g1xip1, g1yi, g1yip1 = ctypes.c_double(), ctypes.c_double(), ctypes.c_double(), ctypes.c_double()
-        g1.GetPoint(g1p, g1xi, g1yi)
-        g1.GetPoint(g1p+1, g1xip1, g1yip1)
-        g1xi   = g1xi.value
-        g1xip1 = g1xip1.value
-        g1yi   = g1yi.value
-        g1yip1 = g1yip1.value
-        for g2p in range(g2.GetN()-1):
-            g2xi, g2xip1, g2yi, g2yip1 = ctypes.c_double(), ctypes.c_double(), ctypes.c_double(), ctypes.c_double()
-            g2.GetPoint(g2p, g2xi, g2yi)
-            g2.GetPoint(g2p+1, g2xip1, g2yip1)
+    def _evalG1(x):
+        # g1 is the expected limit. Below the lowest simulated mass we have no
+        # limit, so (only when extrapolating) hold it flat at its lowest node
+        # instead of power-law extrapolating it.
+        if extrapolateBelow and x < x1[0]:
+            return y1[0]
+        return _evalLL(x1, y1, x)
 
-            g2xi   = g2xi.value
-            g2xip1 = g2xip1.value
-            g2yi   = g2yi.value
-            g2yip1 = g2yip1.value
+    xhi = min(x1[-1], x2[-1])
+    if extrapolateBelow:
+        xlo = xFloor if xFloor is not None else min(x1[0], x2[0]) / 1000.0
+    else:
+        xlo = max(x1[0], x2[0])
+    if not (xhi > xlo):
+        return (-1,-1), (-1,-1)
 
-            #print (g1p,g2p)
-            #print (g1xi,g1xip1)
-            #print (g1yi,g1yip1)
-            #print (g2xi,g2xip1)
-            #print (g2yi,g2yip1)
-            # Now I have two adjacent points from each graph
+    N = 5000
+    lxlo, lxhi = math.log(xlo), math.log(xhi)
 
-            if sign( g1yi-g2yi ) != sign( g1yip1-g2yip1 ) and \
-                g1xi < g2xip1 and g1xip1 > g2xi:
-                # we have a local crossing
-                listOfCrossingRegions.append((g1xi,g1xip1,g2xi,g2xip1,g1yi,g1yip1,g2yi,g2yip1))
-
+    def _d(x):
+        return _evalG1(x) - _evalLL(x2, y2, x)
 
     listOfCrossings = []
-    for g1xi,g1xip1,g2xi,g2xip1,g1yi,g1yip1,g2yi,g2yip1 in listOfCrossingRegions:
-        if interpolationType.lower() == "linear":
-            m1 = (g1yip1 - g1yi) / (g1xip1 - g1xi)
-            m2 = (g2yip1 - g2yi) / (g2xip1 - g2xi)
-
-            xcrossing = (-m2*g2xi + g2yi - g1yi + m1 * g1xi) / (m1 - m2)
-            ycrossing = m1*(xcrossing - g1xi) + g1yi
-
-            listOfCrossings.append( (xcrossing,ycrossing) )
-        elif interpolationType.lower() == "exp":
-            # assuming form y = A*exp(Bx)
-            B1 = math.log( g1yip1 / g1yi ) / (g1xip1 - g1xi)
-            A1 = g1yi / math.exp(B1*g1xi)
-            B2 = math.log( g2yip1 / g2yi ) / (g2xip1 - g2xi)
-            A2 = g2yi / math.exp(B2*g2xi)
-            xcrossing = math.log(A1/A2) / (B2-B1)
-            ycrossing = A1*math.exp(B1*xcrossing)
-
-            # print("exp crossing calculation")
-            # print(A1,B1,A2,B2)
-            # print(xcrossing,ycrossing)
-            listOfCrossings.append( (xcrossing,ycrossing) )
+    xprev = xlo
+    dprev = _d(xprev)
+    for i in range(1, N+1):
+        xcur = math.exp(lxlo + (lxhi - lxlo)*i/N)
+        dcur = _d(xcur)
+        if dprev == 0.0:
+            listOfCrossings.append((xprev, _evalG1(xprev)))
+        elif sign(dprev) != sign(dcur):
+            # refine the crossing in log-x inside [xprev, xcur]
+            lp, lc = math.log(xprev), math.log(xcur)
+            lx = lp - dprev*(lc - lp)/(dcur - dprev)
+            xcrossing = math.exp(lx)
+            listOfCrossings.append((xcrossing, _evalG1(xcrossing)))
+        xprev, dprev = xcur, dcur
 
     if len(listOfCrossings)==0:
         return (-1,-1), (-1,-1)

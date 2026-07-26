@@ -625,7 +625,80 @@ You WILL need to download the files located [here](https://drive.google.com/driv
 This will fill out the following three commands and run the first 2 as well.
 ```
 python3 helper_scripts/limitRateInputScript.py -d e0 -l LIMITDIR
-python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py --outdir exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_Limit -s exp_lim/signal_LIMITDIR_alpha_max.txt -l MONTHS_OF_LIVETIME
+python3 exp_lim/set_limit_alphaMax.py --outdir exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_limit -s exp_lim/signal_LIMITDIR_alpha_max.txt -l MONTHS_OF_LIVETIME
 python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVETIME
 ```
-- IMPORTANT NOTE: After running `partial_limit_pipeline.sh or set_limit_general_modified_alphaMax_volumeLimits.py`, copy text output following `Exp lim:` and `Closed exp lim:` into `max_exp_lim_Run3_e0` and `max_exp_lim_Run3_e0_closed` of `plotExcludedMassVsEp_2D.py`. You wil need to play with bounds of x1/y1/x2/y2 to get limits to appear.
+- The step-2→step-3 handoff is now automatic: `set_limit_alphaMax.py` writes the intersection arrays (`exp_lim`, `closed_exp_lim`, `exp_lim_lower`, `exp_lim_upper`, plus the `eps` grid) to `<outdir>/exclusion_limits.json`, and `plotExcludedMassVsEp_2D.py` loads them from `exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_limit/exclusion_limits.json`. No more copy-pasting the `Exp lim:` / `Closed Exp lim:` printouts into `max_exp_lim_Run3_e0` / `max_exp_lim_Run3_e0_closed`. Just keep `LIMITDIR` and `MONTHS_OF_LIVETIME` consistent between the two steps. You may still need to play with the x1/y1/x2/y2 bounds to get limits to appear.
+
+#### The limit script `exp_lim/set_limit_alphaMax.py` (two modes)
+`set_limit_alphaMax.py` is the **single** limit-setting script (it replaced the two near-duplicate
+`set_limit_general_modified_alphaMax.py` / `..._volumeLimits.py`, which had drifted and caused
+normalization/plot bugs). It builds the expected-limit curve, intersects it with the theory line at each
+`eps`, and writes `exclusion_limits.json`. It has two modes selected by a flag:
+- **default (volume mode)** — the expected median is the **depth-weighted average over depths e3–e6**
+  (`props_dict` mass-dependent proportions). This is the nominal result. Used by `partial_limit_pipeline.sh`.
+- **`--single`** — the median is each signal's **own** combine limit (`this_tree.limit`), i.e. one fixed
+  depth. The depth is baked into the input paths (`limitRateInputScript.py -d e<N>` inserts the `_e<N>`
+  token). Used by `run_fixedDepth_limits.sh` to produce one `exclusion_limits.json` per depth.
+- **Normalization:** both modes divide the per-signal normalization (100) by the livetime in months
+  (`this_xsec = 100/lumi`) so the y-axis is a **monthly** rate. (The old single-depth script was missing
+  this `/lumi`, so its median was ~`lumi`× too high and the theory never crossed it → wrong/empty
+  fixed-depth exclusions.)
+- The crossing finder `Inter()` (in `exp_lim/header.py`) has a dormant `extrapolateBelow` option
+  (default OFF, not used by the pipeline) that would extend the search below the lowest simulated mass;
+  it is intentionally unused — see the note in `header.py` for why (the excluded region is `m < crossing`,
+  off-plot and below the 200 GeV selection).
+
+**Fixed-depth overlay** (one region per assumed decay length, 0 mm … 1e6 mm):
+```
+./helper_scripts/run_fixedDepth_limits.sh                       # runs set_limit_alphaMax.py --single per depth
+python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVETIME --fixedDepth
+```
+`--fixedDepth` loads the six per-depth JSONs and draws each region from its interpolated per-`eps` mass
+window `[exp_lim, closed_exp_lim]` (`fill_betweenx`, smooth boundaries).
+
+**Expected-band overlay** (`--band68`): a "second version" of the 2D plot that overlays the **68% and 95%
+expected bands** on the median exclusion contour. For every `eps`, `set_limit_alphaMax.py` intersects the
+theory line with not just the median but also the `±1σ` (`g_mcplus`/`g_mcminus`) and `±2σ`
+(`g_mc2plus`/`g_mc2minus`) expected-limit curves, and writes all the mass-window edges to
+`exclusion_limits.json`: `exp_lim_lower[/_closed]` (+1σ), `exp_lim_upper[/_closed]` (−1σ),
+`exp_lim_lower95[/_closed]` (+2σ), `exp_lim_upper95[/_closed]` (−2σ). (The `_closed` upper-mass edges were
+previously computed by `signed_window()` but discarded.) The windows **nest**: −2σ is the widest excluded
+mass window and +2σ the narrowest (a smaller limit excludes more mass). Worked example at `eps=1.6e-8`
+(matches the 1D `limits_combine_..._1.6e-08` plot): median `[3.50, 17.76]`, −1σ `[3.30, 27.67]`,
++1σ `[3.71, 11.33]`, −2σ `[3.15, 39.5]`, +2σ `[3.94, 7.36]` TeV.
+
+`plotExcludedMassVsEp_2D.py --band68` draws the median contour (dashed black) + a solid **68%** gold
+(`#FFDF7F`) reach region with a **95%** blue (`#85D1FB`) ring outside it, plus thin outlines marking the
+inner ±σ crossings. Output filename gets a `_band68` suffix. Band mode **skips the (pyarrow-heavy) parquet
+load** entirely. It needs the `±1σ`/`±2σ` arrays in the JSON, so **regenerate the JSON first** (this
+re-runs `set_limit_alphaMax.py` in the el8 container — reads 168 combine ROOT files, ~2 min):
+
+```
+# (1) Regenerate exclusion_limits.json with the +-1sigma / +-2sigma band edges.
+#     Run inside the el8 container with cmsenv + twoD-env, borrowing pyarrow (see step 8 env notes).
+cmssw-el8 -- bash -c 'cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src && eval `scram runtime -sh` && source twoD-env/bin/activate && \
+  PYA=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages; export PYTHONPATH=$PYA:$PYTHONPATH && \
+  python3 exp_lim/set_limit_alphaMax.py -L "Run 3 Cosmics" \
+    --outdir exp_lim/signal_rpf2x0_Binningv13_Inputv28_SR_Blind_livetime_20.7_limit \
+    -s exp_lim/signal_rpf2x0_Binningv13_Inputv28_SR_Blind_alpha_max.txt -l 20.7'
+
+# (2) Draw the band plot (writes figures/..._band68.pdf/.png AND a band_edges_cache_<yaxis>.npz next to the JSON).
+cmssw-el8 -- bash -c 'cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src && eval `scram runtime -sh` && source twoD-env/bin/activate && \
+  python3 helper_scripts/plotExcludedMassVsEp_2D.py -l rpf2x0_Binningv13_Inputv28_SR_Blind -L 20.7 --band68'
+```
+
+**Fast recolor (`--use-cache`):** the band colors/line widths are top-of-file constants in
+`plotExcludedMassVsEp_2D.py` (`MEDIAN_COLOR`, `BAND68_COLOR`, `BAND95_COLOR`, `BAND68_ALPHA`,
+`BAND95_ALPHA`, `MEDIAN_LW`, `EDGE_LW`). The step-(2) run above caches the interpolated band-edge points to
+`band_edges_cache_<yaxis>.npz`. Edit a color constant, then redraw **straight from the npz** — no
+JSON/parquet/ROOT, so it's instant (`--use-cache` is band-only and per y-axis):
+
+```
+# After editing e.g. BAND95_COLOR at the top of plotExcludedMassVsEp_2D.py:
+cmssw-el8 -- bash -c 'cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src && eval `scram runtime -sh` && source twoD-env/bin/activate && \
+  python3 helper_scripts/plotExcludedMassVsEp_2D.py -l rpf2x0_Binningv13_Inputv28_SR_Blind -L 20.7 --band68 --use-cache'
+```
+
+The `--yaxis lifetime` variant works with `--band68` too (writes `band_edges_cache_lifetime.npz` and a
+`_lifetime` filename suffix). `--band68` is mutually exclusive with `--fixedDepth`.

@@ -46,7 +46,7 @@ echo ""
 
 echo "============= COMMANDS TO RUN ============="
 echo ">>> Step 1: python3 helper_scripts/limitRateInputScript.py -d e0 -l ${LIMITDIR}"
-echo ">>> Step 2: python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py --outdir exp_lim/signal_${LIMITDIR}_livetime_${MONTHS_OF_LIVETIME}_Limit -s exp_lim/signal_${LIMITDIR}_alpha_max.txt -l ${MONTHS_OF_LIVETIME}"
+echo ">>> Step 2: python3 exp_lim/set_limit_alphaMax.py --outdir exp_lim/signal_${LIMITDIR}_livetime_${MONTHS_OF_LIVETIME}_Limit -s exp_lim/signal_${LIMITDIR}_alpha_max.txt -l ${MONTHS_OF_LIVETIME}"
 echo ">>> Step 3: python3 helper_scripts/plotExcludedMassVsEp_2D.py -l ${LIMITDIR} -L ${MONTHS_OF_LIVETIME}"
 echo ""
 
@@ -57,7 +57,7 @@ echo ""
 
 # --- Step 2: Set limits ---
 echo ">>> Step 2: Setting limits..."
-python3 exp_lim/set_limit_general_modified_alphaMax_volumeLimits.py \
+python3 exp_lim/set_limit_alphaMax.py \
     --outdir "exp_lim/signal_${LIMITDIR}_livetime_${MONTHS_OF_LIVETIME}_limit" \
     -s "exp_lim/signal_${LIMITDIR}_alpha_max.txt" \
     -l "${MONTHS_OF_LIVETIME}"
