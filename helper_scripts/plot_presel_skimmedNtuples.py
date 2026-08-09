@@ -1,5 +1,6 @@
 import os
 import re
+from array import array
 import ROOT, cmsstyle as CMS
 import mplhep as hep
 from tqdm import tqdm
@@ -22,6 +23,58 @@ collections = os.environ.get('COLLECTIONS', 'matched_muon').split(',')
 region = os.environ.get('REGION', 'sr')  # sr, vr1, vr2 (override with REGION env var)
 # Set ONLY_RNN=1 to produce just the RNN-score plot (skips other vars and profile plots)
 ONLY_RNN = os.environ.get('ONLY_RNN', '0') == '1'
+# RNN_RATIO=1 : add MC/data ratio pads under the RNN figure.
+RNN_RATIO = os.environ.get('RNN_RATIO', '0') == '1'
+# RNN_ALL_SIGNALS=1 : draw all four signal masses (2/10/20/180 TeV) as in the AN;
+# default keeps the original three. Either way the signals appear in the SR only
+# (draw_signal) -- a validation region is not a place to show signal.
+RNN_ALL_SIGNALS = os.environ.get('RNN_ALL_SIGNALS', '0') == '1'
+# Either flag selects the AN-style layout: square-ish canvas, fixed per-sample
+# colors, deeper log-y floor, blinding boundary on a bin edge. With both off the
+# figures come out exactly as they did before these were added.
+RNN_ANSTYLE = RNN_RATIO or RNN_ALL_SIGNALS
+
+# RNN working point: the SR/VR2 pass boundary, the top of the VR1 window, the SR
+# data blinding threshold, and the vertical marker on every RNN figure. Input v30
+# moved this from 0.9999 to 0.99999 (four nines -> five). It lives here as one
+# named constant because it was previously spelled out at ~8 call sites, and the
+# same stale 0.9999 also survived as a hardcoded legend string in the
+# runWith1DVanilla_* scripts -- a literal cut value is invisible to a version grep.
+# Override with RNN_WP=<value> to reproduce an older figure.
+RNN_WP = float(os.environ.get('RNN_WP', '0.99999'))
+# VR1 fail/pass split, unchanged across input versions.
+RNN_VR1_FAIL = 0.45
+
+# Fixed per-sample colors. These are the colors the running color_numerator hands
+# out in the preselection-overlay figures, i.e. what the AN already uses, spelled
+# out here so they no longer depend on how many samples happen to be drawn. The
+# one deviation: the counter reaches kBlack (1) on the seventh sample, which would
+# collide with the data points, so the last signal gets 9.
+RNN_COLORS = {
+    "Cosmic Bkg":       6,   # kMagenta
+    "Neutrino Bkg":     5,   # kYellow
+    "M_{DM} = 2 TeV":   4,   # kBlue
+    "M_{DM} = 10 TeV":  3,   # kGreen
+    "M_{DM} = 20 TeV":  2,   # kRed
+    "M_{DM} = 180 TeV": 9,
+}
+
+# Log-y floor per region, chosen one decade below the smallest non-empty
+# normalized DATA bin that is actually shown, so the whole measured tail is on
+# the figure. SR/VR1 hold 1.15M events (smallest visible bin 7.0e-6 -- the SR
+# does reach 8.7e-7, but only above the blinding boundary); VR2 holds 28.5M, so
+# a single-event bin sits at 3.5e-8. The old floor was 5e-5 everywhere, which
+# cut the VR2 data off around -log10(1-S) = 1.5.
+# The 2-bin summary needs far less range (smallest pass fraction 2.2e-5, VR2).
+RNN_YMIN = {'sr': 1e-6, 'vr1': 1e-6, 'vr2': 1e-8}
+RNN_YMIN_TWOBIN = 1e-6
+
+# Region label for the on-figure pave, in the AN's wording.
+RNN_REGION_LABEL = {
+    'sr':  'SR (p_{T} > 200 GeV)',
+    'vr1': 'VR1 (p_{T} > 200 GeV)',
+    'vr2': 'VR2 (p_{T} < 200 GeV)',
+}
 
 # v5.0.1_wRNN filenames: MC/signal carry the "_v5.0.0" version suffix; the data
 # "All" file is the hadd of every per-dataset skim (Run20XX + Commissioning20XX).
@@ -67,7 +120,8 @@ base_var_dict = {
             "eta_highpt": [26, 100, -3, 3, None, None, None, 'eta_highpt', '#eta (highest p_{T})'],
             "phi_highpt": [27, 100, -3.15, 3.15, None, None, None, 'phi_highpt', '#phi (highest p_{T})'],
             "pt_highpt": [28, 500, 0, 10000, None, None, None, 'pt_highpt', 'p_{T} [GeV] (highest p_{T})'],
-            "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Normalized Yield / Bin']
+            # [7] is the y-axis title of the RNN figure ("Fraction of Events", as in the AN)
+            "RNNScore": [0, 100, 0, 1, 'RNNScore', 'RNNScore_nminus1', 'RNNScore_final', 'Fraction of Events']
             }
 
 track_var_dict={# "track_numberOfValidHits": [8, 77, 0, 77, 'track_numberOfValidHits', 'track_numberOfValidHits_nminus1', 'track_numberOfValidHits_final', '# of Valid Track Hits'],
@@ -648,28 +702,32 @@ for collection in tqdm(collections, desc="Collections"):
             #   region_hi : upper RNNScore bound of the region itself; nothing
             #               (data OR MC) is shown above it (None = up to 1.0)
             if region == 'sr':
-                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, 0.9999, 0.9999, None, None
-                line_vals = [0.9999]
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, RNN_WP, RNN_WP, None, None
+                line_vals = [RNN_WP]
             elif region == 'vr1':
-                # VR1 is the RNN region orthogonal to the SR (RNNScore < 0.9999):
-                # neither data nor MC is shown above 0.9999. Validation region ->
+                # VR1 is the RNN region orthogonal to the SR (RNNScore < RNN_WP):
+                # neither data nor MC is shown above RNN_WP. Validation region ->
                 # unblinded below. The line marks the 0.45 pass/fail boundary.
-                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, 0.45, 0.9999, 0.9999
-                line_vals = [0.45]
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, RNN_VR1_FAIL, RNN_WP, RNN_WP
+                line_vals = [RNN_VR1_FAIL]
             elif region == 'vr2':
                 # VR2 is a validation region (orthogonal to the SR via the pT
                 # cut) -> unblinded.
-                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, 0.9999, None, None
-                line_vals = [0.9999]
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = False, None, RNN_WP, None, None
+                line_vals = [RNN_WP]
             else:
-                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, None, 0.9999, None, None
-                line_vals = [0.9999]
+                draw_signal, blind_above, fail_cut, pass_hi, region_hi = True, None, RNN_WP, None, None
+                line_vals = [RNN_WP]
 
-            samples_to_draw = ["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg"]
-            if draw_signal:
-                samples_to_draw += ["M_{DM} = 2 TeV", "M_{DM} = 10 TeV", "M_{DM} = 20 TeV"]
             # drop samples disabled in samples_dict (e.g. Neutrino Bkg until reprocessed)
-            samples_to_draw = [s for s in samples_to_draw if s in samples_dict]
+            _keep = lambda L: [s for s in L if s in samples_dict]
+            bkg_samples = _keep(["Run-3 Cosmics", "Cosmic Bkg", "Neutrino Bkg"])
+            sig_samples = _keep(["M_{DM} = 2 TeV", "M_{DM} = 10 TeV",
+                                 "M_{DM} = 20 TeV", "M_{DM} = 180 TeV"])
+            # One figure per mode, carrying the AN legend: data (SR blinded), both
+            # background MCs, and -- in the SR only -- the signal masses.
+            _sigs = sig_samples if RNN_ALL_SIGNALS else sig_samples[:3]
+            samples_to_draw = bkg_samples + (_sigs if draw_signal else [])
 
             # Draw three versions: linear [0,1], the -log10(1-RNNScore) transform
             # (zooms the high-score tail toward the SR cut, x=4), and a 2-bin
@@ -700,6 +758,19 @@ for collection in tqdm(collections, desc="Collections"):
                         t_max = region_hi
                         t_nbins = int(round((t_max - t_min) / 0.01)) or 1
 
+                # Put the blinding boundary on a bin edge (linear mode). With 100
+                # uniform bins the last one is [0.99, 1.00], which straddles
+                # S = RNN_WP: the whole bin has to be dropped, throwing away the
+                # perfectly unblinded [0.99, RNN_WP) sliver. Splitting it there
+                # keeps that sliver and blinds exactly the pass region.
+                t_edges = None
+                if RNN_ANSTYLE and rnn_mode == 'lin' and blind_above is not None:
+                    _e = [t_min + i * (t_max - t_min) / t_nbins for i in range(t_nbins + 1)]
+                    if not any(abs(x - blind_above) < 1e-12 for x in _e):
+                        _e = sorted(_e + [blind_above])
+                    t_edges = array('d', _e)
+                    t_nbins = len(_e) - 1
+
                 # RNNScore value -> x position on the current axis (for blinding
                 # bin lookup and vertical lines)
                 def xpos(s):
@@ -708,13 +779,54 @@ for collection in tqdm(collections, desc="Collections"):
                         return -ROOT.TMath.Log10(1.0 - sc)
                     return s
 
-                c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
-                c.SetLeftMargin(0.2)
-                c.SetRightMargin(0.2)
-                c.SetLogy(True)
+                # Ratio pads: only meaningful for the continuous (non-2-bin) modes.
+                do_ratio = RNN_RATIO and rnn_mode != 'twobin'
+                drawn_h = {}          # sample -> normalized histogram, for the ratios
+                if do_ratio:
+                    # Main panel gets 60% of the height (was 54%) so it comes out
+                    # roughly square, and the two ratio pads 20% each (was 23%);
+                    # their text sizes below are scaled by 0.23/0.20 to compensate.
+                    c = ROOT.TCanvas(f"c_rnn_{rnn_mode}", "", 800, 1000)
+                    pad_main = ROOT.TPad("pad_main", "", 0, 0.40, 1, 1.0)
+                    pad_r1 = ROOT.TPad("pad_r1", "", 0, 0.20, 1, 0.40)
+                    pad_r2 = ROOT.TPad("pad_r2", "", 0, 0.0, 1, 0.20)
+                    for _p in (pad_main, pad_r1, pad_r2):
+                        _p.SetLeftMargin(0.15)
+                        _p.SetRightMargin(0.05)
+                    pad_main.SetBottomMargin(0.02)
+                    pad_main.SetTopMargin(0.08)
+                    pad_r1.SetTopMargin(0.03)
+                    pad_r1.SetBottomMargin(0.04)
+                    pad_r2.SetTopMargin(0.03)
+                    pad_r2.SetBottomMargin(0.46)
+                    pad_main.SetLogy(True)
+                    pad_main.Draw()
+                    pad_r1.Draw()
+                    pad_r2.Draw()
+                    garbage_protect_list += [pad_main, pad_r1, pad_r2]
+                    pad_main.cd()
+                elif RNN_ANSTYLE:
+                    # Square single-pad figure (the 2-bin summary lands here, and
+                    # everything else when RNN_RATIO is off); the legacy 0.2/0.2
+                    # margins below squeeze the frame into a narrow strip.
+                    c = ROOT.TCanvas(f"c_rnn_{rnn_mode}", "", 800, 800)
+                    c.SetLeftMargin(0.15)
+                    c.SetRightMargin(0.05)
+                    c.SetTopMargin(0.08)
+                    c.SetBottomMargin(0.13)
+                    c.SetLogy(True)
+                    c.cd()
+                else:
+                    c = CMS.cmsCanvas('', 0, 1, 0, 1, '', '')
+                    c.SetLeftMargin(0.2)
+                    c.SetRightMargin(0.2)
+                    c.SetLogy(True)
 
                 # define axis ranges
-                hframe = ROOT.TH1F("hframe", "", t_nbins, t_min, t_max)
+                if t_edges is not None:
+                    hframe = ROOT.TH1F("hframe", "", t_nbins, t_edges)
+                else:
+                    hframe = ROOT.TH1F("hframe", "", t_nbins, t_min, t_max)
                 hframe.SetStats(False)
                 hframe.GetXaxis().SetTitle(x_title)
                 hframe.GetYaxis().SetTitle(var_dict[main_var][7])
@@ -726,12 +838,36 @@ for collection in tqdm(collections, desc="Collections"):
                     hframe.GetXaxis().SetBinLabel(1, 'Fail')
                     hframe.GetXaxis().SetBinLabel(2, 'Pass')
                     hframe.GetXaxis().SetLabelSize(0.06)
+                if do_ratio:
+                    # the x axis belongs to the bottom ratio pad
+                    hframe.GetXaxis().SetLabelSize(0)
+                    hframe.GetXaxis().SetTitleSize(0)
                 hframe.Draw()
 
-                hframe.SetMinimum(5e-5)  # force log Y minimum
-                hframe.SetMaximum(1)     # optional
+                # force log Y range. In AN style the top of the frame is pushed
+                # above 1 to open an empty band for the legend and the pave: one
+                # decade normally, two when the SR signal masses need a second
+                # legend column. Nothing normalized can reach up there.
+                _ny = len(samples_to_draw)
+                _ncol = 2 if _ny > 4 else 1
+                if RNN_ANSTYLE:
+                    hframe.SetMinimum(RNN_YMIN_TWOBIN if rnn_mode == 'twobin'
+                                      else RNN_YMIN.get(region, 5e-5))
+                    hframe.SetMaximum(100 if _ncol == 2 else 10)
+                else:
+                    hframe.SetMinimum(5e-5)
+                    hframe.SetMaximum(1)
 
-                leg = ROOT.TLegend(0.525, 0.7, 0.725, 0.9)
+                if RNN_ANSTYLE:
+                    # top right, growing downwards; the pave takes the top left, so
+                    # the two never run into each other whatever is being drawn
+                    _nrow = -(-_ny // _ncol)
+                    leg = ROOT.TLegend(0.50 if _ncol == 2 else 0.62,
+                                       0.885 - 0.042 * _nrow, 0.95, 0.885)
+                    leg.SetNColumns(_ncol)
+                    leg.SetTextSize(0.026)
+                else:
+                    leg = ROOT.TLegend(0.525, 0.7, 0.725, 0.9)
                 leg.SetBorderSize(0)
                 leg.SetFillStyle(0)
                 leg.SetTextFont(42)
@@ -774,10 +910,12 @@ for collection in tqdm(collections, desc="Collections"):
                             var = "RNNt"
                         else:
                             var = "RNNScore"
-                        h = df.Histo1D(
-                                (f"h_RNNScore_{rnn_mode}_{sample}", "", t_nbins, t_min, t_max),
-                                var
-                            )
+                        _hname = f"h_RNNScore_{rnn_mode}_{sample}"
+                        if t_edges is not None:
+                            _model = ROOT.RDF.TH1DModel(_hname, "", t_nbins, t_edges)
+                        else:
+                            _model = ROOT.RDF.TH1DModel(_hname, "", t_nbins, t_min, t_max)
+                        h = df.Histo1D(_model, var)
                         garbage_protect_list.append(h)
                         histo = h.GetValue()
                         histo.SetDirectory(0)
@@ -793,13 +931,17 @@ for collection in tqdm(collections, desc="Collections"):
                                     histo.SetBinContent(ib, 0)
 
                     is_cosmic_bkg = sample == "Cosmic Bkg"
-                    histo.SetLineColor(ROOT.kBlack if is_data else color_numerator)
-                    histo.SetMarkerColor(ROOT.kBlack if is_data else color_numerator)
+                    # fixed palette in AN style, running counter in the legacy one.
+                    # NB: the counter reaches kBlack (1) once seven samples are drawn,
+                    # which would collide with the data points.
+                    col = RNN_COLORS.get(sample, color_numerator) if RNN_ANSTYLE else color_numerator
+                    histo.SetLineColor(ROOT.kBlack if is_data else col)
+                    histo.SetMarkerColor(ROOT.kBlack if is_data else col)
                     histo.SetMarkerStyle(20)
                     histo.SetMarkerSize(0.6 if is_data else 1.0)
                     histo.SetLineWidth(2)
                     if is_cosmic_bkg:
-                        histo.SetFillColor(color_numerator)
+                        histo.SetFillColor(col)
                         histo.SetFillStyle(3004)
                     if is_data:
                         histo.Draw("P SAME")
@@ -811,6 +953,7 @@ for collection in tqdm(collections, desc="Collections"):
                         histo.Draw("HIST SAME")
                         leg.AddEntry(histo, sample, "l")
                     garbage_protect_list.append(histo)
+                    drawn_h[sample] = histo
                     color_numerator -= 1
 
                 # vertical marker(s) at the pass/blinding boundary (not for 2-bin)
@@ -824,24 +967,129 @@ for collection in tqdm(collections, desc="Collections"):
                         ln.Draw()
                         garbage_protect_list.append(ln)
 
-                pave = ROOT.TPaveText(0.23, 0.78, 0.40, 0.90, "NDC")
+                # the pave lines describe what is actually on this figure, so a
+                # figure without signal does not claim a signal depth
+                _has_sig = any(s in sig_samples for s in samples_to_draw)
+                _has_data = any(samples_dict[s][0] == "Data" for s in samples_to_draw)
+                if RNN_ANSTYLE:
+                    # top left, mirroring the legend. Short lines: the box is only
+                    # ~0.29 NDC wide, and the collection is already in the file name
+                    # (it is only worth stating when it is not the default one).
+                    _lines = []
+                    if collection != 'matched_muon':
+                        _lines.append(f"Collection = {collection}")
+                    _lines.append(RNN_REGION_LABEL.get(region, f"Region = {region}"))
+                    if _has_sig:
+                        _lines.append("Signal Depth: 0.1 m")  # SurfaceDepth-e2 samples
+                    if _has_data and blind_above is not None:
+                        _lines.append(f"Blinded: S #geq {blind_above}")
+                    pave = ROOT.TPaveText(0.18, 0.885 - 0.042 * len(_lines), 0.47, 0.885, "NDC")
+                    pave.SetTextSize(0.026)
+                else:
+                    _lines = [f"Collection = {collection}", f"Region = {region}"]
+                    if _has_sig:
+                        _lines.append("Signal Depth: 0.1 m")
+                    if _has_data and blind_above is not None:
+                        _lines.append(f"Data blinded: RNN #geq {blind_above}")
+                    pave = ROOT.TPaveText(0.23, 0.78, 0.40, 0.90, "NDC")
+                    pave.SetTextSize(0.025)
                 pave.SetFillColor(0)
                 pave.SetBorderSize(0)
                 pave.SetTextAlign(12)  # left aligned
-                pave.SetTextSize(0.025)
-                pave.AddText(f"Collection = {collection}")
-                pave.AddText(f"Region = {region}")
-                if draw_signal:
-                    pave.AddText("Signal Depth: 0.1 m")  # SurfaceDepth-e2 samples
-                if blind_above is not None:
-                    pave.AddText(f"Data blinded: RNN #geq {blind_above}")
+                for _ln_txt in _lines:
+                    pave.AddText(_ln_txt)
                 pave.Draw()
                 leg.Draw()
 
-                CMS.CMS_lumi(c, iPosX=0, scaleLumi=0)
+                CMS.CMS_lumi(pad_main if do_ratio else c, iPosX=0, scaleLumi=0)
+
+                if do_ratio and "Run-3 Cosmics" in drawn_h and "Cosmic Bkg" in drawn_h:
+                    hdat = drawn_h["Run-3 Cosmics"]
+                    hmc = drawn_h["Cosmic Bkg"]
+                    nb_r = hdat.GetNbinsX()
+
+                    def _style_ratio(h, ytitle, ymax):
+                        h.SetStats(False)
+                        h.SetMinimum(0.0)
+                        h.SetMaximum(ymax)
+                        h.GetYaxis().SetTitle(ytitle)
+                        h.GetYaxis().SetNdivisions(505)
+                        h.SetMarkerStyle(20)
+                        h.SetMarkerSize(0.8)
+                        h.SetMarkerColor(ROOT.kBlack)
+                        h.SetLineColor(ROOT.kBlack)
+                        h.SetFillStyle(0)
+
+                    # --- pad 1: bin-by-bin MC/data ---
+                    pad_r1.cd()
+                    r1 = hmc.Clone("r1_binbybin")
+                    r1.SetDirectory(0)
+                    r1.Divide(hdat)
+                    _style_ratio(r1, "MC / data", 3.2)
+                    r1.GetXaxis().SetLabelSize(0)
+                    r1.GetXaxis().SetTitleSize(0)
+                    r1.GetYaxis().SetTitleSize(0.172)
+                    r1.GetYaxis().SetTitleOffset(0.365)
+                    r1.GetYaxis().SetLabelSize(0.150)
+                    r1.Draw("P E")
+                    l1 = ROOT.TLine(r1.GetXaxis().GetXmin(), 1, r1.GetXaxis().GetXmax(), 1)
+                    l1.SetLineStyle(2)
+                    l1.Draw()
+                    garbage_protect_list += [r1, l1]
+
+                    # --- pad 2: ratio of the tail integral, bin -> +inf ---
+                    # For each bin i, integrate both histograms over [i, N] and take
+                    # the ratio; this is the MC/data ratio of the *cumulative* yield
+                    # above that RNN value, which is what a cut at that value selects.
+                    pad_r2.cd()
+                    r2 = hdat.Clone("r2_tailint")
+                    r2.SetDirectory(0)
+                    r2.Reset()
+                    # NB: 'max' is shadowed by a local above, so use plain comparisons.
+                    # The histograms are area-normalized, so convert the MC tail
+                    # fraction back to a raw count for the Poisson error.
+                    n_mc_raw = hmc.GetEntries()
+                    for ib in range(1, nb_r + 1):
+                        di = hdat.Integral(ib, nb_r)
+                        mi = hmc.Integral(ib, nb_r)
+                        if di > 0 and mi > 0:
+                            n_tail = mi * n_mc_raw
+                            r2.SetBinContent(ib, mi / di)
+                            r2.SetBinError(ib, (mi / di) / (n_tail ** 0.5) if n_tail > 0 else 0.0)
+                        else:
+                            r2.SetBinContent(ib, 0.0)
+                            r2.SetBinError(ib, 0.0)
+                    _style_ratio(r2, "#int_{bin}^{#infty} MC / data", 3.2)
+                    r2.GetXaxis().SetTitle(x_title)
+                    r2.GetXaxis().SetTitleSize(0.172)
+                    r2.GetXaxis().SetTitleOffset(0.91)
+                    r2.GetXaxis().SetLabelSize(0.150)
+                    # smaller than the pad-1 title: the #int glyph with its limits is
+                    # tall, and at 0.132/0.475 the #infty ran off the left edge
+                    r2.GetYaxis().SetTitleSize(0.105)
+                    r2.GetYaxis().SetTitleOffset(0.60)
+                    r2.GetYaxis().SetLabelSize(0.150)
+                    r2.SetMarkerColor(ROOT.kAzure + 2)
+                    r2.SetLineColor(ROOT.kAzure + 2)
+                    r2.Draw("P E")
+                    l2 = ROOT.TLine(r2.GetXaxis().GetXmin(), 1, r2.GetXaxis().GetXmax(), 1)
+                    l2.SetLineStyle(2)
+                    l2.Draw()
+                    garbage_protect_list += [r2, l2]
+                    for bval in line_vals:
+                        for _pad, _rh in ((pad_r1, r1), (pad_r2, r2)):
+                            _pad.cd()
+                            _ln = ROOT.TLine(xpos(bval), 0, xpos(bval), 3.2)
+                            _ln.SetLineStyle(2)
+                            _ln.SetLineColor(ROOT.kGray + 2)
+                            _ln.Draw()
+                            garbage_protect_list.append(_ln)
+
                 os.makedirs(f"figures/presel_ch_skimmedNtuples/{collection}", exist_ok=True)
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}{fname_suffix}.png")
-                c.SaveAs(f"figures/presel_ch_skimmedNtuples/{collection}/{collection}_{region}_{var_dict[main_var][4+num]}{fname_suffix}.pdf")
+                _base = (f"figures/presel_ch_skimmedNtuples/{collection}/"
+                         f"{collection}_{region}_{var_dict[main_var][4+num]}{fname_suffix}")
+                c.SaveAs(f"{_base}.png")
+                c.SaveAs(f"{_base}.pdf")
                 del c
                 del hframe
 

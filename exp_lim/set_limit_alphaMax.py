@@ -653,7 +653,7 @@ for theory_xsecs in total_theory_xsec_list:
     pave.SetBorderSize(0)
     pave.SetTextAlign(12)  # left aligned
     pave.AddText("m_{A'} = 0.245 GeV")
-    pave.AddText(f"c#tau = {ctau_labels[label_counter]:.3g} [m]")
+    pave.AddText(f"c#tau = {ctau_labels[label_counter]:.3g} m")
     pave.AddText("#alpha_{#chi}^{max} = 0.17 (m_{#chi}/TeV)^{1.61}")
     pave.Draw()
 

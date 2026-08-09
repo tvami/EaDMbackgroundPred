@@ -33,7 +33,9 @@ BASE=/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.0/
 # ------------------------------------------------------------------
 # 1) Create full directory tree
 # ------------------------------------------------------------------
-for sample in Data Signal BkgMC ExpressData; do
+# ExpressData dropped: the express stream is retired. Creating the tree here is what
+# left the stale, never-filled ExpressData/ directory in Ntuples_v5.0.0/.
+for sample in Data Signal BkgMC; do
   for region in sr vr1 vr2; do
     for object in matched_muon muon track tuneP; do
       mkdir -p "$BASE/$sample/$region/$object"
@@ -102,7 +104,11 @@ for f in ./skimmed_*.root ./trigger_study_*.root; do
   if [[ "$fname" == *MaxP* || "$fname" == *realistic_deco* ]]; then
     sample=BkgMC
   elif [[ "$fname" == *ExpressCosmics* ]]; then
-    sample=ExpressData
+    # Retired stream. Skip rather than delete this branch: the express filenames are
+    # Ntuplizer-ExpressCosmics*, which does NOT match the *Ntuplizer-Cosmics* test
+    # below, so dropping the branch would silently file express data as Signal.
+    echo "SKIPPING (ExpressData is retired): $fname"
+    continue
   elif [[ "$fname" == *Ntuplizer-Cosmics* ]]; then
     sample=Data
   else
