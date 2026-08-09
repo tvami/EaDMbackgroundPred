@@ -1,0 +1,100 @@
+{
+  "BINNING": {
+    "default": {
+      "X": {
+        "BINS": [
+          20,
+          40,
+          60,
+          80,
+          100,
+          130,
+          160,
+          200,
+          260,
+          320,
+          400,
+          500,
+          700
+        ],
+        "NAME": "RNNt100",
+        "SIGEND": 260,
+        "SIGSTART": 200,
+        "TITLE": "100 #times (-log_{10}(1 - RNN score))",
+        "_COMMENT": "Axis starts at 20 (RNNScore = 0.369): the RNNScore ~ 0 spike below that has a pass/fail ratio ~4x lower than the rest of the axis and no low-order transfer function can absorb the step. SIGSTART = 200 is RNNScore = 0.99, the blind point; with blindedFitSubregions defaulting to [SIG,HIGH] this masks the whole pass region above 0.99. Edges must be integers to match the fine (700,0,700) input binning exactly."
+      },
+      "Y": {
+        "MAX": 200,
+        "MIN": 1,
+        "NAME": "N",
+        "NBINS": 1,
+        "TITLE": "N"
+      }
+    }
+  },
+  "GLOBAL": {
+    "FILE": "EaDM_$process.root",
+    "HIST": "h$region",
+    "SIGNAME": [
+      "Signal_M3000GeV_e4_RNNSR"
+    ],
+    "path": "./histograms_for_2DAlphabet_v26"
+  },
+  "NAME": "EaDM",
+  "OPTIONS": {
+    "_COMMENT_plotEvtsPerUnit": "Left off: plot._format_1Dhist hardcodes the y-axis label to 'Events / N GeV', which is wrong on this axis (the unit is 0.01 in -log10(1 - RNN score), not GeV). Note the pT-axis configs spell this 'plotEvtsPerUnitVolt', a typo that helpers.parse_arg_dict silently accepts, so it has never done anything there either.",
+    "blindedFit": [
+      "pass"
+    ],
+    "blindedPlots": [
+      "pass"
+    ],
+    "plotEvtsPerUnit": false,
+    "plotTemplateComparisonsNA": false
+  },
+  "PROCESSES": {
+    "SIGNAME": {
+      "COLOR": "red",
+      "LOC": "./histograms_for_2DAlphabet_v26/EaDM_$process.root:h$region",
+      "NAME": "SIGNAME",
+      "SCALE": 1.0,
+      "SYSTEMATICS": [
+        "lumi"
+      ],
+      "TITLE": "DM signal",
+      "TYPE": "SIGNAL",
+      "VARIATION": "nominal"
+    },
+    "data_obs": {
+      "ALIAS": "Run3_Cosmics_Data_All_RNNSR",
+      "COLOR": "black",
+      "LOC": "./histograms_for_2DAlphabet_v26/EaDM_$process.root:h$region",
+      "NAME": "data_obs",
+      "SCALE": 1,
+      "SYSTEMATICS": [],
+      "TITLE": "Run-3 Cosmics",
+      "TYPE": "DATA",
+      "VARIATION": "nominal"
+    }
+  },
+  "REGIONS": {
+    "fail": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    },
+    "pass": {
+      "BINNING": "default",
+      "PROCESSES": [
+        "SIGNAME"
+      ]
+    }
+  },
+  "SYSTEMATICS": {
+    "lumi": {
+      "CODE": 0,
+      "VAL": 1.05
+    }
+  }
+}

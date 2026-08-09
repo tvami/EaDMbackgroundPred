@@ -89,7 +89,7 @@ fi
 
 # Run the Python script with arguments
 echo -e "\n[1] Running Python script"
-python3 skimmed_ntuple_processing_script.py \
+python3 skimmed_ntuple_processing_script_mergeDepths.py \
     -i "$input_file" \
     -n "$ntuple_version" \
     -s "$sample_type" \
@@ -99,15 +99,24 @@ python3 skimmed_ntuple_processing_script.py \
     -k "$checkpoint" \
     -S "$t0_shift_mc" \
     "${scale_args[@]}"
+    -p props_dict.npy
 
 # Copy output to final destination if accessible
 echo -e "\n[2] Transferring output files"
 if [ -d "./output" ]; then
-    dest_base="/ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v${ntuple_version}_wRNN"
+    dest_base="/ceph/cms/store/user/smasanam/EarthAsDMProject/Ntuples/Ntuples_v${ntuple_version}_wRNN"
     dest_full="${dest_base}/${sample_type}/${region}/${collection}"
 
-    # Check if destination is writable by trying to create the full path
-    if mkdir -p "$dest_full" 2>/dev/null; then
+    # Create the destination only if it is missing, then test writability separately.
+    # mkdir -p is not atomic across processes: when many jobs start at once and race to
+    # create the same intermediate directories, a loser can exit non-zero on EEXIST even
+    # though the directory exists and is perfectly writable. Testing mkdir's exit status
+    # therefore sends jobs down the fallback path for no reason.
+    if [ ! -d "$dest_full" ]; then
+        mkdir -p "$dest_full" 2>/dev/null
+    fi
+
+    if [ -d "$dest_full" ] && [ -w "$dest_full" ]; then
         echo "Copying output to $dest_full"
         cp -v ./output/${sample_type}/${region}/${collection}/*.root "$dest_full/" 2>/dev/null
 
