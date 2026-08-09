@@ -1,6 +1,6 @@
 """
 Plots CMS Run 3 cosmics exclusion limits in the (m_chi, epsilon) plane
-for a dark photon mediator model (m_A' = 0.245 GeV).
+for a dark photon mediator model (m_A' = 0.23 GeV).
 
 Two panels are produced:
   Left  (n=0): Thermal coupling scenario  — alpha_x = 0.035 * (m_chi / TeV)
@@ -102,25 +102,36 @@ if args.heatmap:
         raise SystemExit("--heatmap currently supports only --yaxis epsilon.")
 
     months = float(livetime)
-    MA_TARGET = 0.245                                    # m_A' shown on the panels [GeV]
-    PARQUET = ('helper_scripts/parquet_files/rates_muons_electrons_both_alphas'
-               '_MX_1TeV_to_100TeV_special_granularity_fewer_columns.parquet')
+    MA_TARGET = 0.23                                     # m_A' shown on the panels [GeV]
+    MODEL = 'core'                                       # detector-volume model, as in limitRateInputScript.py
+    MX_WINDOW_GEV = (1000., 100000.)                     # displayed m_chi window [GeV]; the
+                                                         # parquet grid runs 10 GeV - 1000 TeV
+    PARQUET = ('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_KAPPAS_10_1000000'
+               '_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet')
 
-    # Snap to the nearest simulated m_A' grid point, then pull only muons at that
-    # mass (push the cuts into the parquet reader so we never materialise 54M rows).
+    # Snap to the nearest simulated m_A' grid point (0.23 is on this grid, so this is
+    # exact), then pull only muons at that mass, at nominal depth.
     ma_u = np.sort(pd.read_parquet(PARQUET, columns=['ma'])['ma'].unique())
     ma_val = ma_u[np.argmin(np.abs(ma_u - MA_TARGET))]
     dfh = pd.read_parquet(
         PARQUET,
-        columns=['mx', 'epsilon', 'alpha_therm_or_max', 'rate_CMS_1month'],
-        filters=[('final_state_particles', '==', 'muons'), ('ma', '==', ma_val)],
+        columns=['mx', 'epsilon', 'alpha_therm_or_max', 'rate_1yr',
+                 f'volume_m3_{MODEL}', f'frac_ecut10_{MODEL}'],
+        filters=[('final_state_particles', '==', 'muons'), ('ma', '==', ma_val),
+                 ('depth_scale', '==', 1.0)],
     )
+    # Same monthly rate as limitRateInputScript.py: the parquet's per-km^3 yearly rate
+    # converted to the detector volume, times the E > 10 GeV acceptance.
+    dfh['rate_1month'] = (dfh['rate_1yr'] / 12.
+                          * dfh[f'volume_m3_{MODEL}'] / 1000. ** 3
+                          * dfh[f'frac_ecut10_{MODEL}'])
+    dfh = dfh[(dfh.mx >= MX_WINDOW_GEV[0]) & (dfh.mx <= MX_WINDOW_GEV[1])]
 
     def _grid(alpha):
         """(mx[GeV], eps, rate[eps,mx]) monthly-rate grid for one coupling scenario."""
         s = dfh[dfh.alpha_therm_or_max == alpha]
         mx = np.sort(s.mx.unique()); ep = np.sort(s.epsilon.unique())
-        Z = (s.pivot_table(index='epsilon', columns='mx', values='rate_CMS_1month')
+        Z = (s.pivot_table(index='epsilon', columns='mx', values='rate_1month')
               .reindex(index=ep, columns=mx).values)
         return mx, ep, Z
 
@@ -186,10 +197,10 @@ if args.heatmap:
         ax.xaxis.set_major_formatter(tev_fmt)
 
         if n == 0:
-            lab = (r"$m_{A^\prime} = 0.245\;\mathrm{GeV}$" "\n"
+            lab = (r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$" "\n"
                    r"$\alpha_{x}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$")
         else:
-            lab = (r"$m_{A^\prime} = 0.245\;\mathrm{GeV}$" "\n"
+            lab = (r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$" "\n"
                    r"$\alpha_{x}^{\text{max}}=0.17\;(\mathrm{m_{\chi}/TeV})^{1.61}$")
         ax.annotate(lab, xy=(0.05, 0.975), xycoords="axes fraction", ha="left",
                     va="top", fontsize=22)
@@ -221,7 +232,7 @@ if args.heatmap:
 df = None
 if not band68:
     df = pd.read_parquet(
-        'helper_scripts/parquet_files/rates_muons_electrons_both_alphas_MX_1TeV_to_100TeV_special_granularity_fewer_columns.parquet'
+        'rates_muons_electrons_both_alphas_KAPPAS_10_1000000_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet'
     )
 
 # ── EXCLUSION BOUNDARY ARRAYS ────────────────────────────────────────────────
@@ -487,7 +498,7 @@ for n, ax in enumerate(axs):
     # Common log-log axes and physical axis labels
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xlim(1000, 1000000)
+    ax.set_xlim(2000, 1000000)
     if y_axis == 'epsilon':
         ax.set_ylim(1e-9, 1e-6)
         ax.set_ylabel(r"$\varepsilon$", fontsize=46)
@@ -500,13 +511,13 @@ for n, ax in enumerate(axs):
     # Panel annotation: model parameters shown in the upper-left corner
     if n == 0:
         label = (
-            r"$m_{A^\prime} = 0.245\;\mathrm{GeV}$"
+            r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$"
             "\n"
             r"$\alpha_{x}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$"
         )
     elif n == 1:
         label = (
-            r"$m_{A^\prime} = 0.245\;\mathrm{GeV}$"
+            r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$"
             "\n"
             r"$\alpha_{x}^{\text{max}}=0.17\;(\mathrm{m_{\chi}/TeV})^{1.61}$"
         )
