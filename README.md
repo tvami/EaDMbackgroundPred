@@ -210,6 +210,13 @@ histogram-dir version; "Binning v<M>" is the analysis binning — the two are bu
  - v26: Run-3 Cosmics, finer high-pT binning (Binningv11a/v11b, overflow bin at 6000/6001) and the signal nuisances renamed to the `CMS_EXO26004_*` convention.
  - v27: Run-3 Cosmics w/ skimmed ntuples v5.0.3_wRNN, whose pT range was extended to 10 TeV (v5.0.2 was too strict), so the high-pT tail that used to pile into the overflow now lands in its own bins → Binningv12 (overflow moved to 10001 GeV). Built with `collect_and_merge_histograms.py --source-base .../Ntuples_v5.0.3_wRNN` (see below) so the Commissioning20XX data eras are now merged into `EaDM_Run3_Cosmics_Data_All_*` (the old `Run202*`-only glob silently dropped them).
  - v28: Run-3 Cosmics w/ skimmed ntuples v5.0.4_wRNN (same RNN as v5.0.2/3; the only change is `PT_MAX_CLIP` in `skimmed_ntuple_processing_script.py` lowered 10000→7000 GeV, so the high-pT tail now piles at 7000 instead of 10000). Paired with **Binningv13**, which moves the overflow edge 10001→7001 to sit just above the new clip. Built with `collect_and_merge_histograms.py --version v28 --source-base /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.4_wRNN`.
+  - v29: Same as v28 except the `Signal` histograms were additionally **depth-merged**: the five
+   `SurfaceDepth-e2 … e6` samples of each mass are summed with `props_dict` shell weights into one
+   template, via `helper_scripts/run_2DAInput_signal_merge_local.sh` (which drives
+   `skimmed_ntuple_processing_script_mergeDepths.py -T 2DAInput -s Signal`). The dir holds the usual
+   per-depth files **plus** 18 `EaDM_Signal_M<mass>GeV_mergedDepth_SR.root` — SR only; the merge can
+   produce VR1/VR2 too, but nothing downstream consumes them. See
+   **[Depth-merged signals (mergedDepth)](#depth-merged-signals-mergeddepth)**.
 
 > **Building the histogram dir.** `collect_and_merge_histograms.py -v <ver> [-s SOURCE_BASE]` collects the
 > step-6 `2DA/EaDM_*.root` trees into `histograms_for_2DAlphabet_<ver>/`, merging the per-era data files
@@ -395,6 +402,124 @@ This will make the inputs using the `generate_condor_inputs.py` file:
 - VR1 (Validation Region 1): pT > 200 GeV, 0.45 <= RNNScore < 0.9999
 - VR2 (Validation Region 2): pT < 200 GeV, RNNScore >= 0.9999 --> with "alt" binning
 
+## Depth-merged signals (mergedDepth)
+
+### What it is and why
+
+The signal MC is generated at five discrete surface depths, `SurfaceDepth-e2 … e6`, i.e. 1e2 … 1e6 mm
+past the front face of the volume at 8 m. The standard chain treats each depth as its own signal and
+sets one limit per depth. **Depth-merging** instead sums the five samples of a given mass into a
+single template, weighting each by the fraction of signal events that actually land in the radial
+shell that sample stands for — so one merged signal replaces the fixed-depth assumption, with the
+depth distribution folded in at the histogram level rather than in the limit script.
+
+The shells are bounded by 8, 8.1, 9, 18, 108, 1008 and 4000 m, and the depth→shell map is
+`DEPTH_SHELLS = {2: [0], 3: [1], 4: [2], 5: [3], 6: [4, 5]}`
+([skimmed_ntuple_processing_script_mergeDepths.py:40](helper_scripts/skimmed_ntuple_processing_script_mergeDepths.py#L40)) —
+each `eX` covers the shell ending 1eX mm past the front face, and `e6` additionally absorbs the
+outermost shell, which sits beyond every generated depth.
+
+`depth_weight(mass, depth)` looks the fractions up in `props_dict`, which is tabulated only on a
+coarse mass grid (1–9, 10–90, 100–900 TeV). Intermediate masses (1500, 2500, …) are interpolated
+shell-by-shell in log(mass) and then renormalised to unit sum; masses outside the grid are clipped to
+its ends. `np.interp` is exact at the tabulated masses, so a mass that is itself a key reproduces
+`props_dict` verbatim.
+
+> **Units — `props_dict` is keyed by the DM mass, not `MinP`.** The filename token `MinP-<N>`
+> (and hence `M<N>GeV`) is the per-muon pT, which is **half** the DM particle mass — see
+> [Mass convention](#mass-convention-mn). `props_dict` is built from parquet files whose axis is the
+> DM mass (`mDM_*`), so the lookup uses **2×`MinP`**: `depth_weight(int(number)*2, depth)`.
+> `exp_lim/set_limit_alphaMax.py` keys the same dict the same way (its signal list carries 2×`MinP`
+> as the mass, e.g. `2000` for `Signal_M1000GeV`), so the merge and the volume-mode limit weight the
+> depths consistently. Keep the two in step if you touch either.
+
+**Two log lines to check per mass:**
+- `WARNING: M<mass>GeV depth weights sum to only <w>` — a depth sample doesn't exist for that mass
+  (M1000 has no `e6`). The merged histograms are then normalised to `100*w` events instead of the
+  100-event reference, so the limit from them is too weak by `1/w`.
+- `M<mass>GeV cutflow closure: … ratio = …` — merged yield vs. the cutflow expectation of the samples
+  it was built from (tolerance 1e-4). A warning here means the per-depth `100/n_generated` scaling,
+  the props weights, or the histogram accumulation is wrong — **do not set a limit from those files**.
+
+### Prerequisite: `props_dict.npy`
+
+The shell fractions live in `helper_scripts/parquet_files/props_dict.npy` (committed; regenerate only
+if the shell definition changes). It is produced by `helper_scripts/depthFractionCalcScript.py`, which
+rebins the distance-at-detector parquet distributions onto the shell edges and writes
+`props_dict[mass] = fraction per shell` (sums to 1).
+
+That script has **hardcoded local `/Users/...` input paths** and runs under numpy ≥ 2 — run it
+off-cluster on the parquet files (the same Google-Drive set as step 8) and copy the resulting `.npy`
+into `helper_scripts/parquet_files/`. The consumer aliases `numpy._core` → `numpy.core` before
+`np.load`, because numpy ≥ 2 pickles reference a module that CMSSW's numpy 1.24 still calls
+`numpy.core`.
+
+Pass it with `-p/--propsDict` (default `parquet_files/props_dict.npy`); it is only read when
+`-s Signal`.
+
+### Producing the merged histograms
+
+Step 6, pass 2 — see **[6a. Depth-merge the Signal histograms](#6a-depth-merge-the-signal-histograms-step-6-pass-2)**.
+Then run step 6c as usual to build `histograms_for_2DAlphabet_v29/`.
+
+### Running the 2DA chain
+
+The merged chain is a twin of the standard one, touching only `mergedDepth` files so the per-depth
+chain (`input_2DA_SR.txt`, `step7_condor_2DA_SR.cfg`, `run_2DA_SR_batch.sh`) is left alone.
+
+```bash
+./submit_2DA_mergedDepths_SR.sh                 # rescan v29, then submit to condor
+./submit_2DA_mergedDepths_SR.sh --no-generate   # submit the existing list as-is
+./submit_2DA_mergedDepths_SR.sh --dry-run       # validate + parse, submit nothing
+```
+
+It regenerates `input_2DA_mergedDepths_SR.txt` by globbing
+`histograms_for_2DAlphabet_v29/EaDM_Signal_M*GeV_mergedDepth_SR.root` (18 masses), then queues
+`step7_condor_2DA_mergedDepths_SR.cfg` → `run_2DA_mergedDepths_SR_batch.sh`. Settings block at the top
+of the submit script: `HISTO_DIR=histograms_for_2DAlphabet_v29`,
+`TEMPLATE_CFG=config_Binningv13_Inputv29Template_SR_Blind.json`, `TF_TYPE=2x0`. Output area:
+`rpf2x0_Binningv13_Inputv29_mergedDepths_SR_Blind`.
+
+Local alternative (same per-signal work, no condor):
+```bash
+./run_all_mergedDepths_local.sh          # 6 signals at a time
+./run_all_mergedDepths_local.sh 10       # 10 at a time
+```
+Signals with a `done` marker are skipped, so it resumes after an interrupt; per-signal logs go to
+`logs_local/`.
+
+### Limits
+
+```bash
+./run_limits_mergedDepths.sh                     # defaults
+./run_limits_mergedDepths.sh -m 24.3             # different livetime
+./run_limits_mergedDepths.sh --skip-input        # reuse the existing alpha_max.txt
+./run_limits_mergedDepths.sh --no-plot           # stop after the limits, skip the 2D plot
+```
+Defaults: `-d rpf2x0_Binningv13_Inputv29_mergedDepths_SR_Blind`, `-m 20.7`. It needs `pyarrow`
+(see the step 8 env notes) and checks for it up front.
+
+This wrapper exists because the standard `partial_limit_pipeline.sh` cannot be used as-is — two
+changes are needed (both handled internally, listed here so the workaround isn't mistaken for a bug):
+1. `limitRateInputScript.py` has no `mergedDepth` path token, so the wrapper generates with `-d e3`
+   (whose mass grid maps 1:1 onto the 18 merged masses) and then `sed`s `_e3_SR` → `_mergedDepth_SR`
+   in the signal list. It verifies afterwards how many entries resolve to a real combine limit file.
+2. `exp_lim/set_limit_alphaMax.py` runs with **`--single`** (each signal's own combine limit) instead
+   of the default depth-weighted average over e3–e6 — that average is meaningless for a signal whose
+   depths are already merged in.
+
+Otherwise it is the same three steps as [Step 8: Run Limits](#8-run-limits): signal list →
+`exclusion_limits.json` in `exp_lim/signal_<LIMITDIR>_livetime_<MONTHS>_limit/` → 2D exclusion plot
+(step 3 runs `plotExcludedMassVsEp_2D.py --band68 --use-cache`).
+
+> **`--use-cache` gotcha.** Step 3 draws straight from `band_edges_cache_<yaxis>.npz` next to the
+> JSON. On a **first** run that cache doesn't exist yet and the script exits with
+> `No band cache at … -- run once without --use-cache first`; use `--no-plot`, then draw once by hand
+> without `--use-cache` (the "Expected-band overlay" recipe in [Step 8](#8-run-limits)) to create it,
+> after which the wrapper works.
+> Conversely the cache is **not** invalidated when the JSON is regenerated — delete the `.npz` after
+> re-running step 2, or you will redraw the old bands.
+
 ## Conventions and gotchas
 
 ### Mass convention (`M<N>`)
@@ -530,6 +655,13 @@ python3 generate_input_ntuple_list.py \
 ### 6. Process Skimmed Ntuples
 Add RNN scores and create 2DAlphabet input histograms.
 
+> **Which script actually runs on condor.** `run_ntuple_processing_batch.sh` calls
+> `skimmed_ntuple_processing_script_mergeDepths.py` **unconditionally** — every condor step-6 job
+> today uses the fork, not the base script shown below. The fork is a superset (same CLI plus
+> `-p/--propsDict`), so the `Data`/`BkgMC` behaviour is unchanged; the depth-merging code only
+> activates for `-s Signal`. The local-testing snippet below still uses the base script because
+> that path is unaffected.
+
 **For local testing:**
 ```bash
 cd helper_scripts
@@ -567,6 +699,62 @@ Each per-era 2DA histogram (`hpass`/`hfail` and the `_pTsyst/_t0syst/_trigsyst/_
 shape variations) is a fine `TH2` spanning **0–12500 GeV in 1 GeV bins** on the x (pT) axis. 2DAlphabet
 rebins these to the coarse analysis `BINS` at fit time, so any `BINS` edge you put in a config must be
 ≤ 12500 (e.g. the v12 overflow edge 10001 is in range).
+
+### 6a. Depth-merge the Signal histograms (step 6, pass 2)
+
+Only needed when you want `mergedDepth` signal templates (histogram version v29 and later). Background
+and data need nothing here. See **[Depth-merged signals (mergedDepth)](#depth-merged-signals-mergeddepth)**
+for what the merge does and why.
+
+**Why two passes.** The merge discovers the depths to combine by globbing
+`./output/<sample>/<region>/<collection>/*.root`, and a condor sandbox holds only the single file that
+job produced — so it cannot run inside the step-6 jobs. Instead:
+
+- **Pass 1 (condor):** the normal step-6 submission, but with the `Signal` lines set to run_type
+  `Process` instead of `Both` (the `2DAInput` half is deferred). That list is
+  `helper_scripts/input_ntuples_v5.0.0_mergeDepths.txt` — identical to `input_ntuples_v5.0.0.txt`
+  except for those 267 `Signal` lines. It leaves the RNN-scored per-depth ntuples on ceph.
+- **Pass 2 (login node):** gather the per-depth files for one mass into a single staging tree and run
+  the merge over them.
+
+```bash
+cd helper_scripts
+./run_2DAInput_signal_merge_local.sh -n 5.0.0 -r "sr vr1 vr2" \
+    -b /ceph/cms/store/user/smasanam/EarthAsDMProject/Ntuples/Ntuples_v5.0.0_wRNN \
+    -d /ceph/cms/store/user/smasanam/EarthAsDMProject/Ntuples/Ntuples_v5.0.0_wRNN
+```
+
+| Flag | Default | Meaning |
+|---|---|---|
+| `-n VERSION` | `5.0.0` | ntuple version (also picks the default `-b` path) |
+| `-c COLLECTION` | `matched_muon` | collection |
+| `-r "REGIONS"` | `"sr vr1 vr2"` | space-separated region list |
+| `-w DIR` | `./mergeDepths_2DA` | staging work directory |
+| `-b DIR` | `/ceph/.../Ntuples_v<VERSION>_wRNN` | source base holding the pass-1 output (`Signal/<region>/<collection>/`) |
+| `-C` | off (symlink) | copy the inputs instead of symlinking them |
+| `-P` | off | publish the merged output back to the `-b` base (overwrites) |
+| `-d DIR` | — | publish under `DIR` instead of `-b`; **implies `-P`** and mirrors the `-b` layout |
+| `-h` | — | help |
+
+Merged output lands in `<workdir>/output/Signal/<region>/<collection>/2DA/` as
+`EaDM_Signal_M<mass>GeV_mergedDepth_{SR,VR1,VR2}.root`, and with `-P`/`-d` is copied to
+`<base>/Signal/<region>/<collection>/2DA/` — the same layout `collect_and_merge_histograms.py
+--source-base` reads, so step 6c can pick it up directly.
+
+> **Run this natively on the el8 login node.** It does its own `cmsenv` from the release area it
+> lives in. Do **not** wrap it in `cmssw-el9`, which does not bind-mount `/ceph`.
+
+Notes:
+- The script stages inputs, prints a **depth-coverage table** per mass (which of `e2…e6` were found),
+  runs the merge, and optionally publishes. It clears stale `*.root` from the staging dir first so an
+  old version can't be silently merged in.
+- `-i` is required by the python script's argparse but is effectively unused in `2DAInput` mode — the
+  merge globs the staging dir. The wrapper passes a genuine member of the set anyway, since `-i` is
+  read as a fallback when a globbed file has no `h_cutflow`.
+- Watch the log for `WARNING: M<mass>GeV depth weights sum to only …` (a depth sample is missing) and
+  the per-mass `cutflow closure` line (merged yield vs. cutflow expectation, tolerance 1e-4).
+- Failures are collected per region: one bad region doesn't abort the others, and the script exits
+  non-zero listing them.
 
 ### 6b. Preselection / cutflow plots (optional)
 
@@ -753,14 +941,45 @@ You may need to run `pip/conda/whatever install pyarrow` for the following to wo
 You WILL need to download the files located [here](https://drive.google.com/drive/folders/1Pn10mJrzeFBAhp00yWmnPprDYWYmvgky?usp=share_link) and save them to `helper_scripts/parquet_files` for the below to work.
 
 ```
-./helper_scripts/partial_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME
+./helper_scripts/partial_limit_pipeline.sh -d LIMITDIR -m MONTHS_OF_LIVETIME [-M core|floating]
 ```
 This will fill out the following three commands and run the first 2 as well.
 ```
-python3 helper_scripts/limitRateInputScript.py -d e0 -l LIMITDIR
+python3 helper_scripts/limitRateInputScript.py -d e0 -l LIMITDIR -m core
 python3 exp_lim/set_limit_alphaMax.py --outdir exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_limit -s exp_lim/signal_LIMITDIR_alpha_max.txt -l MONTHS_OF_LIVETIME
 python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVETIME
 ```
+`-m/--model` is **required** on `limitRateInputScript.py` and selects the detector-volume model
+(`core` or `floating`), i.e. which `volume_m3_<model>` / `frac_ecut10_<model>` columns are read.
+`partial_limit_pipeline.sh` defaults to `core` and exposes it as `-M` (its own `-m` is the livetime).
+`run_limits_mergedDepths.sh` also passes `core`.
+
+#### What the rate input actually is (`limitRateInputScript.py`)
+The per-mass numbers in `exp_lim/signal_<LIMITDIR>_alpha_max.txt` are **monthly** signal rates read
+from the consolidated parquet
+(`..._KAPPAS_10_1000000_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet`)
+under a slice that is **hardcoded at the top of the script**: `MA = 0.23`, `ALPHA = 'MAX'`,
+`FINAL_STATE = 'muons'`, and `depth_scale == 1.0`. Each entry is
+
+```
+rate = rate_1yr * (1/12) * volume_m3_<model> / 1000**3 * frac_ecut10_<model>
+```
+
+i.e. the parquet's per-km³ yearly rate converted to a monthly rate in the detector volume, times the
+E > 10 GeV acceptance. Off-grid DM masses are log-interpolated between bracketing grid points
+(linear fallback if either endpoint is 0), and templates above `TEMPLATE_MASS_CAP` = 90 TeV get the
+`eff_func` efficiency correction for the frozen `M90000GeV` template.
+
+Two consequences worth knowing:
+- **`MA = 0.23` is the lowest ma at which the muon channel is open.** At `ma = 0.22` the parquet has
+  `BR(a→µµ) = 0` exactly, so every rate would come out zero. The plot labels in
+  `plotExcludedMassVsEp_2D.py` (`MA_TARGET`, the `$m_{A^\prime}$` annotations) are set to 0.23 to
+  match; keep them in step if you change `MA`. `--heatmap` reads the **same** consolidated parquet
+  with the same slice and the same rate formula (`MODEL = 'core'`), so 0.23 is an exact grid point
+  there; it clips the displayed mass window to `MX_WINDOW_GEV` = 1–100 TeV.
+- The epsilon grid is taken from the parquet (45 points) and printed at startup. `labels` in
+  `exp_lim/set_limit_alphaMax.py:90` indexes the output lines **positionally**, so it must stay
+  identical to that printed grid — they match today.
 - The step-2→step-3 handoff is now automatic: `set_limit_alphaMax.py` writes the intersection arrays (`exp_lim`, `closed_exp_lim`, `exp_lim_lower`, `exp_lim_upper`, plus the `eps` grid) to `<outdir>/exclusion_limits.json`, and `plotExcludedMassVsEp_2D.py` loads them from `exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_limit/exclusion_limits.json`. No more copy-pasting the `Exp lim:` / `Closed Exp lim:` printouts into `max_exp_lim_Run3_e0` / `max_exp_lim_Run3_e0_closed`. Just keep `LIMITDIR` and `MONTHS_OF_LIVETIME` consistent between the two steps. You may still need to play with the x1/y1/x2/y2 bounds to get limits to appear.
 
 #### The limit script `exp_lim/set_limit_alphaMax.py` (two modes)
