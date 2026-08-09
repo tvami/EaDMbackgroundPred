@@ -266,6 +266,80 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
   **7000 GeV**: `pT_max` (and its up/down variants) is now `std::min(pT_max, 7000)` before filling, so
   the high-pT tail piles up at 7000 instead of 10000. `N_SEG_CLIP` is unchanged. Organize with
   `helper_scripts/organizeSkimmedNtuples.sh 5.0.4` (outputs in `Ntuples_v5.0.4_wRNN/`).
+- v5.0.5: **Not a step6 production.** A t0-shifted *mirror* of the v5.0.4 trees, built by
+  `helper_scripts/t0shift_study/make_shifted_tree.py`: MC/signal carry the **+8 ns re-scored**
+  `RNNScore`, data is copied unchanged (data defines the t0 frame). 21 files. This is the sample the
+  measured patch cost **0.869** and the deployed VR2 baseline band **1.136** come from, so do not
+  overwrite it.
+- v5.0.6: **The E1 production — the current RNN.** Re-run of `step6` on the v5.0.0 skims,
+  commissioning retained, using `rnn_retrain_weights_matchL0toData_shift11p0_smear7p7.ckpt` ("E1")
+  and **no t0 shift or smear at inference**. E1 was trained with label 0 transported into the data
+  t0 frame (shift 11.0 ns + per-event smear 7.7 ns), which is what makes the +8 ns inference patch
+  unnecessary — that patch is the thing this version exists to remove.
+  **Submitted 2026-07-31 as condor cluster 372383** (339 jobs); then organize with
+  `helper_scripts/organizeSkimmedNtuples.sh 5.0.6`. Feeds histogram version **v29**.
+
+  **The 339 jobs are 267 Signal (89 points x 3 regions) + 66 Data (22 eras x 3 regions) + 6 BkgMC
+  (neutrino MC + the v5a `MaxTheta-75` cosmic MC, x 3 regions).** They deliberately do **not** include
+  the `Ntuplizer-0to75Theta` / `0to89Theta` skims: those are *training* inputs for the cone study, read
+  straight from `Ntuples_v5.0.0` by `rnn_retrain_centeredT0.py`, which needs only the four dtSeg
+  branches and no `RNNScore`. Step 6 exists to add `RNNScore` and build 2DA histograms; those samples
+  need neither, and no config references them as a process. Do not "fix" this by adding them.
+  The cone study changes **which sample trains the network**, not which sample is the analysis
+  background — even if C89 wins, the background stays the v5a `MaxTheta-75` and only the checkpoint
+  changes, which is why v5.0.7 would be a re-run of these same 339 inputs.
+
+  v5.0.6 is also the **first production carrying `CMS_EXO26004_RNN_scale`** (the 4% RNN
+  working-point efficiency scale, see "Systematics"), so its 2DA files hold **22** histograms rather
+  than the 18 in v28. No extra flags were needed: the script's default RNN-scale cuts are the
+  E1-derived pair, which is correct for exactly this production.
+
+  Chosen on 2026-07-31 from a nine-candidate grid as the only one better than the deployed
+  v5-plus-patch on **both** axes — VR2 mid-RNN band **1.027** vs 1.136 (1.000 ideal), VR1 **0.860**
+  vs 1.276, signal efficiency at matched VR2 data rate **0.5080** vs 0.4648 (**+9.3%**). The
+  efficiency gain is corroborated by the independently measured patch cost: full recovery would be
+  0.4648/0.869 = 0.5347. The Sp/Wp one-variable gradients place E1 within 0.2 ns (shift) and 0.4 ns
+  (smear) of the band optimum. Details in `HANDOVER_20260731_rnn_variant_grid_status.md`.
+
+  > **This slot previously read "arm 2".** v5.0.6/7/8 were reserved on 2026-07-29 for arms 2/3/4 and
+  > never submitted (empty ceph dirs). E1 supersedes all three; the arm-3/4 cfgs and joblists moved to
+  > `helper_scripts/retired_arm_productions/`.
+- v5.0.7: **Reserved — the MaxTheta 0–89 cone production**, conditional on the C89 / C75n trainings
+  (clusters 372361 / 372362, submitted 2026-07-31). Every arm through E1 trained label 0 on the
+  **0–75** cone (`CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75`, the v5a production).
+  C89 uses the wider 0–89 cone. **C89 is not interpretable on its own** — it differs from the 75 in
+  both the cone *and* the ntuplizer campaign, so it must be read against C75n, which is the 0–75 cone
+  from the *same* campaign. Only C89 − C75n isolates the cone. If that step says the cone matters,
+  the winning cone gets a full step6 production as v5.0.7. Empty on ceph until then.
+- v5.0.8: free. Ceph dir exists but is empty and can be removed.
+
+### The 0to75Theta / 0to89Theta background skims (added to `Ntuples_v5.0.0/BkgMC/`, cluster 372321)
+
+`Ntuples_v5.0.0/BkgMC/<region>/matched_muon/` now holds **four** files per region, not two. The two
+extra ones are `skimmed_matched_muon_<region>_Ntuplizer-0to{75,89}Theta-4to3000GeV-140X_mcRun3_2024cosmics_realistic_deco_v14-v2_s{2,3}_v5.0.0.root`,
+skimmed from smasanam's "new private bkg" ntuplizer campaign
+(`/ceph/cms/store/user/smasanam/EarthAsDMProject/Cosmics/crab_Ntuplizer-0to{75,89}Theta-...`) via
+`step2_condor_skim_newbkg.cfg` + `input_cosmics_datasets_matched_muon_newbkg_chunked.txt` (108 jobs).
+They exist to support the **0-89 deg cone RNN variant** (`BKG_CONE=89`), which needed a wider
+downward-going label-0 sample than the deployed `MaxTheta-75` one.
+
+Three things to know before using them:
+
+- **They carry no `bField` branch,** because that campaign predates it. `skim_ntuples.C` therefore
+  applies the v5.0.0 magnet-on cut **only when the branch is present** (`has_bfield`), and keeps
+  `bField` in `branches_to_keep` only in that case. This is a no-op physically: `bField` is a constant
+  3.8 T in the cosmic MC, so `bField > 0.1` passes 100% (measured, 73317 v5a events). Samples that do
+  have the branch are untouched — the filter still runs and the branch order is unchanged, verified
+  against the production `Ntuples_v5.0.0` file. `NTUPLE_VERSION` therefore stays `v5.0.0`: the cutflow
+  did not change for any existing dataset.
+- **They are NOT `_wRNN`.** There is no `RNNScore` on them and step 6 was not run. That is deliberate —
+  the only consumer is `rnn_retrain_centeredT0.py`, which reads just the four `muon_dtSeg_*` branches.
+  Do not feed them to the 2DAlphabet chain without running step 6 first.
+- **`0to89` is not a bigger `0to75`.** The two smasanam productions are ~9.25M and ~10.0M raw events;
+  the deployed v5a `MaxTheta-75` is ~23.5M. Skimmed, that is 32299 / 34607 / 82205 label-0 entries.
+  So the 89 cone costs **2.5x the label-0 statistics** relative to the deployed background, which is why
+  `0to75Theta` was skimmed alongside it as the matched control. The merged counts reproduce the old
+  `Ntuples_v4.1.1` skims of the same productions exactly (89: 1616/1616/30683, 75: 1614/1614/32993).
 
 ## Binning Versions
 
@@ -502,11 +576,19 @@ cd helper_scripts
 **What it does:**
 - Scans base directories for raw ntuples:
   - `/ceph/cms/store/user/tvami/EarthAsDM`
-  - `/ceph/cms/store/user/tvami/EarthAsDM/ExpressCosmics`
+  - `/ceph/cms/store/user/tvami/EarthAsDM/ExpressCosmics` — **no longer used, see below**
   - `/ceph/cms/store/user/tvami/EarthAsDM/Cosmics`
 - Creates entries for each region (sr, vr1, vr2) and each dataset directory
 - Outputs: `input_cosmics_datasets_{collection}.txt`
 - Format: `object region directory_path`
+
+> **ExpressData is retired — do not run on it.** The express stream was a prompt-turnaround
+> cross-check; the analysis now uses only the PromptReco `Cosmics` eras plus the private cosmic MC.
+> `make_input_list.sh` still scans `ExpressCosmics/`, so any list it regenerates will contain
+> express entries — **drop them before submitting step 2**. This is already the state of the
+> production trees: `Ntuples_v5.0.0/` has an `ExpressData/` directory left over from earlier
+> rounds, but **step 6 was never run over it**, so no `_wRNN` version (v5.0.1 through v5.0.8)
+> has an `ExpressData/` tree at all, and nothing downstream reads one.
 
 **Output example:**
 ```
@@ -753,6 +835,57 @@ priors. The four signal systematics (defined in each `config_*.json`, prefixed `
 | `CMS_EXO26004_pT` | shape (up/down templates) | pT-scale, `pTsyst` |
 | `CMS_EXO26004_t0` | shape | cosmic timing `t0syst` |
 | `CMS_EXO26004_RNN` | shape | bootstrapping-based RNN-score syst (added in v24/v25) |
+| `CMS_EXO26004_trig` | shape | trigger, `trigsyst` |
+| `CMS_EXO26004_RNN_scale` | shape (`RNNscale`) | **4% RNN working-point efficiency scale (added 2026-07-31)** |
+
+#### `CMS_EXO26004_RNN_scale` — the RNN working-point efficiency scale
+
+Covers the overall efficiency **scale** at the `RNNScore >= 0.9999` working point, which
+`CMS_EXO26004_RNN` (a *shape* term from the sigma=4 ns t0-noise method) does not constrain. The two are
+complementary and both are applied.
+
+**Implemented as a shift of the working point, not as a flat scaling of `hpass`.** A real tagger
+efficiency uncertainty *migrates* events between pass and fail; scaling `hpass` alone would break
+`pass + fail = total` and let the transfer function absorb the difference. Moving the cut and refilling
+both regions conserves the total by construction — verified on a smoke test, where nominal and both
+variations all give `pass + fail = 9.0510`. This is the same mechanism `RNNsyst` and `t0syst` already use.
+
+It needs **no new RNN inference**: the shifted cuts are applied to the nominal `RNNScore` branch, so the
+systematic costs only two extra RDataFrame filters per region.
+
+The cuts are **global constants**, derived once from the e4 signal grid so the mean efficiency over all
+18 mass points moves by -/+4%. They are deliberately **not** re-derived per sample — a per-sample cut
+would force exactly 4% everywhere and erase the pT/n_Seg shape content, which is the whole point of
+making this a shape. The residual per-mass spread (1.027-1.066 up, 0.944-0.970 down for E1) *is* the shape.
+
+| network | nominal eff | +4% cut | -4% cut |
+|---|---|---|---|
+| **E1** (`matchL0toData_shift11p0_smear7p7`, v5.0.6+) | 0.4954 | `0.9998709559` | `0.9999225736` |
+| v5 (`rnn_v5_188k_final_weights`, v5.0.4/v28) | 0.5225 | `0.9998533130` | `0.9999332428` |
+
+**The E1 pair is the script default.** Processing a *v5*-scored production (e.g. a v5.0.4/v28 re-run)
+MUST pass the v5 cuts explicitly, or the systematic comes out at ~2.3% instead of 4%:
+
+```bash
+python3 helper_scripts/skimmed_ntuple_processing_script.py ... \
+    --rnnScaleUp 0.9998533130 --rnnScaleDown 0.9999332428
+```
+
+Region handling:
+- **SR / VR2** — the `0.9999` cut moves.
+- **VR1** — pass is the window `[0.45, 0.9999)`; only the **upper** edge moves, since the systematic is
+  about the SR working point. The `0.45` lower edge is untouched.
+- **BkgMC SR** — uses a looser `0.9` cut for statistics, where a `0.9999`-derived shift is meaningless,
+  so up/down equal nominal (null variation). Harmless because the nuisance is attached to SIGNAL
+  processes only, but it does mean the `SR_BkgMC` closure test sees no RNN_scale variation.
+
+> **TRAP when adding any new systematic here.** Booking and writing the histograms is not enough.
+> `skimmed_ntuple_processing_script.py` has **two more hardcoded lists** that must also be extended:
+> the `hist.Scale(100 / cutflow)` loop and the empty-bin `1e-08` sentinel loop. Missing the scale loop
+> leaves the new templates as **raw counts while everything else is cross-section scaled** — a factor
+> ~2500 discrepancy that raises no error, builds a valid card, and only shows up as a wildly pulled
+> nuisance. This was caught by the smoke test on 2026-07-31 and is the single easiest way to get this
+> wrong.
 
 ### Goodness-of-fit
 Run inside step 7 (`--algo=saturated`, 5000 toys, on condor). Outputs in the `*_area` dir:
