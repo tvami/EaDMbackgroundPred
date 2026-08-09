@@ -4,9 +4,9 @@ set -euo pipefail
 # ------------------------------------------------------------------
 # organizeSkimmedNtuples.sh
 #
-# Moves the locally-returned condor output trees (Data/ BkgMC/ Signal/
-# ExpressData/) that step6 (run_ntuple_processing_batch.sh) dumps into this
-# helper_scripts directory up to the corresponding /ceph destination.
+# Moves the locally-returned condor output trees (Data/ BkgMC/ Signal/) that step6
+# (run_ntuple_processing_batch.sh) dumps into this helper_scripts directory up to the
+# corresponding /ceph destination. ExpressData is retired and no longer handled.
 #
 # The trees are already in the final <sample>/<region>/<object>[/2DA]/ layout,
 # so this script just MERGES each sample tree into the /ceph base (it does NOT
@@ -24,7 +24,7 @@ usage() {
   cat <<EOF
 Usage: organizeSkimmedNtuples.sh [options] [VERSION]
 
-Moves the local Data/ BkgMC/ Signal/ ExpressData/ trees (in this script's
+Moves the local Data/ BkgMC/ Signal/ trees (in this script's
 directory) into:
     $CEPH_BASE/Ntuples_v<VERSION>_wRNN/
 
@@ -73,7 +73,10 @@ RSYNC_OPTS=(-a --remove-source-files)
 $DRY_RUN && RSYNC_OPTS=(-a --dry-run)
 
 moved_any=false
-for sample in Data BkgMC Signal ExpressData; do
+# ExpressData is retired -- the express stream was a prompt-turnaround cross-check and
+# nothing downstream reads it. No _wRNN version (v5.0.1 .. v5.0.8) has an ExpressData/
+# tree, so looping over it only ever hit the `[[ -d ]] || continue` below.
+for sample in Data BkgMC Signal; do
   src="$SCRIPT_DIR/$sample"
   [[ -d "$src" ]] || continue
 

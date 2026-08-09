@@ -1008,7 +1008,7 @@ def plot_correlation_matrix(varsToIgnore, threshold=0, corrText=False, cmsText='
         latex.DrawLatex(0.15,0.93,"CMS")
         latex.SetTextFont(52)
         latex.SetTextSize(0.04)
-        latex.DrawLatex(0.26,0.93,cmsText)
+        latex.DrawLatex(0.32,0.93,cmsText)
         if lumiText:
             latex.SetTextFont(42)
             latex.SetTextAlign(31)
@@ -1200,7 +1200,7 @@ def plot_transfer_funcs(tag, subtag, projection='projx2', savename=None, cmsText
 
     # Canvas (CMS style, matches the GoF / F-test plots)
     c = ROOT.TCanvas('cTF','cTF',800,800)
-    c.SetLeftMargin(0.13)
+    c.SetLeftMargin(0.19)
     c.SetRightMargin(0.05)
     c.SetTopMargin(0.08)
     c.SetBottomMargin(0.12)
@@ -1216,10 +1216,21 @@ def plot_transfer_funcs(tag, subtag, projection='projx2', savename=None, cmsText
     h_ratio.GetXaxis().SetTitleSize(0.045)
     h_ratio.GetYaxis().SetTitleSize(0.045)
     h_ratio.GetXaxis().SetTitleOffset(1.1)
-    h_ratio.GetYaxis().SetTitleOffset(1.35)
+    # 1.35 overlapped the tick labels whenever the transfer factor is small enough that
+    # ROOT writes them out in full (e.g. "0.005" in the closure fit) rather than pulling
+    # out an exponent.
+    h_ratio.GetYaxis().SetTitleOffset(1.9)
     h_ratio.GetXaxis().SetLabelSize(0.04)
     h_ratio.GetYaxis().SetLabelSize(0.04)
+    # Give the curve headroom instead of letting ROOT put the frame top exactly on the
+    # maximum bin. With SetMinimum(0) and no maximum, a CONSTANT transfer factor (par1
+    # railed at its lower bound, as in the SR_BkgMC closure fit) draws as a single line
+    # lying on the top frame edge over an otherwise empty panel, which reads as a failed
+    # plot rather than as a flat TF. A curved TF hid the problem because its maximum sits
+    # at one pT only.
+    _hi = h_ratio.GetMaximum()
     h_ratio.SetMinimum(0)
+    h_ratio.SetMaximum(1.3*_hi if _hi > 0 else 1.0)
     h_ratio.Draw('hist ][ C')
 
     # CMS Internal label
@@ -1228,10 +1239,10 @@ def plot_transfer_funcs(tag, subtag, projection='projx2', savename=None, cmsText
     latex.SetTextAlign(11)
     latex.SetTextFont(62)
     latex.SetTextSize(0.05)
-    latex.DrawLatex(0.13,0.93,"CMS")
+    latex.DrawLatex(0.19,0.93,"CMS")
     latex.SetTextFont(52)
     latex.SetTextSize(0.04)
-    latex.DrawLatex(0.23,0.93,cmsText)
+    latex.DrawLatex(0.26,0.93,cmsText)
 
     c.RedrawAxis()
     if savename is None:
