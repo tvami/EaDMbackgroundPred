@@ -157,6 +157,18 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // Create RDataFrame from TChain
     ROOT::RDataFrame df(chain);
 
+    // Does this ntuple carry the bField branch? The v5a productions do; the older
+    // Ntuplizer-0to{75,89}Theta ones (smasanam's "new private bkg") predate it and do
+    // not, so the v5.0.0 magnet-on cut cannot be applied to them. Skipping it costs
+    // nothing physically: bField is a constant 3.8 T in the cosmic MC, so the cut is a
+    // 100% no-op there (measured on 73317 v5a events). Samples that DO have the branch
+    // are unaffected -- the filter still runs and the branch is still kept, so v5.0.0
+    // outputs stay byte-identical.
+    bool has_bfield = (chain.GetBranch("bField") != nullptr);
+    std::cout << "bField branch: " << (has_bfield ? "present -- applying magnet-on cut"
+                                                  : "ABSENT -- skipping the magnet-on cut (no-op in MC)")
+              << "\n";
+
     // Apply region-specific pT cut
     TString pt_cut_label;
     float pt_cut_value = 200.f;
@@ -288,8 +300,11 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
     // Each step counts objects passing progressively tighter cuts,
     // then requires at least one such object in the event.
 
-    // Step 0: Require the magnetic field to be on (magnet ramped up), before the trigger
-    auto df_bfield = df_with_count.Filter("bField > 0.1", "B field > 0.1 T");
+    // Step 0: Require the magnetic field to be on (magnet ramped up), before the trigger.
+    // Erased to RNode so the step can be skipped for ntuples without the branch (see above).
+    ROOT::RDF::RNode df_bfield =
+        has_bfield ? ROOT::RDF::RNode(df_with_count.Filter("bField > 0.1", "B field > 0.1 T"))
+                   : ROOT::RDF::RNode(df_with_count);
 
     // Step 1: Trigger
     auto df_trigger = df_bfield.Filter("HLT_L1SingleMuCosmics", "Trigger");
@@ -641,7 +656,6 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         "run",
         "ls",
         "event",
-        "bField",
         "HLT_L1SingleMuCosmics",
         "HLT_Random",
         "muon_dtSeg_n",
@@ -650,6 +664,9 @@ void skim_ntuples(TString object = "track", TString region = "sr", TString base_
         "muon_dtSeg_globY",
         "muon_dtSeg_globZ",
     };
+    // Keep bField only if the input had it. Inserted at its original position (after
+    // "event") so the branch order of samples that do have it is unchanged.
+    if (has_bfield) branches_to_keep.insert(branches_to_keep.begin() + 3, "bField");
 
     if (object == "track") {
         branches_to_keep.insert(branches_to_keep.end(), {

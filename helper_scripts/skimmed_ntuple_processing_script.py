@@ -18,6 +18,27 @@ parser.add_argument("-r", "--region",        default="sr")      # sr, vr1, vr2
 parser.add_argument("-c", "--collection",    default="matched_muon")  # matched_muon, muon, track, tuneP
 parser.add_argument("-T", "--runType",       default="Both")    # Process, 2DAInput, Both
 parser.add_argument("-i", "--inputFile",     required=True, help="Input ROOT file to process")
+# Checkpoint is a flag so several RNN versions can be produced in parallel; the
+# default reproduces the v5.0.2-v5.0.4 productions byte-for-byte.
+parser.add_argument("-k", "--checkpoint",    default="./rnn_v5_188k_final_weights.ckpt",
+                    help="RNN weights to score with (transferred into cwd by condor)")
+# t0ShiftMC is for the arm-3 style network (trained on MC moved into the DATA
+# absolute-t0 frame): at inference data is already in that frame and MC has to be
+# moved into it. Deliberately keyed off sampleType inside the script rather than
+# taken as a raw shift, because applying it to data -- or forgetting it on MC --
+# measures the signal efficiency in the wrong frame, and nothing downstream would
+# flag it. 0 for every other network.
+parser.add_argument("-S", "--t0ShiftMC",     type=float, default=0.0,
+                    help="ns added to valid MC/Signal t0 (never to Data); 0 = off")
+parser.add_argument("--rnnCut",       type=float, default=0.9999,
+                    help="nominal SR/VR2 RNN working point, and the upper edge of the "
+                         "VR1 window; default 0.9999 reproduces v5.0.2-v5.0.7")
+parser.add_argument("--rnnScaleUp",   type=float, default=None,
+                    help="RNN working-point cut giving +4%% signal efficiency "
+                         "(CMS_EXO26004_RNN_scale up); default depends on --checkpoint")
+parser.add_argument("--rnnScaleDown", type=float, default=None,
+                    help="RNN working-point cut giving -4%% signal efficiency "
+                         "(CMS_EXO26004_RNN_scale down)")
 args = parser.parse_args()
 
 # =========================
@@ -26,16 +47,69 @@ args = parser.parse_args()
 PT_MAX_CLIP = 7000.0  # Maximum pT value for clipping (GeV)
 N_SEG_CLIP = 199       # Maximum segment count for clipping
 
+# -------------------------------------------------------------------------------
+# CMS_EXO26004_RNN_scale: the RNN working-point EFFICIENCY SCALE systematic.
+#
+# Implemented as a shift of the 0.9999 working point rather than a flat scaling of
+# the pass histogram, because a real tagger-efficiency uncertainty MIGRATES events
+# between pass and fail. Scaling `pass` alone would break pass+fail = total and let
+# the transfer function absorb the difference. Moving the cut and refilling both
+# regions conserves the total by construction, and is how RNNsyst/t0syst already work.
+#
+# No new RNN inference is needed -- these cuts are applied to the NOMINAL RNNScore
+# branch, so this systematic costs nothing beyond two extra filters per region.
+#
+# The cuts are GLOBAL constants, derived once from the e4 signal grid so that the mean
+# efficiency over all 18 mass points moves by -/+4%. They are deliberately NOT
+# re-derived per sample: a per-sample cut would impose exactly 4% everywhere and
+# destroy the pT/n_Seg shape content, which is the entire reason for making this a
+# shape rather than the lnN it started as.
+#
+# Derived 2026-07-31 from helper_scripts/rnn_4arm_rescore/out/sig_e4_*.npz:
+#
+#   network                     nominal eff   +4% cut         -4% cut
+#   E1 (matchL0toData 11.0/7.7)    0.4954     0.9998709559    0.9999225736
+#   v5 (rnn_v5_188k_final)         0.5225     0.9998533130    0.9999332428
+#
+# Per-mass spread at the global cut is 1.027-1.066 (up) and 0.944-0.970 (down) for E1,
+# i.e. the induced variation is close to 4% at every mass but not identical -- that
+# residual mass dependence IS the shape.
+#
+# Default is the E1 pair, since v5.0.6 onward is the E1 production. Override with
+# --rnnScaleUp/--rnnScaleDown when processing with a different checkpoint; the v5
+# numbers above are the ones to use for a v5.0.4/v28-style reprocessing.
+RNN_CUT            = args.rnnCut
+RNN_SCALE_UP_CUT   = args.rnnScaleUp   if args.rnnScaleUp   is not None else 0.9998709559
+RNN_SCALE_DOWN_CUT = args.rnnScaleDown if args.rnnScaleDown is not None else 0.9999225736
+if not (0.0 < RNN_SCALE_UP_CUT < RNN_SCALE_DOWN_CUT < 1.0):
+    raise SystemExit(f"RNN_scale cuts must satisfy 0 < up < down < 1; got "
+                     f"up={RNN_SCALE_UP_CUT} down={RNN_SCALE_DOWN_CUT}. "
+                     f"'up' is the LOOSER cut (higher efficiency).")
+# The scale cuts are a SHIFT of the working point, so they have to straddle it. Without
+# this, a working-point change with stale scale cuts gives a one-sided "systematic"
+# that silently biases the signal yield instead of varying it.
+if not (RNN_SCALE_UP_CUT < RNN_CUT < RNN_SCALE_DOWN_CUT):
+    raise SystemExit(f"RNN_scale cuts must straddle the nominal working point; got "
+                     f"up={RNN_SCALE_UP_CUT} cut={RNN_CUT} down={RNN_SCALE_DOWN_CUT}. "
+                     f"Re-derive them with "
+                     f"rnn_4arm_rescore/derive_rnn_scale_cuts.py --wp {RNN_CUT}.")
+print(f"Nominal RNN working point: {RNN_CUT:.10f}")
+print(f"CMS_EXO26004_RNN_scale cuts: up(+4% eff) >= {RNN_SCALE_UP_CUT:.10f}, "
+      f"down(-4% eff) >= {RNN_SCALE_DOWN_CUT:.10f}")
+
 # =========================
 # Load pretrained RNN model if not 2DAInput only
 # =========================
 
 if args.runType != '2DAInput':
-    # Path to trained RNN weights (transferred by condor to current directory)
-    # checkpoint_path = './rnn_retrain_weights_May2026_globYZgt125cm.ckpt'
-    # checkpoint_path = './rnn_retrain_weights_Apr2026.ckpt'
-    # checkpoint_path = './rnn_retrain_weights_june2026_privateCosmicMC.ckpt'  # v5.0.1 RNN
-    checkpoint_path = './rnn_v5_188k_final_weights.ckpt'  # v5.0.2 RNN
+    # Path to trained RNN weights (transferred by condor to current directory).
+    # Now set by --checkpoint; the default is the v5.0.2-v5.0.4 network, so an
+    # invocation without the flag behaves exactly as before. Previously used:
+    #   ./rnn_retrain_weights_May2026_globYZgt125cm.ckpt
+    #   ./rnn_retrain_weights_Apr2026.ckpt
+    #   ./rnn_retrain_weights_june2026_privateCosmicMC.ckpt   # v5.0.1 RNN
+    #   ./rnn_v5_188k_final_weights.ckpt                      # v5.0.2-v5.0.4 RNN
+    checkpoint_path = args.checkpoint
 
     # Define model architecture (must match training architecture exactly)
     model = Sequential([
@@ -111,6 +185,22 @@ if args.runType == 'Process' or args.runType == 'Both':
         x_arr  = ak.Array(list(RNN_input_arr["muon_dtSeg_globX"]))
         y_arr  = ak.Array(list(RNN_input_arr["muon_dtSeg_globY"]))
         z_arr  = ak.Array(list(RNN_input_arr["muon_dtSeg_globZ"]))
+
+        # --t0ShiftMC (default 0 = off, so this whole block is a no-op for every
+        # production so far). Applied HERE, once, before the sort -- the t0-syst and
+        # bootstrap variants below all derive from this t0_arr, so they inherit the
+        # shift automatically. Shifting them individually would mean four edits and
+        # a silent systematic if one were missed.
+        # Valid segments only: the -999 / 9998 sentinels have to stay recognizable
+        # constants, matching shift_t0() in rnn_input_prep.py.
+        if args.t0ShiftMC and sample_type != "Data":
+            _good = (t0_arr > -998.0) & (t0_arr < 9998.0)
+            t0_arr = ak.where(_good, t0_arr + args.t0ShiftMC, t0_arr)
+            print(f"Applied t0 shift of {args.t0ShiftMC} ns to valid MC segments "
+                  f"(sampleType={sample_type})")
+        elif args.t0ShiftMC:
+            print(f"t0ShiftMC={args.t0ShiftMC} ns requested but sampleType=Data, "
+                  f"so NOT applied (data already defines the frame)")
 
         # =========================
         # Sort segments by t0 timing per event
@@ -530,24 +620,32 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # Define RNN score cut boundaries for pass/fail regions per analysis region
         # bnd_nominal: nominal cut, bnd_up/down: RNN score syst variations, bnd_t0_up/down: t0 noise syst (±|noise|)
         if args.region == 'sr':
-            bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-            bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
-            bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
-            bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
-            bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
+            bnd_nominal = [f'RNNScore >= {RNN_CUT}', f'RNNScore < {RNN_CUT}']
+            bnd_up = [f'RNNScore_syst_up >= {RNN_CUT}', f'RNNScore_syst_up < {RNN_CUT}']
+            bnd_down = [f'RNNScore_syst_down >= {RNN_CUT}', f'RNNScore_syst_down < {RNN_CUT}']
+            bnd_t0_up = [f'RNNScore_t0syst_up >= {RNN_CUT}', f'RNNScore_t0syst_up < {RNN_CUT}']
+            bnd_t0_down = [f'RNNScore_t0syst_down >= {RNN_CUT}', f'RNNScore_t0syst_down < {RNN_CUT}']
+            # RNN working-point efficiency scale: same nominal score, shifted cut
+            bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
+            bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
         if args.region == 'vr1':
             # VR1 uses a window cut: pass requires intermediate RNN scores (between ~signal-like and background-like)
-            bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
-            bnd_up = ['RNNScore_syst_up >= 0.45 & RNNScore_syst_up < 0.9999', 'RNNScore_syst_up < 0.45']
-            bnd_down = ['RNNScore_syst_down >= 0.45 & RNNScore_syst_down < 0.9999', 'RNNScore_syst_down < 0.45']
-            bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
-            bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
+            bnd_nominal = [f'RNNScore >= 0.45 & RNNScore < {RNN_CUT}', f'RNNScore < 0.45']
+            bnd_up = [f'RNNScore_syst_up >= 0.45 & RNNScore_syst_up < {RNN_CUT}', f'RNNScore_syst_up < 0.45']
+            bnd_down = [f'RNNScore_syst_down >= 0.45 & RNNScore_syst_down < {RNN_CUT}', f'RNNScore_syst_down < 0.45']
+            bnd_t0_up = [f'RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < {RNN_CUT}', f'RNNScore_t0syst_up < 0.45']
+            bnd_t0_down = [f'RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < {RNN_CUT}', f'RNNScore_t0syst_down < 0.45']
+            bnd_rnnscale_up = [f'RNNScore >= 0.45 & RNNScore < {RNN_SCALE_UP_CUT}', 'RNNScore < 0.45']
+            bnd_rnnscale_down = [f'RNNScore >= 0.45 & RNNScore < {RNN_SCALE_DOWN_CUT}', 'RNNScore < 0.45']
         if args.region == 'vr2':
-            bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-            bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
-            bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
-            bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
-            bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
+            bnd_nominal = [f'RNNScore >= {RNN_CUT}', f'RNNScore < {RNN_CUT}']
+            bnd_up = [f'RNNScore_syst_up >= {RNN_CUT}', f'RNNScore_syst_up < {RNN_CUT}']
+            bnd_down = [f'RNNScore_syst_down >= {RNN_CUT}', f'RNNScore_syst_down < {RNN_CUT}']
+            bnd_t0_up = [f'RNNScore_t0syst_up >= {RNN_CUT}', f'RNNScore_t0syst_up < {RNN_CUT}']
+            bnd_t0_down = [f'RNNScore_t0syst_down >= {RNN_CUT}', f'RNNScore_t0syst_down < {RNN_CUT}']
+            # RNN working-point efficiency scale: same nominal score, shifted cut
+            bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
+            bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
         
         # Split events into pass/fail for each systematic variation:
         # Nominal RNN cut
@@ -569,6 +667,12 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         rnn_t0_up_fail_df = df2.Filter(bnd_t0_up[1])
         rnn_t0_down_pass_df = df2.Filter(bnd_t0_down[0])
         rnn_t0_down_fail_df = df2.Filter(bnd_t0_down[1])
+        # RNN working-point efficiency scale (+/-4% signal eff): nominal score,
+        # shifted cut. Refills BOTH pass and fail so the total is conserved.
+        rnnscale_up_pass_df = df2.Filter(bnd_rnnscale_up[0])
+        rnnscale_up_fail_df = df2.Filter(bnd_rnnscale_up[1])
+        rnnscale_down_pass_df = df2.Filter(bnd_rnnscale_down[0])
+        rnnscale_down_fail_df = df2.Filter(bnd_rnnscale_down[1])
 
         # Book 2D histograms (pT vs n_Seg) for each pass/fail region and systematic variation
         # Axes: x = muon pT [0, 12500 GeV] in 12500 bins, y = # DT segments [0, 200] in 200 bins
@@ -617,6 +721,18 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         fail_t0_down_hist = rnn_t0_down_fail_df.Histo2D(("hfail_t0syst_down", "hfail_t0syst_down; p_{T} (GeV);# of Hits",
                 12500, 0, 12500, 200, 0, 200),
                 pT_var, n_Seg_var)
+        pass_rnnscale_up_hist = rnnscale_up_pass_df.Histo2D(("hpass_RNNscale_up", "hpass_RNNscale_up; p_{T} (GeV);# of Hits",
+                12500, 0, 12500, 200, 0, 200),
+                pT_var, n_Seg_var)
+        fail_rnnscale_up_hist = rnnscale_up_fail_df.Histo2D(("hfail_RNNscale_up", "hfail_RNNscale_up; p_{T} (GeV);# of Hits",
+                12500, 0, 12500, 200, 0, 200),
+                pT_var, n_Seg_var)
+        pass_rnnscale_down_hist = rnnscale_down_pass_df.Histo2D(("hpass_RNNscale_down", "hpass_RNNscale_down; p_{T} (GeV);# of Hits",
+                12500, 0, 12500, 200, 0, 200),
+                pT_var, n_Seg_var)
+        fail_rnnscale_down_hist = rnnscale_down_fail_df.Histo2D(("hfail_RNNscale_down", "hfail_RNNscale_down; p_{T} (GeV);# of Hits",
+                12500, 0, 12500, 200, 0, 200),
+                pT_var, n_Seg_var)
         if args.region == 'vr2':
                 rnn_score_hist = df2.Histo1D(("hist_RNNScore", "hist_RNNScore; RNN Score; Ratio of Events / Bin", 
                     100, 0, 1),
@@ -659,6 +775,10 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         pass_rnn_down_hist.Write()
         fail_rnn_up_hist.Write()
         fail_rnn_down_hist.Write()
+        pass_rnnscale_up_hist.Write()
+        pass_rnnscale_down_hist.Write()
+        fail_rnnscale_up_hist.Write()
+        fail_rnnscale_down_hist.Write()
         if args.region == 'vr2': rnn_score_hist.Write()
         root_file.Close()
 
@@ -769,29 +889,39 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             # to probe a region with sufficient MC statistics
             if args.region == 'sr':
                 if sample_type == 'Signal':
-                    bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-                    bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
-                    bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
-                    bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
-                    bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
+                    bnd_nominal = [f'RNNScore >= {RNN_CUT}', f'RNNScore < {RNN_CUT}']
+                    bnd_up = [f'RNNScore_syst_up >= {RNN_CUT}', f'RNNScore_syst_up < {RNN_CUT}']
+                    bnd_down = [f'RNNScore_syst_down >= {RNN_CUT}', f'RNNScore_syst_down < {RNN_CUT}']
+                    bnd_t0_up = [f'RNNScore_t0syst_up >= {RNN_CUT}', f'RNNScore_t0syst_up < {RNN_CUT}']
+                    bnd_t0_down = [f'RNNScore_t0syst_down >= {RNN_CUT}', f'RNNScore_t0syst_down < {RNN_CUT}']
+                    # RNN working-point efficiency scale: same nominal score, shifted cut
+                    bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
+                    bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
                 elif sample_type == 'BkgMC':
                     bnd_nominal = ['RNNScore >= 0.9', 'RNNScore < 0.9']
                     bnd_up = ['RNNScore_syst_up >= 0.9', 'RNNScore_syst_up < 0.9']
                     bnd_down = ['RNNScore_syst_down >= 0.9', 'RNNScore_syst_down < 0.9']
                     bnd_t0_up = ['RNNScore_t0syst_up >= 0.9', 'RNNScore_t0syst_up < 0.9']
                     bnd_t0_down = ['RNNScore_t0syst_down >= 0.9', 'RNNScore_t0syst_down < 0.9']
+                    bnd_rnnscale_up = ['RNNScore >= 0.9', 'RNNScore < 0.9']
+                    bnd_rnnscale_down = ['RNNScore >= 0.9', 'RNNScore < 0.9']
             if args.region == 'vr1':
-                bnd_nominal = ['RNNScore >= 0.45 & RNNScore < 0.9999', 'RNNScore < 0.45']
-                bnd_up = ['RNNScore_syst_up >= 0.45 & RNNScore_syst_up < 0.9999', 'RNNScore_syst_up < 0.45']
-                bnd_down = ['RNNScore_syst_down >= 0.45 & RNNScore_syst_down < 0.9999', 'RNNScore_syst_down < 0.45']
-                bnd_t0_up = ['RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < 0.9999', 'RNNScore_t0syst_up < 0.45']
-                bnd_t0_down = ['RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < 0.9999', 'RNNScore_t0syst_down < 0.45']
+                bnd_nominal = [f'RNNScore >= 0.45 & RNNScore < {RNN_CUT}', f'RNNScore < 0.45']
+                bnd_up = [f'RNNScore_syst_up >= 0.45 & RNNScore_syst_up < {RNN_CUT}', f'RNNScore_syst_up < 0.45']
+                bnd_down = [f'RNNScore_syst_down >= 0.45 & RNNScore_syst_down < {RNN_CUT}', f'RNNScore_syst_down < 0.45']
+                bnd_t0_up = [f'RNNScore_t0syst_up >= 0.45 & RNNScore_t0syst_up < {RNN_CUT}', f'RNNScore_t0syst_up < 0.45']
+                bnd_t0_down = [f'RNNScore_t0syst_down >= 0.45 & RNNScore_t0syst_down < {RNN_CUT}', f'RNNScore_t0syst_down < 0.45']
+                bnd_rnnscale_up = [f'RNNScore >= 0.45 & RNNScore < {RNN_SCALE_UP_CUT}', 'RNNScore < 0.45']
+                bnd_rnnscale_down = [f'RNNScore >= 0.45 & RNNScore < {RNN_SCALE_DOWN_CUT}', 'RNNScore < 0.45']
             if args.region == 'vr2':
-                bnd_nominal = ['RNNScore >= 0.9999', 'RNNScore < 0.9999']
-                bnd_up = ['RNNScore_syst_up >= 0.9999', 'RNNScore_syst_up < 0.9999']
-                bnd_down = ['RNNScore_syst_down >= 0.9999', 'RNNScore_syst_down < 0.9999']
-                bnd_t0_up = ['RNNScore_t0syst_up >= 0.9999', 'RNNScore_t0syst_up < 0.9999']
-                bnd_t0_down = ['RNNScore_t0syst_down >= 0.9999', 'RNNScore_t0syst_down < 0.9999']
+                bnd_nominal = [f'RNNScore >= {RNN_CUT}', f'RNNScore < {RNN_CUT}']
+                bnd_up = [f'RNNScore_syst_up >= {RNN_CUT}', f'RNNScore_syst_up < {RNN_CUT}']
+                bnd_down = [f'RNNScore_syst_down >= {RNN_CUT}', f'RNNScore_syst_down < {RNN_CUT}']
+                bnd_t0_up = [f'RNNScore_t0syst_up >= {RNN_CUT}', f'RNNScore_t0syst_up < {RNN_CUT}']
+                bnd_t0_down = [f'RNNScore_t0syst_down >= {RNN_CUT}', f'RNNScore_t0syst_down < {RNN_CUT}']
+                # RNN working-point efficiency scale: same nominal score, shifted cut
+                bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
+                bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
 
             # Split MC events into pass/fail for all systematic variations (same logic as Data)
             pass_df = df2.Filter(bnd_nominal[0])
@@ -810,6 +940,12 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             rnn_t0_up_fail_df = df2.Filter(bnd_t0_up[1])
             rnn_t0_down_pass_df = df2.Filter(bnd_t0_down[0])
             rnn_t0_down_fail_df = df2.Filter(bnd_t0_down[1])
+            # RNN working-point efficiency scale (+/-4% signal eff): nominal score,
+            # shifted cut. Refills BOTH pass and fail so the total is conserved.
+            rnnscale_up_pass_df = df2.Filter(bnd_rnnscale_up[0])
+            rnnscale_up_fail_df = df2.Filter(bnd_rnnscale_up[1])
+            rnnscale_down_pass_df = df2.Filter(bnd_rnnscale_down[0])
+            rnnscale_down_fail_df = df2.Filter(bnd_rnnscale_down[1])
 
             # Book 2D histograms — same binning as Data
             pass_hist = pass_df.Histo2D(("hpass", "hpass; p_{T} (GeV);# of Hits",
@@ -854,6 +990,18 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             fail_t0_down_hist = rnn_t0_down_fail_df.Histo2D(("hfail_t0syst_down", "hfail_t0syst_down; p_{T} (GeV);# of Hits",
                     12500, 0, 12500, 200, 0, 200),
                     pT_var, n_Seg_var)
+            pass_rnnscale_up_hist = rnnscale_up_pass_df.Histo2D(("hpass_RNNscale_up", "hpass_RNNscale_up; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var)
+            fail_rnnscale_up_hist = rnnscale_up_fail_df.Histo2D(("hfail_RNNscale_up", "hfail_RNNscale_up; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var)
+            pass_rnnscale_down_hist = rnnscale_down_pass_df.Histo2D(("hpass_RNNscale_down", "hpass_RNNscale_down; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var)
+            fail_rnnscale_down_hist = rnnscale_down_fail_df.Histo2D(("hfail_RNNscale_down", "hfail_RNNscale_down; p_{T} (GeV);# of Hits",
+                    12500, 0, 12500, 200, 0, 200),
+                    pT_var, n_Seg_var)
             # Trigger SF systematic histograms: nominal pass/fail reweighted per-pT-bin by (1 +- sf_err/sf)
             pass_trig_up_hist = pass_df.Histo2D(("hpass_trigsyst_up", "hpass_trigsyst_up; p_{T} (GeV);# of Hits",
                     12500, 0, 12500, 200, 0, 200),
@@ -886,13 +1034,13 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 # Normalize signal histograms to 100 events (arbitrary reference cross section)
                 # so that 2DAlphabet can later re-scale by the true signal cross section
                 print("Scaling histograms!")
-                for hist in [pass_hist, fail_hist, pass_pT_up_hist, pass_pT_down_hist, fail_pT_up_hist, fail_pT_down_hist, pass_t0_up_hist, pass_t0_down_hist, fail_t0_up_hist, fail_t0_down_hist, pass_rnn_up_hist, pass_rnn_down_hist, fail_rnn_up_hist, fail_rnn_down_hist, pass_trig_up_hist, fail_trig_up_hist, pass_trig_down_hist, fail_trig_down_hist]:
+                for hist in [pass_hist, fail_hist, pass_pT_up_hist, pass_pT_down_hist, fail_pT_up_hist, fail_pT_down_hist, pass_t0_up_hist, pass_t0_down_hist, fail_t0_up_hist, fail_t0_down_hist, pass_rnn_up_hist, pass_rnn_down_hist, fail_rnn_up_hist, fail_rnn_down_hist, pass_rnnscale_up_hist, pass_rnnscale_down_hist, fail_rnnscale_up_hist, fail_rnnscale_down_hist, pass_trig_up_hist, fail_trig_up_hist, pass_trig_down_hist, fail_trig_down_hist]:
                     hist.Scale(100 / cutflow_hist.GetBinContent(1))
 
             # Replace empty bins with a small sentinel value (1e-8) to avoid log(0) issues in 2DAlphabet fits
             for x_bin in range(1, pass_hist.GetNbinsX() + 1):
                 for y_bin in range(1, pass_hist.GetNbinsY() + 1):
-                    for hist in [pass_hist,fail_hist,pass_pT_up_hist,pass_pT_down_hist,fail_pT_up_hist,fail_pT_down_hist,pass_t0_up_hist,pass_t0_down_hist,fail_t0_up_hist,fail_t0_down_hist,pass_rnn_up_hist,pass_rnn_down_hist,fail_rnn_up_hist,fail_rnn_down_hist,pass_trig_up_hist,fail_trig_up_hist,pass_trig_down_hist,fail_trig_down_hist]:
+                    for hist in [pass_hist,fail_hist,pass_pT_up_hist,pass_pT_down_hist,fail_pT_up_hist,fail_pT_down_hist,pass_t0_up_hist,pass_t0_down_hist,fail_t0_up_hist,fail_t0_down_hist,pass_rnn_up_hist,pass_rnn_down_hist,fail_rnn_up_hist,fail_rnn_down_hist,pass_rnnscale_up_hist,pass_rnnscale_down_hist,fail_rnnscale_up_hist,fail_rnnscale_down_hist,pass_trig_up_hist,fail_trig_up_hist,pass_trig_down_hist,fail_trig_down_hist]:
                         bin_content = hist.GetBinContent(x_bin, y_bin)
                         if bin_content == 0:
                             hist.SetBinContent(x_bin, y_bin, 1e-08)
@@ -913,6 +1061,10 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             pass_rnn_down_hist.Write()
             fail_rnn_up_hist.Write()
             fail_rnn_down_hist.Write()
+            pass_rnnscale_up_hist.Write()
+            pass_rnnscale_down_hist.Write()
+            fail_rnnscale_up_hist.Write()
+            fail_rnnscale_down_hist.Write()
             pass_trig_up_hist.Write()
             pass_trig_down_hist.Write()
             fail_trig_up_hist.Write()

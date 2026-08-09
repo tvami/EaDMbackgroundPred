@@ -1,0 +1,129 @@
+{
+    "BINNING": {
+        "default": {
+            "X": {
+                "BINS": [
+                    10,
+                    19,
+                    34,
+                    55,
+                    82,
+                    115,
+                    155,
+                    200
+                ],
+                "MAXtest": 5500,
+                "MINtest": 500,
+                "NAME": "pT",
+                "NBINStest": 50,
+                "SIGEND": 155,
+                "SIGSTART": 115,
+                "TITLE": "p_{T}"
+            },
+            "Y": {
+                "MAX": 200,
+                "MIN": 1,
+                "NAME": "N",
+                "NBINS": 1,
+                "TITLE": "N"
+            }
+        }
+    },
+    "GLOBAL": {
+        "FILE": "EaDM_$process.root",
+        "HIST": "h$region",
+        "HIST_DOWN": "h$region_$syst_down",
+        "HIST_UP": "h$region_$syst_up",
+        "SIGNAME": [
+            "Signal_M3000GeV_e4_VR2"
+        ],
+        "path": "./histograms_for_2DAlphabet_v30"
+    },
+    "NAME": "EaDM",
+    "OPTIONS": {
+        "blindedFitNA": [
+            "pass"
+        ],
+        "blindedPlotsNA": [
+            "pass"
+        ],
+        "plotEvtsPerUnitVolt": true,
+        "plotTemplateComparisonsNA": true
+    },
+    "PROCESSES": {
+        "SIGNAME": {
+            "COLOR": "red",
+            "LOC": "path/FILE:HIST",
+            "SCALE": 1.0,
+            "SYSTEMATICS": [
+                "lumi",
+                "RNN",
+                "pT",
+                "t0",
+                "trig",
+                "CMS_EXO26004_RNN_scale"
+            ],
+            "TITLE": "DM signal",
+            "TYPE": "SIGNAL"
+        },
+        "data_obs": {
+            "ALIAS": "Run3_Cosmics_Data_All_VR2",
+            "COLOR": "black",
+            "LOC": "path/FILE:HIST",
+            "SCALE": 1,
+            "SYSTEMATICS": [],
+            "TITLE": "Run-3 Cosmics VR2",
+            "TYPE": "DATA"
+        }
+    },
+    "REGIONS": {
+        "fail": {
+            "BINNING": "default",
+            "PROCESSES": [
+                "SIGNAME"
+            ]
+        },
+        "pass": {
+            "BINNING": "default",
+            "PROCESSES": [
+                "SIGNAME"
+            ]
+        }
+    },
+    "SYSTEMATICS": {
+        "CMS_EXO26004_RNN_scale": {
+            "ALIAS": "RNNscale",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0,
+            "UP": "path/FILE:HIST_UP"
+        },
+        "RNN": {
+            "ALIAS": "RNNsyst",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0,
+            "UP": "path/FILE:HIST_UP"
+        },
+        "lumi": {
+            "CODE": 0,
+            "VAL": 1.05
+        },
+        "pT": {
+            "ALIAS": "pTsyst",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0,
+            "UP": "path/FILE:HIST_UP"
+        },
+        "t0": {
+            "ALIAS": "t0syst",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0,
+            "UP": "path/FILE:HIST_UP"
+        },
+        "trig": {
+            "ALIAS": "trigsyst",
+            "DOWN": "path/FILE:HIST_DOWN",
+            "SIGMA": 1.0,
+            "UP": "path/FILE:HIST_UP"
+        }
+    }
+}
