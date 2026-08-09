@@ -1,0 +1,70 @@
+{
+    "NAME": "EaDM",
+    "GLOBAL": {
+        "FILE": "EaDM_$process.root",
+        "HIST": "h$region",
+        "path": "./histograms_for_2DAlphabet_v26",
+        "SIGNAME": ["Signal_M3000GeV_e4_RNNSR"]
+    },
+    "REGIONS": {
+        "pass": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        },
+        "fail": {
+            "PROCESSES": ["SIGNAME"],
+            "BINNING": "default"
+        }
+    },
+    "PROCESSES": {
+        "data_obs": {
+            "SYSTEMATICS":[],
+            "COLOR": "black",
+            "SCALE": 1,
+            "TYPE": "DATA",
+            "TITLE": "Run-3 Cosmics",
+            "ALIAS": "Run3_Cosmics_Data_All_RNNSR",
+            "LOC": "path/FILE:HIST"
+        },
+        "SIGNAME": {
+            "SYSTEMATICS":["lumi"],
+            "COLOR": "red",
+            "SCALE": 1.0,
+            "TYPE": "SIGNAL",
+            "TITLE": "DM signal",
+            "LOC": "path/FILE:HIST"
+        }
+    },
+    "SYSTEMATICS": {
+        "lumi": {
+                "CODE": 0,
+                "VAL": 1.05
+        }
+    },
+    "BINNING": {
+        "default": {
+            "X": {
+                "NAME": "RNNt100",
+                "TITLE": "100 #times (-log_{10}(1 - RNN score))",
+                "_COMMENT": "Axis starts at 20 (RNNScore = 0.369): the RNNScore ~ 0 spike below that has a pass/fail ratio ~4x lower than the rest of the axis and no low-order transfer function can absorb the step. SIGSTART = 200 is RNNScore = 0.99, the blind point; with blindedFitSubregions defaulting to [SIG,HIGH] this masks the whole pass region above 0.99. Edges must be integers to match the fine (700,0,700) input binning exactly.",
+                "BINS": [20, 40, 60, 80, 100, 130, 160, 200, 260, 320, 400, 500, 700],
+                "SIGSTART": 200,
+                "SIGEND": 260
+            },
+            "Y": {
+                "NAME": "N",
+                "TITLE": "N",
+                "NBINS": 1,
+                "MIN": 1,
+                "MAX": 200
+            }
+        }
+    },
+    "OPTIONS": {
+        "blindedFit": ["pass"],
+        "blindedPlots": ["pass"],
+        "plotTemplateComparisonsNA": false,
+        "_COMMENT_plotEvtsPerUnit": "Left off: plot._format_1Dhist hardcodes the y-axis label to 'Events / N GeV', which is wrong on this axis (the unit is 0.01 in -log10(1 - RNN score), not GeV). Note the pT-axis configs spell this 'plotEvtsPerUnitVolt', a typo that helpers.parse_arg_dict silently accepts, so it has never done anything there either.",
+        "plotEvtsPerUnit": false
+    }
+}

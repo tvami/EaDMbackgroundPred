@@ -1,86 +1,134 @@
-import matplotlib.pyplot as plt
-import pandas as pd
-import numpy as np
+"""Write the monthly signal-rate table consumed by exp_lim/set_limit_alphaMax.py.
+
+Output layout: three header lines (template paths, DM masses, a constant 100),
+then one line per epsilon point of the parquet grid, each holding one rate per
+DM mass. The `labels` list in set_limit_alphaMax.py indexes those lines
+positionally, so it must match the epsilon grid printed to the console here.
+"""
+
 import argparse
 import contextlib
 
-pd.set_option('display.max_columns', 13)
+import numpy as np
+import pandas as pd
 
-df_1 = pd.read_parquet('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_MX_1TeV_to_100TeV_special_granularity_fewer_columns.parquet')
-df_2 = pd.read_parquet('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_MX_100TeV_to_200TeV_in_steps_of_5TeV.parquet')
-df_3 = pd.read_parquet('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_mx_500_1000_mxstep_100.parquet')
-df_4 = pd.read_parquet('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_mx_225_500_mxstep_25.parquet')
-df_full = pd.concat([df_1, df_2, df_3, df_4], ignore_index=True)
+PARQUET = ('helper_scripts/parquet_files/rates_muons_electrons_both_alphas_KAPPAS_10_1000000'
+           '_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet')
+MA = 0.23
+ALPHA = 'MAX'
+FINAL_STATE = 'muons'
 
-df = df_full.loc[(np.isclose(df_full['ma'], 0.245455)) & (df_full['alpha_therm_or_max'] == 'MAX') & (df_full['final_state_particles'] == 'muons')]
 
-rate_CMS = df['rate_CMS_1month'].to_numpy()
-ma = df['ma'].to_numpy()
-mx = df['mx'].to_numpy()
-epsilon = df['epsilon'].to_numpy()
-alpha_therm_or_max = df['alpha_therm_or_max'].to_numpy()
-final_state_particles = df['final_state_particles'].to_numpy()
+VOLUME_ICECUBE = 1000 ** 3  # m^3, the volume rate_1yr is quoted in
+LIVETIME_FRACTION = 1 / 12  # CMS livetime relative to the parquet's one year
+TEMPLATE_MASS_CAP = 90000   # GeV, heaviest signal template available
 
-parser = argparse.ArgumentParser(description='')
-parser.add_argument('-d','--depth', action='store', dest='depth', help='Depth')
-parser.add_argument('-l','--limit_directory', action='store', dest='limit_directory', help='Limit Directory')
-args = parser.parse_args()
-
-depth = args.depth
-limit_directory = args.limit_directory
-
-if depth != 'e0': extra_text = f'_{depth}'
-else: extra_text = ''
-
-def eff_func(mass):
-    return (0.06758539099355372 * np.exp(-3.9610274911588674e-05 * mass) + 0.016782590921269932)
-
-# eps grid densified to 1e-9 steps up to 1.24e-7 (see set_limit_alphaMax.py labels --
-# these two MUST stay identical). Every value must exist in the parquet eps grid
-# (exact np.isclose lookup below), which is on a 1e-9 grid, so all these are valid.
-eps_list = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.4e-08, 2.5e-08, 2.6e-08, 2.7e-08, 2.8e-08, 2.9e-08, 3e-08, 3.1e-08, 3.2e-08, 3.3e-08, 3.4e-08, 3.5e-08, 3.6e-08, 3.7e-08, 3.8e-08, 3.9e-08, 4e-08, 4.1e-08, 4.2e-08, 4.3e-08, 4.4e-08, 4.5e-08, 4.6e-08, 4.7e-08, 4.8e-08, 4.9e-08, 5e-08, 5.1e-08, 5.2e-08, 5.3e-08, 5.4e-08, 5.5e-08, 5.6e-08, 5.7e-08, 5.8e-08, 5.9e-08, 6e-08, 6.1e-08, 6.2e-08, 6.3e-08, 6.4e-08, 6.5e-08, 6.6e-08, 6.7e-08, 6.8e-08, 6.9e-08, 7e-08, 7.1e-08, 7.2e-08, 7.3e-08, 7.4e-08, 7.5e-08, 7.6e-08, 7.7e-08, 7.8e-08, 7.9e-08, 8e-08, 8.1e-08, 8.2e-08, 8.3e-08, 8.4e-08, 8.5e-08, 8.6e-08, 8.7e-08, 8.8e-08, 8.9e-08, 9e-08, 9.1e-08, 9.2e-08, 9.3e-08, 9.4e-08, 9.5e-08, 9.6e-08, 9.7e-08, 9.8e-08, 9.9e-08, 1e-07, 1.01e-07, 1.02e-07, 1.03e-07, 1.04e-07, 1.05e-07, 1.06e-07, 1.07e-07, 1.08e-07, 1.09e-07, 1.1e-07, 1.11e-07, 1.12e-07, 1.13e-07, 1.14e-07, 1.15e-07, 1.16e-07, 1.17e-07, 1.18e-07, 1.19e-07, 1.2e-07, 1.21e-07, 1.22e-07, 1.23e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07, 3.28e-07, 3.52e-07, 3.76e-07, 4e-07, 4.24e-07, 4.48e-07, 4.72e-07, 4.96e-07, 5.2e-07, 5.44e-07, 5.68e-07, 5.92e-07, 6.16e-07, 6.4e-07, 6.64e-07, 6.88e-07, 7.12e-07, 7.36e-07, 7.6e-07, 7.84e-07, 8.08e-07, 8.32e-07, 8.56e-07, 8.8e-07, 9.04e-07, 9.28e-07, 9.52e-07, 9.76e-07, 1e-06]
-mass_dict = {
+MASS_GRIDS = {
     'e0': [1600, 1800, 2000, 2200, 2600, 2800, 3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5400, 5600, 5800, 6000, 6500, 7000, 7500, 8000, 8500, 9000, 9500, 25000, 30000, 35000, 40000, 45000, 50000, 55000, 60000, 70000, 75000, 80000, 85000, 90000, 95000, 100000, 110000, 120000, 130000, 140000, 150000, 160000, 170000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000, 1000000],
-    'e2': [2000,3000,4000,6000,7000,8000,9000,10000,20000,40000,60000,80000,100000,120000,140000,160000,180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
-    'e3': [2000,3000,4000,5000,6000,7000,8000,9000,10000,20000,40000,60000,80000,100000,120000,140000,160000,180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
-    'e4': [2000,3000,4000,5000,6000,7000,8000,9000,10000,20000,40000,60000,80000,100000,120000,140000,160000,180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
-    'e5': [2000,3000,4000,5000,6000,7000,8000,9000,10000,20000,40000,60000,80000,100000,120000,140000,160000,180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
-    'e6': [3000,4000,5000,6000,7000,8000,9000,10000,20000,40000,60000,80000,100000,120000,140000,160000,180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000]
+    'e2': [2000, 3000, 4000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
+    'e3': [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
+    'e4': [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
+    'e5': [2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
+    'e6': [3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 20000, 40000, 60000, 80000, 100000, 120000, 140000, 160000, 180000, 185000, 190000, 195000, 200000, 225000, 250000, 275000, 300000, 325000, 350000, 375000, 400000, 425000, 450000, 475000, 500000, 600000, 700000, 800000, 900000],
 }
 
-output_file = f"exp_lim/signal_{limit_directory}_alpha_max.txt"
-print(f"Saving to {output_file}")
 
-# Wrap everything you want saved to file in this block
-with open(output_file, 'w') as f, contextlib.redirect_stdout(f):
-    # First Line
-    print(",".join(
-        f'{limit_directory}/rpf2x0_Signal_M{min(int(mass/2), 90000)}GeV{extra_text}_SR/Signal_M{min(int(mass/2), 90000)}GeV{extra_text}_SR-2x0_area'
-        for mass in mass_dict[depth]
-    ))
+def eff_func(mass):
+    return 0.06758539099355372 * np.exp(-3.9610274911588674e-05 * mass) + 0.016782590921269932
 
-    # Second Line
-    print(",".join(
-        f'{mass}' for mass in mass_dict[depth]
-    ))
 
-    # Third Line
-    print(",".join(
-        '100' for mass in mass_dict[depth]
-    ))
+def load_slice():
+    df = pd.read_parquet(PARQUET)
+    sel = df.loc[np.isclose(df['ma'], MA)
+                 & (df['alpha_therm_or_max'] == ALPHA)
+                 & (df['final_state_particles'] == FINAL_STATE)
+                 & (df['depth_scale'] == 1.0)]
+    if sel.empty:
+        raise SystemExit(f"No rows in {PARQUET} for ma={MA}, alpha={ALPHA}, {FINAL_STATE}. "
+                         f"Available ma values: {np.unique(df['ma'].to_numpy())}")
+    return sel
 
-    # Subsequent Lines
-    for eps in eps_list:
-        list = []
-        for dm_mass in mass_dict[depth]:
-            dm_mass = min(dm_mass, 900000)
-            if dm_mass % 200 != 0:
-                rate = (rate_CMS[(np.isclose(mx, (dm_mass+100))) & (np.isclose(epsilon, eps, rtol=5e-11, atol=5e-11))][0] + rate_CMS[(np.isclose(ma, 0.245455)) & (np.isclose(mx, (dm_mass-100))) & (np.isclose(epsilon, eps, rtol=5e-11, atol=5e-11))][0]) / 2
-            else:
-                rate = rate_CMS[(np.isclose(mx, dm_mass)) & (np.isclose(epsilon, eps, rtol=5e-11, atol=5e-11))][0]
-            if dm_mass > 90000:
-                rate *= eff_func(dm_mass)/eff_func(90000)
 
-            list.append(rate)
+def make_rate_lookup(sel, model):
+    """Return (eps_grid, get_rate) for the given detector-volume model."""
+    mx = sel['mx'].to_numpy()
+    epsilon = sel['epsilon'].to_numpy()
+    rate_1yr = sel['rate_1yr'].to_numpy()
+    volume = sel[f'volume_m3_{model}'].to_numpy()
+    acceptance = sel[f'frac_ecut10_{model}'].to_numpy()
 
-        print(*[f"{x.item():e}" for x in list], sep=", ")
+    mx_grid = np.unique(mx)
+    mx_set = set(mx_grid.tolist())
+
+    def rate_at(m, eps):
+        # eps always comes from the grid below, so an exact match is safe here
+        # (a tolerance would merge neighbouring points at the bottom of the grid).
+        row = (mx == m) & (epsilon == eps)
+        return (rate_1yr[row][0] * LIVETIME_FRACTION
+                * volume[row][0] / VOLUME_ICECUBE * acceptance[row][0])
+
+    def get_rate(dm_mass, eps):
+        """Rate at a DM mass, log-interpolated between the bracketing grid
+        points when the mass is off-grid (rate falls ~exponentially with mass);
+        masses outside the grid are extrapolated from its two end points."""
+        if dm_mass in mx_set:
+            return rate_at(dm_mass, eps)
+
+        if dm_mass > mx_grid[-1]:
+            lo, hi = mx_grid[-2], mx_grid[-1]
+        elif dm_mass < mx_grid[0]:
+            lo, hi = mx_grid[0], mx_grid[1]
+        else:
+            lo = mx_grid[mx_grid < dm_mass][-1]
+            hi = mx_grid[mx_grid > dm_mass][0]
+
+        r_lo, r_hi = rate_at(lo, eps), rate_at(hi, eps)
+        frac = (dm_mass - lo) / (hi - lo)
+        if r_lo <= 0 or r_hi <= 0:
+            return r_lo + frac * (r_hi - r_lo)
+        return np.exp(np.log(r_lo) + frac * (np.log(r_hi) - np.log(r_lo)))
+
+    return np.unique(epsilon), get_rate
+
+
+def signal_rate(get_rate, dm_mass, eps):
+    rate = get_rate(dm_mass, eps)
+    # Templates freeze at TEMPLATE_MASS_CAP, so correct the resulting
+    # efficiency mismatch on the template-mass scale.
+    template_mass = dm_mass / 2
+    if template_mass > TEMPLATE_MASS_CAP:
+        rate *= eff_func(template_mass) / eff_func(TEMPLATE_MASS_CAP)
+    return rate
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('-d', '--depth', required=True, choices=sorted(MASS_GRIDS),
+                        help='Depth')
+    parser.add_argument('-l', '--limit_directory', required=True, help='Limit directory')
+    parser.add_argument('-m', '--model', required=True, choices=['core', 'floating'],
+                        help='Detector-volume model')
+    args = parser.parse_args()
+
+    masses = MASS_GRIDS[args.depth]
+    suffix = '' if args.depth == 'e0' else f'_{args.depth}'
+    eps_grid, get_rate = make_rate_lookup(load_slice(), args.model)
+
+    output_file = f"exp_lim/signal_{args.limit_directory}_alpha_max.txt"
+    print(f"Saving to {output_file}")
+    print(f"eps grid from parquet ({len(eps_grid)} points) -- keep `labels` in "
+          "exp_lim/set_limit_alphaMax.py identical to:\n["
+          + ", ".join(f"{e:.6g}" for e in eps_grid) + "]")
+
+    with open(output_file, 'w') as f, contextlib.redirect_stdout(f):
+        template = [f'Signal_M{min(int(m / 2), TEMPLATE_MASS_CAP)}GeV{suffix}_SR' for m in masses]
+        print(",".join(f'{args.limit_directory}/rpf2x0_{t}/{t}-2x0_area' for t in template))
+        print(",".join(str(m) for m in masses))
+        print(",".join('100' for _ in masses))
+
+        for eps in eps_grid:
+            print(", ".join(f"{signal_rate(get_rate, m, eps):e}" for m in masses))
+
+
+if __name__ == '__main__':
+    main()
