@@ -231,8 +231,12 @@ if args.heatmap:
 # parquet load entirely there to keep the fast recolor path dependency-free.
 df = None
 if not band68:
+    # Same path as limitRateInputScript.py and the --heatmap block below. This used to be a bare
+    # filename, which meant --fixedDepth (the one mode that is neither band68 nor heatmap) died
+    # with FileNotFoundError when run from src/, where every other entry point is run from.
     df = pd.read_parquet(
-        'rates_muons_electrons_both_alphas_KAPPAS_10_1000000_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet'
+        'helper_scripts/parquet_files/rates_muons_electrons_both_alphas_KAPPAS_10_1000000'
+        '_varying_steps_coarse_grain_epsilon_and_mas_WITH_CALC_ACCEPTANCES-2.parquet'
     )
 
 # ── EXCLUSION BOUNDARY ARRAYS ────────────────────────────────────────────────
