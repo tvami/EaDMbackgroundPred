@@ -284,6 +284,13 @@ if use_cache:
         if f"{name}_yy" in _npz.files:
             BAND_EDGES[name] = (_npz[f"{name}_yy"], _npz[f"{name}_lo"], _npz[f"{name}_hi"])
     print(f"Loaded band edges from {BAND_CACHE_PATH}")
+    # The bands come from the cache, but the y-axis grid is still needed for the reference
+    # line and the axis range. The JSON is small, so reading just `eps` costs nothing next to
+    # the parquet load this path exists to avoid.
+    try:
+        _lim_eps = _load_limits(f"signal_{limit_directory}_livetime_{livetime}_limit")["eps"]
+    except (OSError, KeyError):
+        _lim_eps = None
 elif fixedDepth:
     # One JSON per fixed depth (produced by run_fixedDepth_limits.sh).
     depth_lims = {
@@ -293,6 +300,7 @@ elif fixedDepth:
     # e0 also drives the single-region arrays used below for shape checks.
     max_exp_lim_Run3_e0_closed = depth_lims['e0']["closed_exp_lim"]
     max_exp_lim_Run3_e0        = depth_lims['e0']["exp_lim"]
+    _lim_eps                   = depth_lims['e0'].get("eps")
 else:
     _lim = _load_limits(f"signal_{limit_directory}_livetime_{livetime}_limit")
     max_exp_lim_Run3_e0_closed = _lim["closed_exp_lim"]
@@ -307,7 +315,21 @@ else:
                 "Re-run exp_lim/set_limit_alphaMax.py to regenerate it." % _missing)
 
 # ── EPSILON GRID ─────────────────────────────────────────────────────────────
-eps = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.4e-08, 3.4e-08, 4.4e-08, 5.4e-08, 6.4e-08, 7.4e-08, 8.4e-08, 9.4e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07, 3.28e-07, 3.52e-07, 3.76e-07, 4.00e-07, 4.24e-07, 4.48e-07, 4.72e-07, 4.96e-07, 5.20e-07, 5.44e-07, 5.68e-07, 5.92e-07, 6.16e-07, 6.40e-07, 6.64e-07, 6.88e-07, 7.12e-07, 7.36e-07, 7.60e-07, 7.84e-07, 8.08e-07, 8.32e-07, 8.56e-07, 8.80e-07, 9.04e-07, 9.28e-07, 9.52e-07, 9.76e-07, 1.00e-06]
+# Take the grid from the JSON, i.e. from whatever `labels` exp_lim/set_limit_alphaMax.py used.
+# It must NOT be duplicated here: the limit arrays and the y values are zipped positionally, so
+# a local copy that drifts from `labels` silently pairs each limit with the wrong epsilon. That
+# is exactly what happened -- this file carried the 78-point list below while `labels` was first
+# a 168-point grid (the two agree only up to index 20, then 3.4e-08 here vs 2.5e-08 there) and
+# then, from the Aug 2026 coarse-grain update, a 45-point grid, which additionally made the
+# hardcoded window indices below run off the end of the array.
+EPS_LEGACY = [4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 1.1e-08, 1.2e-08, 1.3e-08, 1.4e-08, 1.5e-08, 1.6e-08, 1.7e-08, 1.8e-08, 1.9e-08, 2e-08, 2.1e-08, 2.2e-08, 2.3e-08, 2.4e-08, 3.4e-08, 4.4e-08, 5.4e-08, 6.4e-08, 7.4e-08, 8.4e-08, 9.4e-08, 1.04e-07, 1.14e-07, 1.24e-07, 1.34e-07, 1.44e-07, 1.54e-07, 1.64e-07, 1.74e-07, 1.84e-07, 1.94e-07, 2.04e-07, 2.14e-07, 2.24e-07, 2.34e-07, 2.44e-07, 2.54e-07, 2.64e-07, 2.74e-07, 2.84e-07, 2.94e-07, 3.04e-07, 3.28e-07, 3.52e-07, 3.76e-07, 4.00e-07, 4.24e-07, 4.48e-07, 4.72e-07, 4.96e-07, 5.20e-07, 5.44e-07, 5.68e-07, 5.92e-07, 6.16e-07, 6.40e-07, 6.64e-07, 6.88e-07, 7.12e-07, 7.36e-07, 7.60e-07, 7.84e-07, 8.08e-07, 8.32e-07, 8.56e-07, 8.80e-07, 9.04e-07, 9.28e-07, 9.52e-07, 9.76e-07, 1.00e-06]
+
+if _lim_eps:
+    eps = list(_lim_eps)
+else:
+    print("WARNING: no 'eps' in the limits JSON; falling back to the legacy hardcoded grid. "
+          "Check that it matches `labels` in exp_lim/set_limit_alphaMax.py.")
+    eps = list(EPS_LEGACY)
 
 A = 1.6e-21 * 3e8
 ctau = [A * e**(-2) for e in eps]
@@ -353,10 +375,32 @@ def make_boundary(limit_array, y_array, start, stop, right_edge=10000001):
 # Volume-mode single region (fixedDepth mode builds masks directly from windows;
 # band/use_cache modes draw straight from window_edges/BAND_EDGES, not these).
 if not fixedDepth and not use_cache:
-    # closed/upper edge: valid indices 6–26, with holes skipped
-    x1, y1 = make_boundary(max_exp_lim_Run3_e0_closed, yAxis, start=6, stop=27)
-    # open/lower edge: valid indices 6–69, with holes skipped
-    x2, y2 = make_boundary(max_exp_lim_Run3_e0, yAxis, start=6, stop=70)
+    # The two curves span fixed epsilon RANGES, not fixed array positions. They used to be
+    # written as literal indices (6/27/70) into the 78-point grid above, which silently meant
+    # something else as soon as the grid changed. Expressed as the epsilon values those indices
+    # stood for, they survive a regrid; on the 45-point coarse grid they land on 27/35/44.
+    WINDOW_EPS_START       = 1.0e-08    # was index 6
+    WINDOW_EPS_CLOSED_LAST = 8.4e-08    # was index 26, i.e. stop=27
+    WINDOW_EPS_OPEN_LAST   = 8.08e-07   # was index 69, i.e. stop=70
+
+    def _eps_index(value):
+        """Nearest index in the active grid to `value`."""
+        return min(range(len(eps)), key=lambda i: abs(eps[i] - value))
+
+    def _stop_after(value):
+        """Exclusive stop that includes `value`; make_boundary also reads y_array[stop]."""
+        return min(_eps_index(value) + 1, len(eps) - 1)
+
+    _start      = _eps_index(WINDOW_EPS_START)
+    _stop_close = _stop_after(WINDOW_EPS_CLOSED_LAST)
+    _stop_open  = _stop_after(WINDOW_EPS_OPEN_LAST)
+    print(f"boundary windows on a {len(eps)}-point grid: start={_start} "
+          f"({eps[_start]:.3g}), closed stop={_stop_close}, open stop={_stop_open}")
+
+    # closed/upper edge, with holes skipped
+    x1, y1 = make_boundary(max_exp_lim_Run3_e0_closed, yAxis, start=_start, stop=_stop_close)
+    # open/lower edge, with holes skipped
+    x2, y2 = make_boundary(max_exp_lim_Run3_e0, yAxis, start=_start, stop=_stop_open)
 
 # ── CONTOUR GRID ─────────────────────────────────────────────────────────────
 # A dense log-spaced 2-D grid for evaluating inside/outside of each exclusion
