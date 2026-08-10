@@ -3,6 +3,11 @@ echo "Run script starting"
 echo "Template Config: $1"
 echo "Signal: $2"
 echo "TF Type: $3"
+# $4 = the parent directory Condor transfers back. Optional, and defaulted to the
+# per-depth SR area so the existing 144-job submission keeps working unchanged; the
+# mergedDepths submission passes its own so the two productions cannot collide.
+parent_dir="${4:-rpf2x0_Binningv13_Inputv30_SR_Blind}"
+echo "Parent dir: $parent_dir"
 
 arch=el8_amd64_gcc12
 rel=CMSSW_14_1_0_pre4
@@ -123,7 +128,6 @@ python3 run_single_signal_2DA.py "$workingArea" "$config_file" "$signal" "$tf_ty
 echo -e "\n[4] Preparing output for transfer"
 
 # Create parent directory structure unconditionally (so Condor always has something to transfer)
-parent_dir="rpf2x0_Binningv13_Inputv30_SR_Blind"
 echo "Creating parent directory: $baseDir/$parent_dir"
 mkdir -p "$baseDir/$parent_dir"
 
