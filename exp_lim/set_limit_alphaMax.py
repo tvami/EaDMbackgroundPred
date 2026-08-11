@@ -83,11 +83,32 @@ parser.add_option('-d', '--debug', type='int',
 debug = options.debug
 
 total_theory_xsec_list = []
-# eps grid: matches the coarse 45-point grid actually sampled in the new
-# consolidated parquet (...KAPPAS_10_1000000_..._coarse_grain_epsilon_and_mas...)
-# -- 9 mantissas x 5 decades, 1e-11 to 9e-07.
-# MUST stay identical to eps_list in helper_scripts/ .py.
-labels = [1e-11, 2e-11, 3e-11, 4e-11, 5e-11, 6e-11, 7e-11, 8e-11, 9e-11, 1e-10, 2e-10, 3e-10, 4e-10, 5e-10, 6e-10, 7e-10, 8e-10, 9e-10, 1e-09, 2e-09, 3e-09, 4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 2e-08, 3e-08, 4e-08, 5e-08, 6e-08, 7e-08, 8e-08, 9e-08, 1e-07, 2e-07, 3e-07, 4e-07, 5e-07, 6e-07, 7e-07, 8e-07, 9e-07]
+# eps grid. One value per rate row in the signals file, in the same order -- the two are indexed
+# positionally, so a mismatch silently pairs each limit with the wrong epsilon.
+#
+# limitRateInputScript.py writes the grid it actually used to "<signals>.eps.txt" next to the
+# rate table, including any points it inserted to resolve the sensitivity turn-on, so read it
+# from there. LABELS_FALLBACK is the plain 45-point parquet grid (9 mantissas x 5 decades,
+# 1e-11 to 9e-07) and is used only for a signals file produced before the sidecar existed.
+LABELS_FALLBACK = [1e-11, 2e-11, 3e-11, 4e-11, 5e-11, 6e-11, 7e-11, 8e-11, 9e-11, 1e-10, 2e-10, 3e-10, 4e-10, 5e-10, 6e-10, 7e-10, 8e-10, 9e-10, 1e-09, 2e-09, 3e-09, 4e-09, 5e-09, 6e-09, 7e-09, 8e-09, 9e-09, 1e-08, 2e-08, 3e-08, 4e-08, 5e-08, 6e-08, 7e-08, 8e-08, 9e-08, 1e-07, 2e-07, 3e-07, 4e-07, 5e-07, 6e-07, 7e-07, 8e-07, 9e-07]
+
+_eps_sidecar = os.path.splitext(options.signals)[0] + ".eps.txt"
+if os.path.exists(_eps_sidecar):
+    with open(_eps_sidecar) as _fh:
+        labels = [float(_l) for _l in _fh if _l.strip()]
+    print(f"Read {len(labels)} epsilon values from {_eps_sidecar}")
+else:
+    labels = list(LABELS_FALLBACK)
+    print(f"No {_eps_sidecar}; falling back to the {len(labels)}-point parquet grid. "
+          "Re-run helper_scripts/limitRateInputScript.py to generate it.")
+
+# The rate table's row count is the ground truth; a mismatch means the two drifted apart.
+with open(options.signals) as _fh:
+    _n_rate_rows = sum(1 for _l in _fh if _l.strip()) - 3   # 3 header lines
+if _n_rate_rows != len(labels):
+    raise SystemExit(f"{options.signals} has {_n_rate_rows} rate rows but the epsilon grid has "
+                     f"{len(labels)} values. They are paired positionally, so this would mislabel "
+                     f"every limit. Regenerate both with helper_scripts/limitRateInputScript.py.")
 A = 1.6e-21 * 3e8
 ctau_labels = [A * e**(-2) for e in labels]
 exp_lim = []

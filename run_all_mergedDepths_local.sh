@@ -15,10 +15,20 @@ set -u
 cd "$(dirname "$0")" || exit 1
 
 NPAR=${1:-6}
-INPUT_FILE="input_2DA_mergedDepths_SR.txt"
-TEMPLATE_CFG="config_Binningv13_Inputv29Template_SR_Blind.json"
-TF_TYPE="2x0"
-LOGDIR="logs_local"
+# Overridable so a new input version does not need a forked copy of this script. Defaults are the
+# v29 set this was written for, so a bare invocation behaves exactly as before. For v30:
+#   INPUT_FILE=input_2DA_mergedDepths_SR_v30.txt \
+#   TEMPLATE_CFG=config_Binningv13_Inputv30Template_SR_Blind.json \
+#   LOGDIR=logs_local_v30 OUTPARENT=rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind \
+#   ./run_all_mergedDepths_local.sh 6
+INPUT_FILE="${INPUT_FILE:-input_2DA_mergedDepths_SR.txt}"
+TEMPLATE_CFG="${TEMPLATE_CFG:-config_Binningv13_Inputv29Template_SR_Blind.json}"
+TF_TYPE="${TF_TYPE:-2x0}"
+LOGDIR="${LOGDIR:-logs_local}"
+# Where finished work areas end up. Empty = leave them in the CWD, which is what this script did
+# before and means they must be moved into the limit dir by hand afterwards. Set it and each area
+# is moved on completion, so run_limits_mergedDepths.sh -d "$OUTPARENT" can run straight after.
+OUTPARENT="${OUTPARENT:-}"
 
 # ---------------------------- environment ---------------------------------
 if [ -z "${CMSSW_BASE:-}" ]; then
@@ -53,7 +63,9 @@ run_one() {
     local area="rpf2x0_${s}"
     local cfg="config_${s}.json"
 
-    if [ -f "${area}/${s}-${TF_TYPE}_area/done" ]; then
+    # Resume check has to look wherever finished areas live, or a rerun redoes everything
+    if [ -f "${area}/${s}-${TF_TYPE}_area/done" ] || \
+       { [ -n "$OUTPARENT" ] && [ -f "${OUTPARENT}/${area}/${s}-${TF_TYPE}_area/done" ]; }; then
         echo "[$(date +%H:%M:%S)] SKIP    $s (already done)"
         return 0
     fi
@@ -65,6 +77,10 @@ run_one() {
     local rc=$?
 
     if [ $rc -eq 0 ]; then
+        if [ -n "$OUTPARENT" ] && [ -d "$area" ]; then
+            mkdir -p "$OUTPARENT"
+            mv "$area" "$OUTPARENT"/ && echo "[$(date +%H:%M:%S)] MOVED   $s -> $OUTPARENT/"
+        fi
         echo "[$(date +%H:%M:%S)] OK      $s"
     else
         echo "[$(date +%H:%M:%S)] FAIL    $s (exit $rc, see ${LOGDIR}/${s}.log)"
@@ -72,7 +88,7 @@ run_one() {
     return $rc
 }
 export -f run_one
-export TEMPLATE_CFG TF_TYPE LOGDIR
+export TEMPLATE_CFG TF_TYPE LOGDIR OUTPARENT
 
 # ---------------------------- run -----------------------------------------
 nsig=$(cut -d',' -f2 "$INPUT_FILE" | grep -c '[^[:space:]]')
@@ -87,7 +103,7 @@ cut -d',' -f2 "$INPUT_FILE" | grep '[^[:space:]]' \
 # ---------------------------- summary -------------------------------------
 echo ""
 echo "=========================================="
-ndone=$(ls -d rpf2x0_Signal_M*_mergedDepth_SR/*-${TF_TYPE}_area/done 2>/dev/null | wc -l)
+ndone=$(ls -d ${OUTPARENT:+$OUTPARENT/}rpf2x0_Signal_M*_mergedDepth_SR/*-${TF_TYPE}_area/done 2>/dev/null | wc -l)
 echo "  Completed: $ndone / $nsig"
 if [ "$ndone" -ne "$nsig" ]; then
     echo "  Failures (no SUCCESS line in log):"
