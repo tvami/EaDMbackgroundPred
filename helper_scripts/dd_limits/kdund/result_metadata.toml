@@ -1,0 +1,1354 @@
+["default_values"] #an example of a metadata set.
+description = "" #Short summary of what the result is.
+independent_variable = "wimp_mass" #used to state what the limit depends on
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+header = ["wimp_mass", "upper_limit"] #These lines define which columns from .csv correspond to what values
+delimiter = ","
+scaling = 1.0 #limits and sensi will be scaled with this factor (for unit conversion)
+label = "" #label used for plotting
+plot_color = "k" #plot color unless overridden
+provenance = ".csv file" #,"Collaboration", "webplotdigitized" or whatnot-- good to remember if they're solid
+#optional
+# reference = """.bib reference text"""
+# exposure #might be nice if you want to plot best-limit vs exposure?
+# label_range_down = -np.inf #set this if you want to give the plotter a hint for the range in which to place the label (e.g. above 70 GeV, xenon limits are flattish)
+# label_range_up = np.inf
+
+["WIMPSI_XENONnT_2023_2303.14729"]
+description = "2023 tonne-year Spin-independent result from XENONnT (power-constrained at 50%)"
+exposure = 1.09 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2023)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+label_range_down = 60
+reference = """
+@article{XENON:2023cxc,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{First Dark Matter Search with Nuclear Recoils from the XENONnT Experiment}",
+    eprint = "2303.14729",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041003",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041003",
+    year = "2023"
+    }
+"""
+
+["WIMPSDp_XENONnT_2023_2303.14729"]
+description = "2023 tonne-year Spin-dependent (proton only) result from XENONnT"
+exposure = 1.09 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2023)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+label_range_down = 60
+reference = """
+@article{XENON:2023cxc,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{First Dark Matter Search with Nuclear Recoils from the XENONnT Experiment}",
+    eprint = "2303.14729",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041003",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041003",
+    year = "2023"
+    }
+"""
+
+["WIMPSDn_XENONnT_2023_2303.14729"]
+description = "2023 tonne-year Spin-dependent (neutron only) result from XENONnT"
+exposure = 1.09 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2023)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+label_range_down = 60
+reference = """
+@article{XENON:2023cxc,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{First Dark Matter Search with Nuclear Recoils from the XENONnT Experiment}",
+    eprint = "2303.14729",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041003",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041003",
+    year = "2023"
+    }
+"""
+
+["nufloor_Billardetal_2014_1307.5458"]
+description = "Neutrino Floor from Billard et al (2014)"
+independent_variable = "wimp_mass"
+label = "Billard &al (2014)"
+header = ["wimp_mass","nufloor"]
+plot_color = "gray"
+reference = """
+    @article{Billard:2013qya,
+    author = "Billard, J. and Strigari, L. and Figueroa-Feliciano, E.",
+    title = "{Implication of neutrino backgrounds on the reach of next generation dark matter direct detection experiments}",
+    eprint = "1307.5458",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ph",
+    doi = "10.1103/PhysRevD.89.023524",
+    journal = "Phys. Rev. D",
+    volume = "89",
+    number = "2",
+    pages = "023524",
+    year = "2014"
+    }
+"""
+
+["WIMPSI_XENON1T_2018_1805.12562"]
+description = "XENON1T tonne-year SI WIMP limit"
+label="XENON1T (2018)"
+header = ["wimp_mass","upper_limit","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+delimiter=","
+plot_color = "navy"
+label_range_down = 60
+reference = """
+@article{XENON:2018voc,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Dark Matter Search Results from a One Ton-Year Exposure of XENON1T}",
+    eprint = "1805.12562",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1103/PhysRevLett.121.111302",
+    journal = "Phys. Rev. Lett.",
+    volume = "121",
+    number = "11",
+    pages = "111302",
+    year = "2018"
+}
+"""
+
+["WIMPSI_LZ_2023_2207.03764"]
+description = "2023 tonne-year Spin-independent result from LZ (power-constrained at -1sigma)"
+label="LZ (2023)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2022lsv,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{First Dark Matter Search Results from the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2207.03764",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041002",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041002",
+    year = "2023"
+}
+"""
+delimiter = " "
+
+["WIMPSDp_LZ_2023_2207.03764"]
+description = "2023 tonne-year Spin-dependent (proton-only) result from LZ (power-constrained at -1sigma)"
+label="LZ (2023)"
+header = ["wimp_mass","upper_limit","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","upper_limit_negative_nuclear_uncert","upper_limit_positive_nuclear_uncert"]
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2022lsv,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{First Dark Matter Search Results from the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2207.03764",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041002",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041002",
+    year = "2023"
+}
+"""
+delimiter = " "
+
+["WIMPSDn_LZ_2023_2207.03764"]
+description = "2023 tonne-year Spin-dependent (neutron-only) result from LZ (power-constrained at -1sigma)"
+label="LZ (2023)"
+header = ["wimp_mass","upper_limit","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","upper_limit_negative_nuclear_uncert","upper_limit_positive_nuclear_uncert"]
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2022lsv,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{First Dark Matter Search Results from the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2207.03764",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.041002",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "4",
+    pages = "041002",
+    year = "2023"
+}
+"""
+delimiter = " "
+
+["WIMPSI_PandaX-4T_2021_2107.13438"]
+description = "2021 Spin-independent result from PandaX-4T commisioning run"
+label="PandaX-4T (2021)"
+header = ["wimp_mass","upper_limit"]
+provenance = "collaboration"
+plot_color = "salmon"
+label_range_down = 60
+reference = """
+@article{PandaX-4T:2021bab,
+    author = "Meng, Yue and others",
+    collaboration = "PandaX-4T",
+    title = "{Dark Matter Search Results from the PandaX-4T Commissioning Run}",
+    eprint = "2107.13438",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.127.261802",
+    journal = "Phys. Rev. Lett.",
+    volume = "127",
+    number = "26",
+    pages = "261802",
+    year = "2021"
+}
+"""
+delimiter = ","
+
+["WIMPSI_PANDAXII_2020_2007.15469"]
+description = "Results of Dark Matter Search using the Full PandaX-II Exposure"
+label="PandaX-II (2020)"
+header = ["wimp_mass","upper_limit"]
+plot_color = "salmon"
+label_range_down = 60
+reference = """
+@article{PandaX-II:2020oim,
+    author = "Wang, Qiuhong and others",
+    collaboration = "PandaX-II",
+    title = "{Results of dark matter search using the full PandaX-II exposure}",
+    eprint = "2007.15469",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1088/1674-1137/abb658",
+    journal = "Chin. Phys. C",
+    volume = "44",
+    number = "12",
+    pages = "125001",
+    year = "2020"
+}
+"""
+
+["WIMPSI_XENON1T_2019_S2only"]
+description = "Limits using S2-only signals"
+exposure = 0.0062 #tonney
+provenance = "Collaboration"
+header = ["wimp_mass","upper_limit"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENON1T (2019)"
+plot_color = "navy"
+reference = """
+@article{XENON:2019gfn,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Light Dark Matter Search with Ionization Signals in XENON1T}",
+    eprint = "1907.11485",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.123.251801",
+    journal = "Phys. Rev. Lett.",
+    volume = "123",
+    number = "25",
+    pages = "251801",
+    year = "2019"
+}
+"""
+
+["WIMPSI_XENON1T_2019_S2onlyMigdal"]
+description = "Limits using S2-only signals and assuming the Migdal effect"
+exposure = 0.0062 #tonney
+provenance = "Collaboration"
+header = ["wimp_mass","upper_limit"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENON1T (2019)"
+delimiter = ","
+plot_color = "navy"
+label_range_down = 0.5
+label_range_up = 2
+reference = """
+@article{XENON:2019zpr,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Search for Light Dark Matter Interactions Enhanced by the Migdal Effect or Bremsstrahlung in XENON1T}",
+    Keywords = {collaborationauthor},
+    eprint = "1907.12771",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.123.241803",
+    journal = "Phys. Rev. Lett.",
+    volume = "123",
+    number = "24",
+    pages = "241803",
+    year = "2019"
+}
+"""
+#["WIMPSI_XENON1T_2019_Migdal"]
+#description = "NR limit for SI, S1+S2 + Migdal"
+#reference = """
+#@article{XENON:2019zpr,
+#    author = "Aprile, E. and others",
+#    collaboration = "XENON",
+#    title = "{Search for Light Dark Matter Interactions Enhanced by the Migdal Effect or Bremsstrahlung in XENON1T}",
+#    Keywords = {collaborationauthor},
+#    eprint = "1907.12771",
+#    archivePrefix = "arXiv",
+#    primaryClass = "hep-ex",
+#    doi = "10.1103/PhysRevLett.123.241803",
+#    journal = "Phys. Rev. Lett.",
+#    volume = "123",
+#    number = "24",
+#    pages = "241803",
+#    year = "2019"
+#}
+#"""
+["WIMPSI_XENON1T_2021_2fold"]
+description = "Limits using 2-fold S1+S2 signals"
+exposure = 0.6 #tonney
+provenance = "Collaboration"
+header = ["wimp_mass","upper_limit","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENON1T (2021)"
+delimiter = ","
+plot_color = "navy"
+label_range_up = 6
+reference = """
+@article{XENON:2020gfr,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Search for Coherent Elastic Scattering of Solar $^8$B Neutrinos in the XENON1T Dark Matter Experiment}",
+    keywords = {contributingauthor},
+    eprint = "2012.02846",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.126.091301",
+    journal = "Phys. Rev. Lett.",
+    volume = "126",
+    pages = "091301",
+    year = "2021"
+}
+"""
+["WIMPSI_XENONnT_2020_projection20ty"]
+description = "Projected XENOnT full exposure, two-sided"
+exposure = 20 #tonney
+provenance = "Collaboration"
+header = ["wimp_mass","sensitivity_median","sensitivity_m1sigma","sensitivity_p1sigma","sensitivity_m2sigma","sensitivity_p2sigma"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENONnT (20ty)"
+delimiter = ","
+plot_color = "dodgerblue"
+label_range_down = 60
+reference = """
+@article{XENON:2020kmp,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Projected WIMP sensitivity of the XENONnT dark matter experiment}",
+    keywords = {contributingauthor},
+    eprint = "2007.08796",
+    archivePrefix = "arXiv",
+    primaryClass = "physics.ins-det",
+    doi = "10.1088/1475-7516/2020/11/031",
+    journal = "JCAP",
+    volume = "11",
+    pages = "031",
+    year = "2020"
+}
+"""
+["WIMPSI_LZ_2019_projection"]
+description = "Projected LZ spin-independent full exposure, one-sided"
+provenance = "Collaboration"
+header = ["index","wimp_mass","sensitivity_median"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "LZ (15.3 ty)"
+delimiter = ","
+exposure = 15.3 #ty, 1000 d x 5.6 t
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2018qzl,
+    author = "Akerib, D. S. and others",
+    collaboration = "LZ",
+    title = "{Projected WIMP sensitivity of the LUX-ZEPLIN dark matter experiment}",
+    eprint = "1802.06039",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.IM",
+    reportNumber = "FERMILAB-PUB-18-054-AE-PPD",
+    doi = "10.1103/PhysRevD.101.052002",
+    journal = "Phys. Rev. D",
+    volume = "101",
+    number = "5",
+    pages = "052002",
+    year = "2020"
+}
+"""
+["WIMPSDp_LZ_2019_projection"]
+description = "Projected LZ spin-dependent, proton-only full exposure, one-sided"
+provenance = "Collaboration"
+header = ["index","wimp_mass","sensitivity_median"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENONnT (20ty)"
+delimiter = ","
+exposure = 15.3 #ty, 1000 d x 5.6 t
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2018qzl,
+    author = "Akerib, D. S. and others",
+    collaboration = "LZ",
+    title = "{Projected WIMP sensitivity of the LUX-ZEPLIN dark matter experiment}",
+    eprint = "1802.06039",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.IM",
+    reportNumber = "FERMILAB-PUB-18-054-AE-PPD",
+    doi = "10.1103/PhysRevD.101.052002",
+    journal = "Phys. Rev. D",
+    volume = "101",
+    number = "5",
+    pages = "052002",
+    year = "2020"
+}
+"""
+["WIMPSDn_LZ_2019_projection"]
+description = "Projected LZ spin-dependent, neutron-only full exposure, one-sided"
+provenance = "Collaboration"
+header = ["index","wimp_mass","sensitivity_median"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "XENONnT (20ty)"
+delimiter = ","
+exposure = 15.3 #ty, 1000 d x 5.6 t
+plot_color = "darkorange"
+label_range_down = 60
+reference = """
+@article{LZ:2018qzl,
+    author = "Akerib, D. S. and others",
+    collaboration = "LZ",
+    title = "{Projected WIMP sensitivity of the LUX-ZEPLIN dark matter experiment}",
+    eprint = "1802.06039",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.IM",
+    reportNumber = "FERMILAB-PUB-18-054-AE-PPD",
+    doi = "10.1103/PhysRevD.101.052002",
+    journal = "Phys. Rev. D",
+    volume = "101",
+    number = "5",
+    pages = "052002",
+    year = "2020"
+}
+"""
+["WIMPSI_Darwin_2016_projection_200ty"]
+description = "Projected Darwin spin-independent"
+header = ["wimp_mass","sensitivity_median"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "Darwin (200ty)"
+delimiter = ","
+exposure = 200 #ty, 1000 d x 5.6 t
+plot_color = "darkgreen"
+label_range_down = 60
+reference = """
+@article{DARWIN:2016hyl,
+    author = "Aalbers, J. and others",
+    collaboration = "DARWIN",
+    title = "{DARWIN: towards the ultimate dark matter detector}",
+    eprint = "1606.07001",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.IM",
+    doi = "10.1088/1475-7516/2016/11/017",
+    journal = "JCAP",
+    volume = "11",
+    pages = "017",
+    year = "2016"
+}
+"""
+["WIMPSI_darkside20k_2017_100ty"]
+description = "Projected DarkSide-20k spin-independent"
+header = ["wimp_mass","sensitivity_median"]
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+label = "DarkSide-20k (100ty)"
+delimiter = ","
+exposure = 100 #ty, 1000 d x 5.6 t
+plot_color = "purple"
+label_range_down = 200
+reference = """
+@article{DarkSide-20k:2017zyg,
+    author = "Aalseth, C. E. and others",
+    collaboration = "DarkSide-20k",
+    title = "{DarkSide-20k: A 20 tonne two-phase LAr TPC for direct dark matter detection at LNGS}",
+    eprint = "1707.08145",
+    archivePrefix = "arXiv",
+    primaryClass = "physics.ins-det",
+    reportNumber = "FERMILAB-PUB-17-298-PPD",
+    doi = "10.1140/epjp/i2018-11973-4",
+    journal = "Eur. Phys. J. Plus",
+    volume = "133",
+    pages = "131",
+    year = "2018"
+}
+"""
+["WIMPSI_DarkSide50_2018_lowE_noquench"]
+description = "DarkSide-50 spin-independent upper limit, no quenching fluctuations (conservative)"
+independent_variable = "wimp_mass" #used to state what the limit depends on
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+header = ["wimp_mass", "upper_limit"] #These lines define which columns from .csv correspond to what values
+delimiter = ","
+label = "DarkSide-50 (2023, NQ)" #label used for plotting
+provenance = ".csv file" #,"Collaboration", "webplotdigitized" or whatnot-- good to remember if they're solid
+plot_color = "purple"
+reference = """
+@article{DarkSide:2018bpj,
+    author = "Agnes, P. and others",
+    collaboration = "DarkSide",
+    title = "{Low-Mass Dark Matter Search with the DarkSide-50 Experiment}",
+    eprint = "1802.06994",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.HE",
+    reportNumber = "FERMILAB-PUB-18-048-AE-E-PPD",
+    doi = "10.1103/PhysRevLett.121.081307",
+    journal = "Phys. Rev. Lett.",
+    volume = "121",
+    number = "8",
+    pages = "081307",
+    year = "2018"
+}
+"""
+["WIMPSI_CDMSlite_2018"]
+description = "CDMSlite spin-independent upper limit"
+independent_variable = "wimp_mass" #used to state what the limit depends on
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+header = ["wimp_mass", "upper_limit_best", "upper_limit", "upper_upper_limit", "lower_upper_limit"] #The third comment is the "official median limit, see https://arxiv.org/src/1707.01632v3/anc/CDMSlite_Run2_DataRelease_Document.pdf"
+delimiter = "\t"
+label = "CDMSlite (2018)"
+provenance = "Collaboration"
+plot_color = "red"
+reference = """
+@article{SuperCDMS:2017nns,
+    author = "Agnese, R. and others",
+    collaboration = "SuperCDMS",
+    title = "{Low-mass dark matter search with CDMSlite}",
+    eprint = "1707.01632",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    reportNumber = "FERMILAB-PUB-17-265-AE",
+    doi = "10.1103/PhysRevD.97.022002",
+    journal = "Phys. Rev. D",
+    volume = "97",
+    number = "2",
+    pages = "022002",
+    year = "2018"
+}
+"""
+["WIMPSI_DAMIC_2020"]
+description = "DAMIC spin-independent upper limit"
+independent_variable = "wimp_mass"
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2"
+header = ["wimp_mass", "upper_limit"]
+delimiter = ","
+label = "DAMIC (2020)" #label used for plotting
+provenance = ".csv file"
+plot_color = "brown"
+reference = """
+@article{DAMIC:2020cut,
+    author = "Aguilar-Arevalo, A. and others",
+    collaboration = "DAMIC",
+    title = "{Results on low-mass weakly interacting massive particles from a 11 kg-day target exposure of DAMIC at SNOLAB}",
+    eprint = "2007.15622",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    reportNumber = "FERMILAB-PUB-20-284-E",
+    doi = "10.1103/PhysRevLett.125.241803",
+    journal = "Phys. Rev. Lett.",
+    volume = "125",
+    pages = "241803",
+    year = "2020"
+}
+"""
+["WIMPSI_CRESSTIII_2019"]
+description = "CRESST-III low-mass SI dark-matter search"
+exposure = 9.97e-6 #ty, 3.64 kgd
+independent_variable = "wimp_mass"
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2" #once scaling applied
+scaling = 1e-36
+header = ["wimp_mass", "upper_limit"]
+delimiter = ","
+label = "CREST-III (2019)" #label used for plotting
+plot_color = "crimson"
+reference = """
+@article{CRESST:2019jnq,
+    author = "Abdelhameed, A. H. and others",
+    collaboration = "CRESST",
+    title = "{First results from the CRESST-III low-mass dark matter program}",
+    eprint = "1904.00498",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1103/PhysRevD.100.102002",
+    journal = "Phys. Rev. D",
+    volume = "100",
+    number = "10",
+    pages = "102002",
+    year = "2019"
+}
+"""
+["WIMPSI_LUX_2017_run4combined"]
+description = "LUX SI dark-matter search"
+exposure = 0.092 #ty, 250 kgd
+independent_variable = "wimp_mass"
+units_independent_variable = "GeV/c^2"
+units_dependent_variable = "cm^2" #once scaling applied
+scaling = 1
+header = ["index", "wimp_mass", "upper_limit"]
+delimiter = ","
+label = "LUX (2017)" #label used for plotting
+plot_color = "magenta"
+reference = """
+@article{LUX:2016ggv,
+    author = "Akerib, D. S. and others",
+    collaboration = "LUX",
+    title = "{Results from a search for dark matter in the complete LUX exposure}",
+    eprint = "1608.07648",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1103/PhysRevLett.118.021303",
+    journal = "Phys. Rev. Lett.",
+    volume = "118",
+    number = "2",
+    pages = "021303",
+    year = "2017"
+}
+"""
+
+
+["nufog_OHare_2021_2109.03116"]
+description = "Neutrino fog contours from O'Hare (2021) where it is defined as when the sensitivity decreases slower than the square root of exposure. Contours also added for when it decreases slower than exposure^2.5 or 3 (while the exponent may decrease after, these contours only show the upper edge.)"
+independent_variable = "wimp_mass"
+label = "O'Hare (2021)"
+header = ["wimp_mass","nufloor","nufog_2d5","nufog_3d0"]
+plot_color = "gray"
+delimiter = " "
+reference = """
+@article{OHare:2021utq,
+    author = "O'Hare, Ciaran A. J.",
+    title = "{New Definition of the Neutrino Floor for Direct Dark Matter Searches}",
+    eprint = "2109.03116",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ph",
+    doi = "10.1103/PhysRevLett.127.251802",
+    journal = "Phys. Rev. Lett.",
+    volume = "127",
+    number = "25",
+    pages = "251802",
+    year = "2021"
+}
+"""
+["WIMPSI_LZ_2024_2410.17036"]
+description = "2024 4.2 tonne-year Spin-independent result from LZ (power-constrained at -1sigma)"
+label="LZ (2024)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","discovery_3sigma"]
+plot_color = "darkorange"
+label_range_down = 60
+provenance = "Collaboration"
+reference = """
+@article{LZ:2024zvo,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{Dark Matter Search Results from 4.2 Tonne-Years of Exposure of the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2410.17036",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    reportNumber = "FERMILAB-PUB-24-0796-V",
+    doi = "10.1103/4dyc-z8zf",
+    journal = "Phys. Rev. Lett.",
+    volume = "135",
+    number = "1",
+    pages = "011802",
+    year = "2025"
+}
+
+"""
+delimiter = ","
+
+["WIMPSDp_LZ_2024_2410.17036"]
+description = "2024 4.2 tonne-year Spin-dependent (proton-only) result from LZ (power-constrained at -1sigma)"
+label="LZ (2024)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","discovery_3sigma"]
+plot_color = "darkorange"
+label_range_down = 60
+provenance = "Collaboration"
+reference = """
+@article{LZ:2024zvo,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{Dark Matter Search Results from 4.2 Tonne-Years of Exposure of the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2410.17036",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    reportNumber = "FERMILAB-PUB-24-0796-V",
+    doi = "10.1103/4dyc-z8zf",
+    journal = "Phys. Rev. Lett.",
+    volume = "135",
+    number = "1",
+    pages = "011802",
+    year = "2025"
+}
+
+"""
+delimiter = ","
+
+["WIMPSDn_LZ_2024_2410.17036"]
+description = "2024 4.2 tonne-year Spin-dependent (neutron-only) result from LZ (power-constrained at -1sigma)"
+label="LZ (2024)"
+header = ["wimp_mass","upper_limit","upper_limit_unconstrained","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","discovery_3sigma"]
+plot_color = "darkorange"
+label_range_down = 60
+provenance = "Collaboration"
+reference = """
+@article{LZ:2024zvo,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{Dark Matter Search Results from 4.2 Tonne-Years of Exposure of the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2410.17036",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    reportNumber = "FERMILAB-PUB-24-0796-V",
+    doi = "10.1103/4dyc-z8zf",
+    journal = "Phys. Rev. Lett.",
+    volume = "135",
+    number = "1",
+    pages = "011802",
+    year = "2025"
+}
+
+"""
+delimiter = ","
+
+["WIMPSI_XENON10_2008_0706.0039"]
+description = "2024 4.2 tonne-year Spin-independent result from LZ (power-constrained at -1sigma)"
+label="XENON10 (2008)"
+header = ["wimp_mass","upper_limit"]
+plot_color = "dodgerblue"
+label_range_down = 60
+reference = """
+@article{XENON:2007uwm,
+    author = "Angle, J. and others",
+    collaboration = "XENON",
+    title = "{First Results from the XENON10 Dark Matter Experiment at the Gran Sasso National Laboratory}",
+    eprint = "0706.0039",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph",
+    doi = "10.1103/PhysRevLett.100.021303",
+    journal = "Phys. Rev. Lett.",
+    volume = "100",
+    pages = "021303",
+    year = "2008"
+}
+"""
+delimiter = ","
+
+["WIMPSI_XLZD_2024_2410.17137_200ty"]
+description = "2024 XLZD projection"
+label="XLZD (200ty)"
+header = ["wimp_mass","sensitivity_median"]
+exposure = 200
+provenance = "curvetrace"
+plot_color = "purple"
+label_range_down = 60
+reference = """
+@article{XLZD:2024nsu,
+    author = "Aalbers, J. and others",
+    collaboration = "XLZD",
+    title = "{The XLZD Design Book: Towards the Next-Generation Liquid Xenon Observatory for Dark Matter and Neutrino Physics}",
+    eprint = "2410.17137",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "10",
+    year = "2024"
+}
+"""
+delimiter = ","
+
+["WIMPSI_XLZD_2024_2410.17137_1000ty"]
+description = "2024 XLZD projection"
+label="XLZD (1000ty)"
+header = ["wimp_mass","sensitivity_median"]
+exposure = 1000
+provenance = "curvetrace"
+plot_color = "purple"
+label_range_down = 60
+reference = """
+@article{XLZD:2024nsu,
+    author = "Aalbers, J. and others",
+    collaboration = "XLZD",
+    title = "{The XLZD Design Book: Towards the Next-Generation Liquid Xenon Observatory for Dark Matter and Neutrino Physics}",
+    eprint = "2410.17137",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "10",
+    year = "2024"
+}
+"""
+delimiter = ","
+
+["WIMPSI_XENON100_1609.06154"]
+description = "477 live days XENON100 combined limit"
+label="XENON100 (2016)"
+header = ["wimp_mass","upper_limit"]
+exposure = 0.048 #ty
+plot_color = "navy"
+reference = """
+@article{XENON100:2016sjq,
+    author = "Aprile, E. and others",
+    collaboration = "XENON100",
+    title = "{XENON100 Dark Matter Results from a Combination of 477 Live Days}",
+    eprint = "1609.06154",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1103/PhysRevD.94.122001",
+    journal = "Phys. Rev. D",
+    volume = "94",
+    number = "12",
+    pages = "122001",
+    year = "2016"
+}
+"""
+delimiter = ","
+
+["WIMPSI_TESSERACT_2025_2503.03683"]
+description = "First Two-channel TESSERACT search"
+label="TESSERACT (2025)"
+header = ["wimp_mass","upper_limit", "lower_limit"] #lower limit is the overburden exclusion-- it is higher than the upper limit
+exposure =3.1918e-7 #ty 0.233 g × 12 hours
+plot_color = "salmon"
+reference = """
+@article{TESSERACT:2025tfw,
+    author = "Chang, C. L. and others",
+    collaboration = "TESSERACT",
+    title = "{First Limits on Light Dark Matter Interactions in a Low Threshold Two Channel Athermal Phonon Detector from the TESSERACT Collaboration}",
+    eprint = "2503.03683",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "3",
+    year = "2025"
+}
+"""
+delimiter = ","
+provenance = "webplotdigitized"
+
+["WIMPSI_QROCODILE_2025_2412.16279_lightmediator"]
+description = "First QROCODILE Result assuming a light mediator"
+label="QROCODILE light mediator (2025)"
+header = ["wimp_mass","upper_limit"]
+plot_color = "orange"
+reference = """
+@article{QROCODILE:2024zmg,
+    author = "Baudis, Laura and others",
+    collaboration = "QROCODILE",
+    title = "{A New Bite Into Dark Matter with the SNSPD-Based QROCODILE Experiment}",
+    eprint = "2412.16279",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ph",
+    reportNumber = "MIT-CTP/5744",
+    month = "12",
+    year = "2024"
+}
+
+"""
+delimiter = ","
+provenance = "webplotdigitized"
+
+["WIMPSI_QROCODILE_2025_2412.16279_heavymediator"]
+description = "First QROCODILE Result assuming a heavy mediator"
+label="QROCODILE heavy mediator (2025)"
+header = ["wimp_mass","upper_limit"]
+plot_color = "orange"
+reference = """
+@article{QROCODILE:2024zmg,
+    author = "Baudis, Laura and others",
+    collaboration = "QROCODILE",
+    title = "{A New Bite Into Dark Matter with the SNSPD-Based QROCODILE Experiment}",
+    eprint = "2412.16279",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ph",
+    reportNumber = "MIT-CTP/5744",
+    month = "12",
+    year = "2024"
+}
+
+"""
+delimiter = ","
+provenance = "webplotdigitized"
+
+["WIMPSI_CRESST_2405.06527"]
+description = "CRESST 2024 Silicon-on-sapphire"
+label="CRESST-III (2025)"
+header = ["wimp_mass","upper_limit"]
+plot_color = "blue"
+reference = """
+@article{CRESST:2024cpr,
+    author = "Angloher, G. and others",
+    collaboration = "CRESST",
+    title = "{First observation of single photons in a CRESST detector and new dark matter exclusion limits}",
+    eprint = "2405.06527",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    doi = "10.1103/PhysRevD.110.083038",
+    journal = "Phys. Rev. D",
+    volume = "110",
+    number = "8",
+    pages = "083038",
+    year = "2024"
+}
+"""
+delimiter = ","
+provenance = "webplotdigitized"
+
+
+["WIMPSI_XENONnT_2025_2502.18005"]
+description = "2025 3.1 tonne-year Spin-independent result from XENONnT"
+exposure = 3.1 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2025)"
+header = ["wimp_mass","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","upper_limit"]
+label_range_down = 60
+reference = """
+@article{XENON:2025vwd,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{WIMP Dark Matter Search using a 3.1 tonne $\\times$ year Exposure of the XENONnT Experiment}",
+    eprint = "2502.18005",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "2",
+    year = "2025"
+}
+
+"""
+
+["WIMPSDp_XENONnT_2025_2502.18005"]
+description = "2025 3.1 tonne-year Spin-dependent proton-only result from XENONnT"
+exposure = 3.1 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2025)"
+header = ["wimp_mass","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","upper_limit"]
+label_range_down = 60
+reference = """
+@article{XENON:2025vwd,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{WIMP Dark Matter Search using a 3.1 tonne $\\times$ year Exposure of the XENONnT Experiment}",
+    eprint = "2502.18005",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "2",
+    year = "2025"
+}
+
+"""
+
+["WIMPSDn_XENONnT_2025_2502.18005"]
+description = "2025 3.1 tonne-year Spin-dependent neutron-only result from XENONnT"
+exposure = 3.1 #tonne-year
+independent_variable = "wimp_mass"
+provenance = "Collaboration"
+plot_color = "dodgerblue"
+label = "XENONnT (2025)"
+header = ["wimp_mass","sensitivity_m2sigma","sensitivity_m1sigma","sensitivity_median","sensitivity_p1sigma","sensitivity_p2sigma","upper_limit"]
+label_range_down = 60
+reference = """
+@article{XENON:2025vwd,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{WIMP Dark Matter Search using a 3.1 tonne $\\times$ year Exposure of the XENONnT Experiment}",
+    eprint = "2502.18005",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "2",
+    year = "2025"
+}
+
+"""
+
+
+["WIMPSI_DAMIC_2025_Migdal_heavymediator"]
+description = "2025 DAMIC-M heavy mediator DM-nucleus scattering with Migdal effect"
+label = "DAMIC-M Migdal (2025)"
+header = ["wimp_mass","upper_limit"]
+provenance = "Collaboration"
+plot_color = "brown"
+reference="""
+@article{DAMIC-M:2025luv,
+    author = "Aggarwal, K. and others",
+    collaboration = "DAMIC-M",
+    title = "{Probing Benchmark Models of Hidden-Sector Dark Matter with DAMIC-M}",
+    eprint = "2503.14617",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/2tcc-bqck",
+    journal = "Phys. Rev. Lett.",
+    volume = "135",
+    number = "7",
+    pages = "071002",
+    year = "2025"
+}
+"""
+
+["WIMPSI_DarkSide-50_nq"]
+description = "DarkSide-50 spin-independent upper limit, no quenching fluctuations (conservative), 2023"
+label = "DarkSide-50 NQ (2023)"
+header = ["wimp_mass", "upper_limit"]
+provenance = "curvetrace"
+plot_color = "purple"
+reference = """
+@article{DarkSide-50:2022qzh,
+    author = "Agnes, P. and others",
+    collaboration = "DarkSide-50",
+    title = "{Search for low-mass dark matter WIMPs with 12~ton-day exposure of DarkSide-50}",
+    eprint = "2207.11966",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    reportNumber = "FERMILAB-PUB-22-589-ND-PPD-SCD",
+    doi = "10.1103/PhysRevD.107.063001",
+    journal = "Phys. Rev. D",
+    volume = "107",
+    number = "6",
+    pages = "063001",
+    year = "2023"
+}
+"""
+
+
+["WIMPSI_LZ_CRDM"]
+description = "LZ Cosmic Ray Boosted DM-nucleus scattering"
+label = "LZ CRDM (2025)"
+# Jelle: Official data file also has sensitivity, but I was too lazy to convert it
+header = ["wimp_mass","upper_limit"]
+provenance = "Collaboration"
+plot_color = "darkorange"
+reference = """
+@article{LZ:2025iaw,
+    author = "Aalbers, J. and others",
+    collaboration = "LZ",
+    title = "{New Constraints on Cosmic Ray-Boosted Dark Matter from the LUX-ZEPLIN Experiment}",
+    eprint = "2503.18158",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    reportNumber = "FERMILAB-PUB-25-0191-V",
+    doi = "10.1103/nr92-jvt3",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "24",
+    pages = "241801",
+    year = "2025"
+}
+"""
+
+["WIMPSI_PandaX-4T_migdal_heavymediator"]
+description = "PandaX-4T Migdal heavy mediator DM-nucleus scattering"
+label = "PandaX-4T Migdal (2023)"
+header = ["wimp_mass","upper_limit"]
+provenance = "curvetrace"
+plot_color = "salmon"
+reference = """
+@article{PandaX:2023xgl,
+    author = "Huang, Di and others",
+    collaboration = "PandaX",
+    title = "{Search for Dark-Matter{\\textendash}Nucleon Interactions with a Dark Mediator in PandaX-4T}",
+    eprint = "2308.01540",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.131.191002",
+    journal = "Phys. Rev. Lett.",
+    volume = "131",
+    number = "19",
+    pages = "191002",
+    year = "2023"
+}
+"""
+
+["WIMPSI_PandaX-4T_S2only_2025"]
+description = "2025 PandaX-4T S2-only DM-nucleus scattering"
+label = "PandaX-4T (2025)"
+header = ["wimp_mass","upper_limit"]
+provenance = "curvetrace"
+plot_color = "salmon"
+reference = """
+@article{Zhang:2025ajc,
+    author = "Zhang, Minzhen and others",
+    title = "{Search for Light Dark Matter with 259-day data in PandaX-4T}",
+    eprint = "2507.11930",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "7",
+    year = "2025"
+}
+"""
+
+["WIMPSI_SENSEI_Migdal_hidden"]
+description = "Sensei dark-matter nucleus scattering limit with Migdal effect 'hidden', F_DM=1, 2312.13342v2"
+label = "SENSEI Migdal (2025)"
+header = ["wimp_mass","upper_limit"]
+provenance = "curvetrace"
+plot_color = 'saddlebrown'
+reference = """
+@article{SENSEI:2023zdf,
+    author = "Adari, Prakruth and others",
+    collaboration = "SENSEI",
+    title = "{First Direct-Detection Results on Sub-GeV Dark Matter Using the SENSEI Detector at SNOLAB}",
+    eprint = "2312.13342",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    reportNumber = "YITP-SB-2023-30, FERMILAB-PUB-23-0824-CSAID-PPD",
+    doi = "10.1103/PhysRevLett.134.011804",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "1",
+    pages = "011804",
+    year = "2025"
+}
+"""
+
+
+["WIMPE_DAMIC_2025_QCDark_heavymediator"]
+description = "2025 DAMIC-M heavy mediator DM-electron scattering"
+label = "DAMIC-M (2025)"
+header = ["wimp_mass","upper_limit"]
+provenance = "Collaboration"
+plot_color = "brown"
+reference="""
+@article{DAMIC-M:2025luv,
+    author = "Aggarwal, K. and others",
+    collaboration = "DAMIC-M",
+    title = "{Probing Benchmark Models of Hidden-Sector Dark Matter with DAMIC-M}",
+    eprint = "2503.14617",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/2tcc-bqck",
+    journal = "Phys. Rev. Lett.",
+    volume = "135",
+    number = "7",
+    pages = "071002",
+    year = "2025"
+}
+"""
+
+["WIMPE_PandaX-4T_dme_crdm"]
+description = "PandaX-4T Cosmic ray boosted DM-electron scattering"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "PandaX-4T CRDM (2024)"
+plot_color = "salmon"
+reference = """
+@article{PandaX:2024pme,
+    author = "Shang, Xiaofeng and others",
+    collaboration = "PandaX",
+    title = "{Search for Cosmic-Ray Boosted Sub-MeV Dark-Matter{\\textendash}Electron Scattering in PandaX-4T}",
+    eprint = "2403.08361",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.133.101805",
+    journal = "Phys. Rev. Lett.",
+    volume = "133",
+    number = "10",
+    pages = "101805",
+    year = "2024"
+}
+"""
+
+["WIMPE_PandaX-4T_s2only_2025_heavymediator"]
+description = "2025 PandaX-4T S2-only DM-electron scattering heavy mediator"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "PandaX-4T S2-only (2025)"
+plot_color = "salmon"
+reference = """
+@article{Zhang:2025ajc,
+    author = "Zhang, Minzhen and others",
+    title = "{Search for Light Dark Matter with 259-day data in PandaX-4T}",
+    eprint = "2507.11930",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "7",
+    year = "2025"
+}
+"""
+
+["WIMPE_PandaX-4T_srdm"]
+description = "PandaX-4T Solar-reflected DM-electron scattering"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "PandaX-4T SRDM (2025)"
+plot_color = "salmon"
+reference = """
+@article{PandaX:2024syk,
+    author = "Shen, Guofang and others",
+    collaboration = "PandaX, (PandaX Collaboration)25,26",
+    title = "{Search for Solar Boosted Dark Matter Particles at the PandaX-4T Experiment}",
+    eprint = "2412.19970",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.134.161003",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "16",
+    pages = "161003",
+    year = "2025"
+}
+"""
+
+
+["WIMPE_SENSEI_hidden"]
+description = "Sensei dark-matter electron scattering limit 'hidden', F_DM=1, 2312.13342v2"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "SENSEI (2025)"
+plot_color = 'saddlebrown'
+reference = """
+@article{SENSEI:2023zdf,
+    author = "Adari, Prakruth and others",
+    collaboration = "SENSEI",
+    title = "{First Direct-Detection Results on Sub-GeV Dark Matter Using the SENSEI Detector at SNOLAB}",
+    eprint = "2312.13342",
+    archivePrefix = "arXiv",
+    primaryClass = "astro-ph.CO",
+    reportNumber = "YITP-SB-2023-30, FERMILAB-PUB-23-0824-CSAID-PPD",
+    doi = "10.1103/PhysRevLett.134.011804",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "1",
+    pages = "011804",
+    year = "2025"
+}
+"""
+
+["WIMPE_XENONnT_fewe_dme_halo_heavymediator"]
+description = "XENONnT few-electron DM-electron scattering heavy mediator halo DM"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "XENONnT few-e (2025)"
+plot_color = "dodgerblue"
+reference = """
+@article{XENON:2024znc,
+    author = "Aprile, E. and others",
+    collaboration = "XENON",
+    title = "{Search for Light Dark Matter in Low-Energy Ionization Signals from XENONnT}",
+    eprint = "2411.15289",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.134.161004",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "16",
+    pages = "161004",
+    year = "2025"
+}
+"""
+
+["WIMPSI_DarkSide-50_Migdal"]
+description = "DarkSide-50 S2-only Migdal"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "DarkSide-50 Migdal (2023)"
+plot_color = "purple"
+reference = """
+@article{DarkSide:2022dhx,
+    author = "Agnes, P. and others",
+    collaboration = "DarkSide",
+    title = "{Search for Dark-Matter{\\textendash}Nucleon Interactions via Migdal Effect with DarkSide-50}",
+    eprint = "2207.11967",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.130.101001",
+    journal = "Phys. Rev. Lett.",
+    volume = "130",
+    number = "10",
+    pages = "101001",
+    year = "2023"
+}
+"""
+
+["WIMPSI_PandaX_4T_2025_2408.00664"]
+description = "PandaX-4T 1.54ty upper limit"
+provenance = "curvetrace"
+header = ["wimp_mass","upper_limit"]
+label = "PandaX-4T (2025)"
+plot_color = "salmon"
+reference = """
+@article{PandaX:2024qfu,
+    author = "Bo, Zihao and others",
+    collaboration = "PandaX",
+    title = "{Dark Matter Search Results from 1.54{\\,}{\\,}Tonne{\\textperiodcentered}Year Exposure of PandaX-4T}",
+    eprint = "2408.00664",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    doi = "10.1103/PhysRevLett.134.011805",
+    journal = "Phys. Rev. Lett.",
+    volume = "134",
+    number = "1",
+    pages = "011805",
+    year = "2025"
+}
+
+"""
+
+
+["WIMPSI_LZ_2025_lowmass_2512.08065v1"]
+description = "LZ 2025 low-mass WIMP search"
+provenance = "collaboration"
+header = ["wimp_mass","upper_limit"]
+label = "LZ (2025)"
+plot_color = "darkorange"
+reference = """
+@article{LZ:2025igz,
+    author = "Akerib, D. S. and others",
+    collaboration = "LZ",
+    title = "{Searches for Light Dark Matter and Evidence of Coherent Elastic Neutrino-Nucleus Scattering of Solar Neutrinos with the LUX-ZEPLIN (LZ) Experiment}",
+    eprint = "2512.08065",
+    archivePrefix = "arXiv",
+    primaryClass = "hep-ex",
+    month = "12",
+    year = "2025"
+}
+"""
