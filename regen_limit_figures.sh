@@ -66,8 +66,12 @@ echo ">>> [2/5] the two ribbon 2D plots, WITHOUT --use-cache (fig:exp_lim_vs_eps
 # The epsilon grid just changed, so the cache is invalid; these two runs overwrite it.
 for Y in epsilon lifetime; do
     echo "    --- yaxis $Y ---"
+    # The ctau panel is pinned to 6000 m at the top rather than cropped to the contours; the
+    # epsilon panel keeps the auto range. Drop --ymax to go back to auto.
+    YOPT=""
+    [ "$Y" = "lifetime" ] && YOPT="--ymax 6000"
     ( setup_full && python3 helper_scripts/plotExcludedMassVsEp_2D.py \
-        -l "$MERGED" -L "$LT" --band68 --ribbon --yaxis "$Y" ) || fail "step 2 (ribbon, yaxis=$Y)"
+        -l "$MERGED" -L "$LT" --band68 --ribbon --yaxis "$Y" $YOPT ) || fail "step 2 (ribbon, yaxis=$Y)"
 done
 
 # ================================== 3 =========================================

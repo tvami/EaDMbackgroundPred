@@ -61,6 +61,13 @@ parser.add_argument('--alpha-exponent', type=float, default=1.61, dest='alpha_ex
                          'only for the on-plot annotation. Must match --alpha-exponent given to '
                          'helper_scripts/limitRateInputScript.py, otherwise the figure advertises '
                          'a coupling the limit was not computed at. Default 1.61 (alpha_X^max).')
+parser.add_argument('--ymin', type=float, default=None,
+                    help='Override the auto-derived lower y limit (epsilon, or ctau in m with '
+                         '--yaxis lifetime). By default the range is snapped to the drawn curves.')
+parser.add_argument('--ymax', type=float, default=None,
+                    help='Override the auto-derived upper y limit. E.g. --ymax 6000 on the ctau '
+                         'panel to show the full decay-length range rather than cropping to the '
+                         'contours. The "Excluded" label follows the range automatically.')
 parser.add_argument('--ribbon', action='store_true', dest='ribbon',
                     help='Band mode only: render the 68%%/95%% uncertainty as thin ribbons hugging the '
                          'exclusion contour (fill between adjacent +-sigma curves on each mass edge) '
@@ -441,7 +448,14 @@ if _WIN_ALL:
 else:                                   # nothing excluded: fall back to the historical ranges
     X_LO, X_HI = 2000., X_HARD_MAX
     Y_LO, Y_HI = (1e-9, 1e-6) if y_axis == 'epsilon' else (1e-1, 1e5)
-print(f"axis ranges from data: x [{X_LO:.4g}, {X_HI:.4g}] GeV   y [{Y_LO:.4g}, {Y_HI:.4g}]")
+# Explicit overrides win over the auto range. Applied here, before the "Excluded" placement, so
+# the label is positioned against the range the panel actually ends up with.
+if args.ymin is not None:
+    Y_LO = args.ymin
+if args.ymax is not None:
+    Y_HI = args.ymax
+print(f"axis ranges from data: x [{X_LO:.4g}, {X_HI:.4g}] GeV   y [{Y_LO:.4g}, {Y_HI:.4g}]"
+      + ("  (y overridden)" if (args.ymin is not None or args.ymax is not None) else ""))
 
 
 def _excluded_label():
