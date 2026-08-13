@@ -1053,6 +1053,15 @@ python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVET
 `--fixedDepth` loads the six per-depth JSONs and draws each region from its interpolated per-`eps` mass
 window `[exp_lim, closed_exp_lim]` (`fill_betweenx`, smooth boundaries).
 
+**Axis ranges are derived from the data, not hardcoded.** The script snaps x/y to the extent of every
+drawn curve — median *and* the 68%/95% band edges — rounded outward to a 1/2/5 tick. This replaced
+fixed ranges that had drifted badly out of step with the exclusion (the ctau panel was spending six
+decades to display two and a half). Override with `--ymin` / `--ymax` when you want a specific frame,
+e.g. `--ymax 6000` on the ctau panel. The "Excluded" label follows whatever range results: it is
+placed at the true area centroid of the gray region, weighted by width times `d(log y)` so the
+densified rows near the turn-on cannot drag it toward the thin tip, and tilted along the band. The
+legend picks the free corner per panel (lower left on ctau, lower right on epsilon).
+
 **Expected-band overlay** (`--band68`): a "second version" of the 2D plot that overlays the **68% and 95%
 expected bands** on the median exclusion contour. For every `eps`, `set_limit_alphaMax.py` intersects the
 theory line with not just the median but also the `±1σ` (`g_mcplus`/`g_mcminus`) and `±2σ`
@@ -1115,11 +1124,12 @@ These are the exact commands behind `fig:exp_lim`, `fig:exp_lim_vs_epsilon` and
 # fig:exp_lim (1D limit at fixed eps) and fig:exp_lim_vs_epsilon_vol (volume 2D), steps 1+2:
 ./run_limits_mergedDepths.sh -d rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -m 20.7
 
-# fig:exp_lim_vs_epsilon_vol -- redo step 3 WITHOUT the cache, both y axes:
-for Y in epsilon lifetime; do
-  python3 helper_scripts/plotExcludedMassVsEp_2D.py \
-    -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -L 20.7 --band68 --ribbon --yaxis $Y
-done
+# fig:exp_lim_vs_epsilon_vol -- redo step 3 WITHOUT the cache, both y axes.
+# The ctau panel is pinned to 6000 m; the epsilon panel uses the auto range.
+python3 helper_scripts/plotExcludedMassVsEp_2D.py \
+  -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -L 20.7 --band68 --ribbon --yaxis epsilon
+python3 helper_scripts/plotExcludedMassVsEp_2D.py \
+  -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -L 20.7 --band68 --ribbon --yaxis lifetime --ymax 6000
 
 # fig:exp_lim_vs_epsilon (fixed-depth overlay): six per-depth JSONs, then the overlay
 bash helper_scripts/run_fixedDepth_limits_v30.sh
