@@ -1,0 +1,56 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is FitDiagnostics
+Set Default Value of Parameter mask_pass_SIG To : 1
+Set Default Value of Parameter mask_pass_HIGH To : 1
+Set Default Value of Parameter r To : 1
+>>> 2 out of 6 channels masked
+
+>> Found 23 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues:
+>> Parameter CMS_EXO26004_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
+>> Verifying eigenvalues are all positive (iteration 0)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+ Fit B-only, status = 0, numBadNLL = 0, covariance quality = -1
+Running Minos for POI r
+>> Found 24 floating parameters
+>> The following parameters are protected in the event of negative eigenvalues: r
+>> Parameter CMS_EXO26004_Background_rpf_2x0_par2 does not have a valid stencil and will be dropped
+>> Verifying eigenvalues are all positive (iteration 0)
+Eigenvalue 22 : -0.00718699
+ - 0.95845	r
+ - -0.210043	CMS_EXO26004_Background_rpf_2x0_par1
+ - 0.162389	CMS_EXO26004_pT
+ - -0.0639817	CMS_EXO26004_RNN
+ - -0.0504256	CMS_EXO26004_Background_fail_HIGH_bin_2_1
+>> Attempt 0 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_Background_rpf_2x0_par1 from the hessian
+>> Verifying eigenvalues are all positive (iteration 1)
+Eigenvalue 21 : -0.00201805
+ - -0.970637	r
+ - -0.168848	CMS_EXO26004_pT
+ - 0.133106	CMS_EXO26004_Background_rpf_2x0_par0
+ - 0.0665249	CMS_EXO26004_RNN
+ - 0.0523848	CMS_EXO26004_Background_fail_HIGH_bin_2_1
+>> Attempt 1 failed, remove the variable with largest eigenvector component...
+>> Dropping CMS_EXO26004_pT from the hessian
+>> Verifying eigenvalues are all positive (iteration 2)
+>> All eigenvalues are positive
+>> Inverting Hessian...
+>> Matrix inverted
+>> Note: the following parameters were dropped as their ranges are either too narrow or the parameter has no effect on the NLL:
+     - CMS_EXO26004_Background_rpf_2x0_par2
+>> Note: the following parameters were dropped to make the covariance matrix pos-def:
+     - CMS_EXO26004_Background_rpf_2x0_par1
+     - CMS_EXO26004_pT
+Fit S+B, status = 0, numBadNLL = 0, covariance quality = -1
+
+ --- FitDiagnostics ---
+Best fit r: 1.13551e-06  -1.13551e-06/+50  (68% CL)
+Done in 0.00 min (cpu), 0.01 min (real)
+25 log messages saved to combine_logger.out
