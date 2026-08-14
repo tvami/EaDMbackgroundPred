@@ -50,6 +50,24 @@ parser.add_argument('--heatmap', action='store_true', dest='heatmap',
                          '(m_chi, epsilon) plane. mu>1 (red) is excluded and the mu=1 contour is the '
                          'exclusion boundary. Needs the parquet signal rates (el8 + borrowed pyarrow) '
                          'and the band-edge cache from a previous --band68 run.')
+parser.add_argument('--ma', type=float, default=0.23, dest='ma',
+                    help="Dark photon mass in GeV for the on-plot annotation. Must match --ma "
+                         "given to helper_scripts/limitRateInputScript.py. Default 0.23.")
+parser.add_argument('--alpha-coeff', type=float, default=0.17, dest='alpha_coeff',
+                    help='Coefficient of the alpha_X benchmark for the annotation. Must match '
+                         '--alpha-coeff given to limitRateInputScript.py. Default 0.17.')
+parser.add_argument('--alpha-exponent', type=float, default=1.61, dest='alpha_exponent',
+                    help='Mass exponent of the alpha_X benchmark the RATES were built with, used '
+                         'only for the on-plot annotation. Must match --alpha-exponent given to '
+                         'helper_scripts/limitRateInputScript.py, otherwise the figure advertises '
+                         'a coupling the limit was not computed at. Default 1.61 (alpha_X^max).')
+parser.add_argument('--ymin', type=float, default=None,
+                    help='Override the auto-derived lower y limit (epsilon, or ctau in m with '
+                         '--yaxis lifetime). By default the range is snapped to the drawn curves.')
+parser.add_argument('--ymax', type=float, default=None,
+                    help='Override the auto-derived upper y limit. E.g. --ymax 6000 on the ctau '
+                         'panel to show the full decay-length range rather than cropping to the '
+                         'contours. The "Excluded" label follows the range automatically.')
 parser.add_argument('--ribbon', action='store_true', dest='ribbon',
                     help='Band mode only: render the 68%%/95%% uncertainty as thin ribbons hugging the '
                          'exclusion contour (fill between adjacent +-sigma curves on each mass edge) '
@@ -59,6 +77,10 @@ args = parser.parse_args()
 
 limit_directory = args.limit_directory
 livetime = args.livetime
+# Output FILENAMES spell the livetime with a 'p' for the decimal point (20.7 -> 20p7); the AN's
+# \includegraphics paths use that spelling. Only the filenames -- the exp_lim/signal_..._limit
+# INPUT directories on disk keep the literal '20.7', so `livetime` itself must not be rewritten.
+livetime_tag = str(livetime).replace('.', 'p')
 fixedDepth = args.fixedDepth
 band68 = args.band68
 use_cache = args.use_cache
@@ -79,6 +101,15 @@ pd.set_option('display.max_columns', None)
 plt.rcParams.update({'font.size': 22})
 cms_fp = FontProperties(family="sans-serif", weight="bold")
 y_axis = args.y_axis # Can be either lifetime or epsilon (set via --yaxis)
+
+def alpha_annotation(exponent, coeff=0.17):
+    """Benchmark line for the plot corner. The coefficient 0.17 is unchanged by a reweight in the
+    exponent, so only the power moves; ^1 is written without an exponent for readability."""
+    if abs(exponent - 1.0) < 1e-9:
+        return rf"$\alpha_{{\chi}}={coeff:g}\;\mathrm{{m_{{\chi}}/TeV}}$"
+    expo = f"{exponent:g}"
+    return rf"$\alpha_{{\chi}}={coeff:g}\;(\mathrm{{m_{{\chi}}/TeV}})^{{" + expo + r"}$"
+
 
 # ── HEATMAP MODE ─────────────────────────────────────────────────────────────
 # Self-contained "third version": a 2D colour-map of the SIGNAL STRENGTH
@@ -197,11 +228,11 @@ if args.heatmap:
         ax.xaxis.set_major_formatter(tev_fmt)
 
         if n == 0:
-            lab = (r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$" "\n"
-                   r"$\alpha_{x}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$")
+            lab = (rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$" "\n"
+                   r"$\alpha_{\chi}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$")
         else:
-            lab = (r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$" "\n"
-                   r"$\alpha_{x}^{\text{max}}=0.17\;(\mathrm{m_{\chi}/TeV})^{1.61}$")
+            lab = (rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$" "\n"
+                   + alpha_annotation(args.alpha_exponent, args.alpha_coeff))
         ax.annotate(lab, xy=(0.05, 0.975), xycoords="axes fraction", ha="left",
                     va="top", fontsize=22)
 
@@ -217,7 +248,7 @@ if args.heatmap:
     cbar.ax.tick_params(labelsize=22)
 
     outbase = (f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}"
-               f"_livetime_{livetime}_heatmap")
+               f"_livetime_{livetime_tag}_heatmap")
     fig.savefig(outbase + ".pdf", bbox_inches='tight')
     fig.savefig(outbase + ".png", dpi=200, bbox_inches='tight')
     print(f"Wrote {outbase}.pdf / .png")
@@ -340,6 +371,138 @@ ctau = [A * e**(-2) for e in eps]
 
 if y_axis == 'lifetime': yAxis = ctau
 elif y_axis == 'epsilon': yAxis = eps
+
+# ── AXIS RANGES AND "Excluded" PLACEMENT, DRIVEN BY THE DATA ──────────────────
+# These used to be hardcoded (x 2-1000 TeV, eps 1e-9..1e-6, ctau 1e-1..1e5) and drifted badly
+# out of step with the exclusion once the rates changed: the ctau panel spent six decades
+# displaying two and a half decades of contour. Deriving them from the drawn windows keeps the
+# panels tight automatically, and is the same lesson as the epsilon densify window in
+# limitRateInputScript.py -- anything pinned to where the exclusion "currently" sits goes stale
+# the moment the normalization moves.
+X_HARD_MAX = 1e6      # GeV; the parquet mass grid stops at 1000 TeV, so windows open to here
+
+
+def _windows_from(srcs):
+    """[(y_value, mass_lo_GeV, mass_hi_GeV or None if open), ...] from (lo, hi, eps) triples."""
+    out = []
+    for lo_a, hi_a, eps_a in srcs:
+        for lo, hi, e in zip(lo_a, hi_a, eps_a):
+            if lo is None or lo <= 0:
+                continue
+            y = A * e ** -2 if y_axis == 'lifetime' else e
+            out.append((y, lo * 1000., (hi * 1000.) if hi and hi > 0 else None))
+    return out
+
+
+def _median_windows():
+    """The MEDIAN exclusion only -- this is the gray region, so it is what the label centers on."""
+    if fixedDepth:
+        return _windows_from([(d["exp_lim"], d["closed_exp_lim"], d.get("eps") or eps)
+                              for d in depth_lims.values()])
+    return _windows_from([(max_exp_lim_Run3_e0, max_exp_lim_Run3_e0_closed, eps)])
+
+
+def _all_windows():
+    """Every drawn curve, median AND the +-1/+-2 sigma band edges.
+
+    The axis ranges have to come from this, not from the median: the 68%/95% bands reach further
+    in both mass and y than the median contour does, so sizing to the median alone clips them at
+    the frame (which is exactly what the first version of this did to the ctau panel).
+    """
+    out = _median_windows()
+    if fixedDepth:
+        return out
+    for _name, k_open, k_closed in BAND_CURVES:
+        lo_a = _lim.get(k_open) if not use_cache else None
+        hi_a = _lim.get(k_closed) if not use_cache else None
+        if lo_a and hi_a:
+            out += _windows_from([(lo_a, hi_a, eps)])
+    if use_cache and BAND_EDGES:
+        # Cache path: the edges are already interpolated and already in y-axis units.
+        for yy, lo_d, hi_d in BAND_EDGES.values():
+            out += [(y, lo * 1000., hi * 1000.) for y, lo, hi in zip(yy, lo_d, hi_d) if lo > 0]
+    return out
+
+
+def _snap(v, up):
+    """Round v outward to the nearest 1/2/5 x 10^k, so the axis still lands on readable ticks."""
+    if v <= 0:
+        return v
+    k = np.floor(np.log10(v))
+    m = v / 10 ** k
+    steps = [1., 2., 5., 10.]
+    if up:
+        return next(s for s in steps if s >= m - 1e-12) * 10 ** k
+    return next(s for s in reversed(steps) if s <= m + 1e-12) * 10 ** k
+
+
+_WIN = _median_windows()          # gray region -> drives the "Excluded" label
+_WIN_ALL = _all_windows()         # everything drawn -> drives the axis ranges
+if _WIN_ALL:
+    _ys = np.array([w[0] for w in _WIN_ALL])
+    _xs = np.array([w[1] for w in _WIN_ALL])
+    X_LO = _snap(_xs.min(), up=False)
+    X_HI = X_HARD_MAX
+    Y_LO = _snap(_ys.min(), up=False)
+    Y_HI = _snap(_ys.max(), up=True)
+else:                                   # nothing excluded: fall back to the historical ranges
+    X_LO, X_HI = 2000., X_HARD_MAX
+    Y_LO, Y_HI = (1e-9, 1e-6) if y_axis == 'epsilon' else (1e-1, 1e5)
+# Explicit overrides win over the auto range. Applied here, before the "Excluded" placement, so
+# the label is positioned against the range the panel actually ends up with.
+if args.ymin is not None:
+    Y_LO = args.ymin
+if args.ymax is not None:
+    Y_HI = args.ymax
+print(f"axis ranges from data: x [{X_LO:.4g}, {X_HI:.4g}] GeV   y [{Y_LO:.4g}, {Y_HI:.4g}]"
+      + ("  (y overridden)" if (args.ymin is not None or args.ymax is not None) else ""))
+
+
+def _excluded_label():
+    """(xy in axes fractions, rotation in degrees) centering "Excluded" in the gray region.
+
+    Position is the centroid of the excluded area weighted by each row's log-width, so it lands
+    in the fat part of the wedge rather than at the thin turn-on tip. Tilt comes from a fit of
+    the region's lower edge, converted through the axis ranges -- the panel is square, so axes
+    fractions are visual proportions and the angle is the on-screen one.
+    """
+    if not _WIN:
+        return (0.5, 0.5), 0.
+    lx = np.log10(X_LO); ldx = np.log10(X_HI) - lx
+    ly = np.log10(Y_LO); ldy = np.log10(Y_HI) - ly
+    fy = np.array([(np.log10(w[0]) - ly) / ldy for w in _WIN])
+    flo = np.array([(np.log10(w[1]) - lx) / ldx for w in _WIN])
+    fhi = np.array([(np.log10(w[2] if w[2] else X_HI) - lx) / ldx for w in _WIN])
+    fhi = np.clip(fhi, None, 1.0)
+    # True AREA centroid: weight each row by its width TIMES its share of the y range.
+    #
+    # The row spacing matters and is badly non-uniform. limitRateInputScript.py densifies epsilon
+    # only across the turn-on (1e-8..1e-7), so there are ~35 closely spaced rows in the lower half
+    # of the region and ~9 sparse ones above it. Weighting per row, at any power, therefore counts
+    # the bottom of the wedge several times over and drags the label down-left toward the thin
+    # turn-on tip. Folding in d(log y) makes the result an integral over the region, so it is
+    # independent of how finely the epsilon grid happens to be sampled.
+    order = np.argsort(fy)
+    fy, flo, fhi = fy[order], flo[order], fhi[order]
+    width = np.clip(fhi - flo, 0, None)
+    dy = np.abs(np.gradient(fy)) if len(fy) > 1 else np.ones_like(fy)
+    dy = np.where(dy > 0, dy, np.median(dy[dy > 0]) if (dy > 0).any() else 1.0)
+    wgt = width * dy
+    if wgt.sum() <= 0:
+        return (0.5, 0.5), 0.
+    cx = float(np.sum(wgt * (flo + fhi) / 2) / wgt.sum())
+    cy = float(np.sum(wgt * fy) / wgt.sum())
+    # Tilt: slope of the lower edge in axes-fraction space.
+    if len(fy) > 2 and np.ptp(flo) > 1e-6:
+        slope = np.polyfit(flo, fy, 1)[0]
+    else:
+        slope = 0.
+    return (cx, cy), float(np.degrees(np.arctan(slope)))
+
+
+EXCLUDED_XY, EXCLUDED_ROT = _excluded_label()
+print(f'"Excluded" label at axes fraction ({EXCLUDED_XY[0]:.3f}, {EXCLUDED_XY[1]:.3f}), '
+      f'rotation {EXCLUDED_ROT:.1f} deg')
 
 # ── FLAT THERMAL LIMIT LINE ───────────────────────────────────────────────────
 # A flat m_chi = 11 TeV limit across all epsilon values; used as a simple
@@ -546,12 +709,11 @@ for n, ax in enumerate(axs):
     # Common log-log axes and physical axis labels
     ax.set_xscale('log')
     ax.set_yscale('log')
-    ax.set_xlim(2000, 1000000)
+    ax.set_xlim(X_LO, X_HI)
+    ax.set_ylim(Y_LO, Y_HI)
     if y_axis == 'epsilon':
-        ax.set_ylim(1e-9, 1e-6)
         ax.set_ylabel(r"$\varepsilon$", fontsize=46)
     elif y_axis == 'lifetime':
-        ax.set_ylim(1e-1, 1e5)
         ax.set_ylabel(r"$c\tau$ [m]", fontsize=46)
     ax.set_xlabel(r"$m_\chi\;\mathrm{[TeV]}$", fontsize=42)
     ax.tick_params(labelsize=28)
@@ -559,17 +721,22 @@ for n, ax in enumerate(axs):
     # Panel annotation: model parameters shown in the upper-left corner
     if n == 0:
         label = (
-            r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$"
+            rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
             "\n"
-            r"$\alpha_{x}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$"
+            r"$\alpha_{\chi}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$"
         )
     elif n == 1:
         label = (
-            r"$m_{A^\prime} = 0.23\;\mathrm{GeV}$"
+            rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
             "\n"
-            r"$\alpha_{x}^{\text{max}}=0.17\;(\mathrm{m_{\chi}/TeV})^{1.61}$"
+            + alpha_annotation(args.alpha_exponent, args.alpha_coeff)
         )
-    ax.annotate(label, xy=(0.05, 0.975), xycoords="axes fraction", ha="left", va="top", fontsize=22)
+    # zorder + backing box: with the axes now cropped to the data, the bands can reach the
+    # top-left corner (they do on the ctau panel), and without these the model parameters are
+    # painted over by the fill.
+    ax.annotate(label, xy=(0.05, 0.975), xycoords="axes fraction", ha="left", va="top",
+                fontsize=22, zorder=30,
+                bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none", alpha=0.75))
 
     # Retrieve unique scan points from the dataframe (not used for contouring here,
     # but kept for potential Z-matrix / rate-overlay extensions below). Skipped in
@@ -743,12 +910,14 @@ for n, ax in enumerate(axs):
                 # fills (gray core is zorder 5) or the fill paints over the text.
                 # Placement/tilt follows the band: it slopes UP in the eps plane and
                 # DOWN in the ctau plane (ctau ~ eps^-2), so flip for lifetime.
-                _ex_xy, _ex_rot = ((0.52, 0.62), 38) if y_axis == 'epsilon' \
-                    else ((0.50, 0.52), -33)
-                ax.annotate("Excluded", xy=_ex_xy, xycoords="axes fraction",
+                ax.annotate("Excluded", xy=EXCLUDED_XY, xycoords="axes fraction",
                             ha="center", va="center", fontsize=22, color='0.25',
-                            rotation=_ex_rot, zorder=25)
-            ax.legend(handles=band_legend, loc='lower right', fontsize=18)
+                            rotation=EXCLUDED_ROT, zorder=25)
+            # The band runs UP to the right in the epsilon plane and DOWN to the right in the
+            # ctau plane (ctau ~ eps^-2), so the empty corner flips with it. Fixed at
+            # 'lower right' the legend sat on top of the bands on the ctau panel.
+            ax.legend(handles=band_legend, fontsize=18,
+                      loc='lower left' if y_axis == 'lifetime' else 'lower right')
 
         else:
             # Single volume-weighted region, drawn the same smooth way as the
@@ -814,12 +983,12 @@ bbox = Bbox.from_extents(bbox.x0 - pad_left, bbox.y0 - pad_bottom,
                          bbox.x1 + pad_right, bbox.y1 + pad_top)
 ysuffix = '_lifetime' if y_axis == 'lifetime' else ''
 if fixedDepth:
-    outbase = f"figures/ExcludedMass_mX_ep_explim_Run3_fixedDepth_livetime_{livetime}{ysuffix}"
+    outbase = f"figures/ExcludedMass_mX_ep_explim_Run3_fixedDepth_livetime_{livetime_tag}{ysuffix}"
 elif band68:
     _ribtag = "_ribbon" if args.ribbon else ""
-    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime}_band68{_ribtag}{ysuffix}"
+    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}_band68{_ribtag}{ysuffix}"
 else:
-    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime}{ysuffix}"
+    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}{ysuffix}"
 fig.savefig(outbase + ".pdf", bbox_inches=bbox)
 fig.savefig(outbase + ".png", bbox_inches=bbox, dpi=200)
 print(f"Wrote {outbase}.pdf / .png")

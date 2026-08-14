@@ -962,11 +962,12 @@ under a slice that is **hardcoded at the top of the script**: `MA = 0.23`, `ALPH
 `FINAL_STATE = 'muons'`, and `depth_scale == 1.0`. Each entry is
 
 ```
-rate = rate_1yr * (1/12) * volume_m3_<model> / 1000**3 * frac_ecut10_<model>
+rate = rate_1yr * (1/12) * volume_m3_<model> / 1000**3 * <acceptance column> * <tracker volume scale>
 ```
 
 i.e. the parquet's per-km³ yearly rate converted to a monthly rate in the detector volume, times the
-E > 10 GeV acceptance. Off-grid DM masses are log-interpolated between bracketing grid points
+E > 10 GeV geometric acceptance (see the next subsection for which acceptance column, and for the
+1.21 tracker volume scale). Off-grid DM masses are log-interpolated between bracketing grid points
 (linear fallback if either endpoint is 0), and templates above `TEMPLATE_MASS_CAP` = 90 TeV get the
 `eff_func` efficiency correction for the frozen `M90000GeV` template.
 
@@ -981,6 +982,49 @@ Two consequences worth knowing:
   `exp_lim/set_limit_alphaMax.py:90` indexes the output lines **positionally**, so it must stay
   identical to that printed grid — they match today.
 - The step-2→step-3 handoff is now automatic: `set_limit_alphaMax.py` writes the intersection arrays (`exp_lim`, `closed_exp_lim`, `exp_lim_lower`, `exp_lim_upper`, plus the `eps` grid) to `<outdir>/exclusion_limits.json`, and `plotExcludedMassVsEp_2D.py` loads them from `exp_lim/signal_LIMITDIR_livetime_MONTHS_OF_LIVETIME_limit/exclusion_limits.json`. No more copy-pasting the `Exp lim:` / `Closed Exp lim:` printouts into `max_exp_lim_Run3_e0` / `max_exp_lim_Run3_e0_closed`. Just keep `LIMITDIR` and `MONTHS_OF_LIVETIME` consistent between the two steps. You may still need to play with the x1/y1/x2/y2 bounds to get limits to appear.
+
+#### The tracker acceptance (`--acceptance`, `--tracker-volume-scale`)
+The signal MC is generated behind the **`cosmicInTracker`** gen filter, so the 100-event denominator of
+every signal template is already a count of muons that reached the tracker. The acceptance folded into
+the rate therefore has to be the inner-detector one, not the muon-chamber one — otherwise the geometry
+is counted twice. That is what `--acceptance` selects, and **`tracker` is the default**:
+
+| flag | parquet column | meaning |
+|---|---|---|
+| `--acceptance tracker` (default) | `frac_hit_id_ecut10_<model>` | E > 10 GeV, hits the muon chambers **and** the inner detector |
+| `--acceptance chambers` | `frac_ecut10_<model>` | E > 10 GeV, hits the muon chambers only |
+
+Averaged over the mass grid the inner-detector requirement keeps **2.2%** of the muons that reach the
+muon chambers (1.9–2.7% depending on `m_chi`, no epsilon dependence — it is purely geometric).
+
+> **Do not use `--rate-scale 0.018` for this.** That flat factor came from
+> `helper_scripts/cosmicInTracker_efficiency.csv`, which measures the filter efficiency against the
+> **CosMuoGen target cylinder** (8 m × 15 m) — a different denominator from "muons that reach the muon
+> chambers". It is 1.14–1.34× too small. `--rate-scale` is kept only as a legacy escape hatch.
+
+`--tracker-volume-scale` then bridges the two tracker definitions, which are **not** the same cylinder:
+
+| cylinder | radius | half-length | source |
+|---|---|---|---|
+| EarthShine inner detector | 1.00 m | 2.50 m | `EarthShine/.../generate_signal_events_CL_v2.py:56-57` |
+| EarthShine outer detector | 7.50 m | 15.0 m | same file, lines 54-55 |
+| `cosmicInTracker` filter | 0.80 m | 2.12 m | `GeneratorInterface/GenFilters/python/CosmicGenFilterHelix_cfi.py` |
+| full CMS tracker | 1.12 m | 2.70 m | comment in that same cfi ("full tracker: r=112, z=+/- 270") |
+
+The muons are straight lines on the scale of the detector, so an acceptance ratio is set by the
+**projected area `r * z`**, not by the volume. That is verified, not assumed: the parquet's own
+`frac_hit_id_ecut10_core / frac_ecut10_core` is **0.0221**, and `(1.00*2.50)/(7.50*15.0)` = **0.02222**
+— agreement to 0.35%. The default scale is therefore `(1.12*2.70)/(1.00*2.50)` = **1.2096**, recovering
+the muons that cross the real tracker outside EarthShine's slightly smaller cylinder. Using a volume
+ratio instead would give 1.355, which is wrong by 12%.
+
+Net effect versus the old flat 0.018: rates go **up by ~1.49×**, so excluded cross sections come down
+by the same factor.
+
+Caveat to keep in mind: the selection efficiency is measured on `cosmicInTracker` events (the *smaller*
+0.80 × 2.12 m cylinder) and is here assumed to carry over to muons that clip the tracker further out.
+Those leave fewer tracker hits, so the 1.21 is mildly optimistic. Pass `--tracker-volume-scale 1.0` to
+turn it off, or `--acceptance chambers` to go back to the muon-chamber-only acceptance.
 
 #### The limit script `exp_lim/set_limit_alphaMax.py` (two modes)
 `set_limit_alphaMax.py` is the **single** limit-setting script (it replaced the two near-duplicate
@@ -1008,6 +1052,15 @@ python3 helper_scripts/plotExcludedMassVsEp_2D.py -l LIMITDIR -L MONTHS_OF_LIVET
 ```
 `--fixedDepth` loads the six per-depth JSONs and draws each region from its interpolated per-`eps` mass
 window `[exp_lim, closed_exp_lim]` (`fill_betweenx`, smooth boundaries).
+
+**Axis ranges are derived from the data, not hardcoded.** The script snaps x/y to the extent of every
+drawn curve — median *and* the 68%/95% band edges — rounded outward to a 1/2/5 tick. This replaced
+fixed ranges that had drifted badly out of step with the exclusion (the ctau panel was spending six
+decades to display two and a half). Override with `--ymin` / `--ymax` when you want a specific frame,
+e.g. `--ymax 6000` on the ctau panel. The "Excluded" label follows whatever range results: it is
+placed at the true area centroid of the gray region, weighted by width times `d(log y)` so the
+densified rows near the turn-on cannot drag it toward the thin tip, and tilted along the band. The
+legend picks the free corner per panel (lower left on ctau, lower right on epsilon).
 
 **Expected-band overlay** (`--band68`): a "second version" of the 2D plot that overlays the **68% and 95%
 expected bands** on the median exclusion contour. For every `eps`, `set_limit_alphaMax.py` intersects the
@@ -1054,3 +1107,100 @@ cmssw-el8 -- bash -c 'cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src && ev
 
 The `--yaxis lifetime` variant works with `--band68` too (writes `band_edges_cache_lifetime.npz` and a
 `_lifetime` filename suffix). `--band68` is mutually exclusive with `--fixedDepth`.
+
+> **The band-edge cache goes stale when the rates change.** `--use-cache` is *only* for recoloring. If
+> you touch `--acceptance`, `--tracker-volume-scale`, `--ma`, `--alpha-*`, or regenerate the rate table
+> at all, re-run **without** `--use-cache` or you will redraw the old result under a new filename.
+> `run_limits_mergedDepths.sh` passes `--use-cache` in its step 3, so after a rate change run the two
+> `--ribbon` commands below explicitly.
+
+#### Rebuilding the three AN limit figures after a rate change
+These are the exact commands behind `fig:exp_lim`, `fig:exp_lim_vs_epsilon` and
+`fig:exp_lim_vs_epsilon_vol` in `AN/AN-23-122/7Results.tex`. All of them run from
+`.../CMSSW_14_1_0_pre4/src` with `cmsenv` + `twoD-env` + borrowed pyarrow (step 8 env notes), inside
+`cmssw-el8 --` on an el9 host.
+
+```
+# fig:exp_lim (1D limit at fixed eps) and fig:exp_lim_vs_epsilon_vol (volume 2D), steps 1+2:
+./run_limits_mergedDepths.sh -d rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -m 20.7
+
+# fig:exp_lim_vs_epsilon_vol -- redo step 3 WITHOUT the cache, both y axes.
+# The ctau panel is pinned to 6000 m; the epsilon panel uses the auto range.
+python3 helper_scripts/plotExcludedMassVsEp_2D.py \
+  -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -L 20.7 --band68 --ribbon --yaxis epsilon
+python3 helper_scripts/plotExcludedMassVsEp_2D.py \
+  -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -L 20.7 --band68 --ribbon --yaxis lifetime --ymax 6000
+
+# fig:exp_lim_vs_epsilon (fixed-depth overlay): six per-depth JSONs, then the overlay
+bash helper_scripts/run_fixedDepth_limits_v30.sh
+python3 helper_scripts/plotExcludedMassVsEp_2D.py \
+  -l rpf2x0_Binningv13_Inputv30_SR_Blind -L 20.7 --fixedDepth
+```
+
+Copy each output straight into `AN/AN-23-122/Figures/7Results/` — no renaming needed.
+`plotExcludedMassVsEp_2D.py` spells the livetime in its **output filenames** with a `p` for the decimal
+point (`20.7` → `livetime_20p7`, via `livetime_tag`), which is what the AN's `\includegraphics` paths
+expect. Note this is filenames only: the `exp_lim/signal_..._livetime_20.7_limit` **input** directories
+it reads keep the literal dot, so do not "fix" one to match the other.
+
+> **`compileAN.sh` runs `tdr --draft`, which does NOT read the figure files** — it stubs them out as
+> boxes. So a clean draft compile proves the `\ref`s resolve but says nothing about whether a
+> `\includegraphics` path exists. Compile without `--draft` to actually validate figure paths:
+> `utils/tdr --style=an --temp_dir=build b`.
+
+#### The WIMP-nucleon cross-section plot (`plotSigmaVsMass_CMSstyle.py`)
+`figures/SigmaVsMass_CMSstyle_tracker_core_extrap.pdf` — the result recast onto the standard
+direct-detection `(m_chi, sigma_SI)` plane, CMS style (median expected + 68%/95% expected bands),
+over the current WIMP-nucleon limits. This is `fig:sigma_vs_mass` in the AN.
+
+The recast is the contact-interaction limit of Eq. 17 of arXiv:1602.01465,
+`sigma_chi_p = 16 pi eps^2 alpha alpha_X mu_chi_p^2 / m_A'^4`, implemented as `sigma_chi_p()` in
+`helper_scripts/plotExcludedAlphaVsMass.py`. It is valid by ~6 orders of magnitude here
+(`m_A'^2 = 0.053 GeV^2` vs a momentum transfer `2 m_N E_R ~ 1e-7 GeV^2`), so `F_DM = 1`.
+
+The curve is the **envelope over epsilon**: at each mass, the smallest sigma any epsilon on the grid
+excludes. This is not optional — epsilon fixes both the cross section *and* the dark photon decay
+length, so unlike a DD limit the exclusion is not a function of sigma alone and no single epsilon wins
+everywhere (the winning epsilon runs 6e-9 … 2e-7).
+
+Two steps. The rate table needs the low-mass points, which are not in any `MASS_GRIDS` entry, so they
+are appended with `--extra-mass`; the `-d e3` grid is used because it maps 1:1 onto the merged masses,
+and the `_e3_SR` path token then has to be rewritten to `_mergedDepth_SR` exactly as
+`run_limits_mergedDepths.sh` does:
+
+```
+SIG=exp_lim/signal_rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind_tracker_core_lowmass_alpha_max.txt
+
+python3 helper_scripts/limitRateInputScript.py \
+  -d e3 -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -m core \
+  --tag _tracker_core_lowmass \
+  --extra-mass 400 --extra-mass 500 --extra-mass 600 --extra-mass 800 \
+  --extra-mass 1000 --extra-mass 1200 --extra-mass 1500 --extra-mass 1000000
+sed -i 's/_e3_SR/_mergedDepth_SR/g' "$SIG"
+
+python3 helper_scripts/plotSigmaVsMass_CMSstyle.py \
+  -s "$SIG" -L 20.7 --extrapolate --extend-fog \
+  --name SigmaVsMass_CMSstyle_tracker_core_extrap
+```
+
+`plotSigmaVsMass_CMSstyle.py` needs **cmsenv only** — do NOT `source twoD-env`, it shadows `mplhep`.
+It warns if handed a rate table without `_tracker` in its name.
+
+Flags worth knowing:
+- `--extrapolate` continues below 2 TeV (the lowest simulated DM mass, template `Signal_M1000GeV`) by
+  power-law extrapolating combine's `r`. Drawn identically to the measured section on purpose, so the
+  **caption** has to carry the caveat: the true `r` almost certainly degrades faster, making this a
+  bound on the reach rather than a limit.
+- `--extend-fog` continues the O'Hare neutrino fog above its published 10 TeV endpoint as
+  `sigma ~ m_chi` (the `1/n_chi` scaling). The slope measured on the file's own top decade is 0.996, so
+  this continues its measured behavior rather than guessing.
+- `--legend-title` (default "This work"), `--no-fog`, `--ma`.
+
+The direct-detection context curves are vendored under `helper_scripts/dd_limits/` — see the README
+there for provenance and for the per-file **column trap** that `load_dd.py` exists to defuse (LZ 2024
+puts `upper_limit` in column 1, XENONnT 2025 in column 6; reading "column 1" everywhere would silently
+plot XENONnT's −2σ *sensitivity* as its limit).
+
+`helper_scripts/plotSigmaVsMass_withDD.py` is the exploratory sibling: fixed-epsilon slices (`-e`), a
+`--compare` overlay for a second rate table, and the benchmark-excluded solid/faded styling. Use it for
+studies; `plotSigmaVsMass_CMSstyle.py` is the one that goes in the AN.
