@@ -46,6 +46,34 @@ BAND_95 = "#85D1FB"     # +-2 sigma expected, blue
 BAND_68 = "#FFDF7F"     # +-1 sigma expected, gold
 MEDIAN = "black"        # median expected, dashed
 
+# Capture kinematics, as in DarkCapPy (DarkPhoton.EminEmaxIntersection): a single elastic scatter
+# can capture chi only if it arrives slower than u_int = v_esc * sqrt(B / (A - B)), with
+# A = m_chi/2, B = 2 mu^2 / m_N. Iron dominates the capture, and the core has the largest v_esc.
+M_FE_GEV = 55.845 * 0.93149
+M_XE_GEV = 131.29 * 0.93149
+VESC_CORE_KMS = 14.97       # max of sqrt(escVel2_List) in DarkCapPy PlanetData
+C_KMS = 2.998e5
+
+# Label anchors used with --dd-mass-cut for the curves whose default anchor lies above the cut.
+DD_LABELS_CUT = {
+    "WIMPSI_LZ_2024_2410.17036":        (55., 0.25),
+    "WIMPSI_XENONnT_2025_2502.18005":   (30., 80.),
+    "WIMPSI_PandaX_4T_2025_2408.00664": (65., 5.0),
+}
+
+
+def capture_speed_kms(m_gev):
+    """Largest halo speed (Earth frame) at which chi can still be captured on iron."""
+    mu = M_FE_GEV * m_gev / (M_FE_GEV + m_gev)
+    a, b = m_gev / 2., 2. * mu**2 / M_FE_GEV
+    return VESC_CORE_KMS * np.sqrt(b / (a - b))
+
+
+def max_recoil_xe_kev(m_gev):
+    """Largest xenon recoil a chi moving at the capture speed can produce."""
+    mu = M_XE_GEV * m_gev / (M_XE_GEV + m_gev)
+    return 2. * mu**2 * (capture_speed_kms(m_gev) / C_KMS)**2 / M_XE_GEV * 1e6
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__,
@@ -65,6 +93,11 @@ def main():
                         help="extend below the signal-MC grid by extrapolating combine's r as a "
                              "power law in mass (see r_limit_lookup). Drawn hatched with a dotted "
                              "median because it is a reach estimate, not a measured limit.")
+    parser.add_argument("--dd-mass-cut", type=float, default=None, metavar="GEV",
+                        help="draw the direct-detection curves and the neutrino fog only below this "
+                             "mass. Above ~100 GeV the chi that the Earth can capture recoils off "
+                             "xenon below 1 keV (printed at runtime), so a detector cannot see that "
+                             "population. Also prints the captured-chi speed on the figure.")
     parser.add_argument("--legend-title", default="This work",
                         help='header line of the legend box (default "This work")')
     parser.add_argument("-o", "--outdir", default="figures")
@@ -78,9 +111,21 @@ def main():
 
     fig, ax = plt.subplots(figsize=(10, 10))          # square, per the plotting convention
 
+    cut = args.dd_mass_cut
+    if cut is not None:
+        print(f"  direct detection cut at {cut:g} GeV: captured chi has u < "
+              f"{capture_speed_kms(cut):.1f} km/s there, max Xe recoil {max_recoil_xe_kev(cut):.2f} keV")
+
     # ---- context: direct detection, recessive, never extrapolated ----------------------
     for stem, x_lab, dy, override in DD_CURVES:
         mass, sigma, label = load_dd.load(stem)
+        if cut is not None:
+            keep = mass <= cut
+            if not keep.any():
+                continue
+            mass, sigma = mass[keep], sigma[keep]
+            if x_lab > cut:
+                x_lab, dy = DD_LABELS_CUT[stem]
         ax.plot(mass, sigma, color=DD_GRAY, lw=1.6, zorder=2)
         ax.text(x_lab, np.interp(x_lab, mass, sigma) * dy, override or label, color=DD_INK,
                 fontsize=11.5, ha="center", va="center", zorder=6,
@@ -96,8 +141,18 @@ def main():
             m_ext = np.logspace(np.log10(mass.max()), 6, 120)[1:]
             mass = np.concatenate([mass, m_ext])
             fog = np.concatenate([fog, fog[-1] * (m_ext / m_ext[0])])
+        if cut is not None:
+            keep = mass <= cut
+            mass, fog = mass[keep], fog[keep]
         ax.fill_between(mass, 1e-52, fog, color="0.74", alpha=0.5, lw=0, zorder=1)
         ax.text(20., 1.2e-49, "Neutrino fog", color=DD_INK, fontsize=12, ha="center", zorder=6)
+
+    if cut is not None:
+        # Boundary above which captured chi recoils below threshold in xenon
+        ax.axvline(cut, color=DD_INK, ls=":", lw=1.8, zorder=5)
+        ax.text(cut * 1.18, 3e-45,
+                rf"Captured $\chi$: $E_R^{{\mathrm{{Xe}}}} < {max_recoil_xe_kev(cut):.0f}$ keV",
+                rotation=90, color=DD_INK, fontsize=13, ha="left", va="bottom", zorder=6)
 
     # ---- the result: median + 68% + 95% expected -----------------------------------------
     # Two calls, one per band. best_over_epsilon picks the winning epsilon on the MEDIAN in both,
@@ -140,7 +195,14 @@ def main():
     # two read as one block: what was assumed, then what was measured.
     ax.text(0.985, 0.955, rf"$m_{{A'}} = {args.ma:g}$ GeV,  $F_{{\mathrm{{DM}}}} = 1$",
             transform=ax.transAxes, fontsize=17, ha="right", va="top", zorder=7)
-    leg = ax.legend(loc="upper right", bbox_to_anchor=(0.99, 0.915),
+    leg_top = 0.915
+    if cut is not None:
+        # The capture speed falls with mass, so the fastest captured chi is at the lightest point.
+        u_max = capture_speed_kms(m_gev.min())
+        ax.text(0.985, 0.915, rf"Captured $\chi$: $u < {u_max:.0f}$ km/s",
+                transform=ax.transAxes, fontsize=17, ha="right", va="top", zorder=7)
+        leg_top = 0.875
+    leg = ax.legend(loc="upper right", bbox_to_anchor=(0.99, leg_top),
                     bbox_transform=ax.transAxes, fontsize=15, framealpha=0.95,
                     title=args.legend_title)
     leg.get_title().set_fontsize(17)

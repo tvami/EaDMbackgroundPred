@@ -18,6 +18,9 @@ Both come along for free when the already-produced per-depth files are the input
 Usage (from .../CMSSW_14_1_0_pre4/src, with cmsenv):
     python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v30
     python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v30 -r SR VR1 VR2
+    # continuous nominal + CMS_EXO26004_depth up/down (greater/less-than shells); --nominal lessThan for v32
+    python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v31 \\
+        -w helper_scripts/parquet_files/depth_weights_continuous_v31.npy
 """
 
 import argparse
@@ -41,14 +44,46 @@ parser.add_argument("-o", "--outDir", default=None,
 parser.add_argument("-p", "--propsDict",
                     default=str(Path(__file__).parent / "parquet_files" / "props_dict.npy"),
                     help="shell fractions from depthFractionCalcScript.py")
+parser.add_argument("-w", "--weights", default=None,
+                    help="depthWeightsContinuous.py output: nominal per --nominal, plus "
+                         "h{pass,fail}_depthsyst_{up,down} (CMS_EXO26004_depth). "
+                         "Omit for the legacy props_dict shells (no depth systematic).")
+parser.add_argument("--nominal", choices=["continuous", "lessThan"], default="continuous",
+                    help="with -w: nominal weights. continuous: up/down = greater/less-than "
+                         "shells. lessThan: up = greater-than, down = its mirror 2*nom - up.")
 parser.add_argument("-n", "--dryRun", action="store_true",
                     help="print the weight table and the closure numbers, write nothing")
 args = parser.parse_args()
 
+# CMS_EXO26004_depth systematic (histogram alias follows the <x>syst convention)
+DEPTH_SYST_ALIAS = "depthsyst"
+NOMINAL_KEY = {"continuous": "weights", "lessThan": "lessThan"}[args.nominal]
+DEPTH_VARIATIONS = ({"up": "greaterThan", "down": "lessThan"} if args.nominal == "continuous"
+                    else {"up": "greaterThan"})   # down is mirrored after the sum
+DEPTH_SYST_HISTS = ("hpass", "hfail")
+
 # Same shell map and units convention as skimmed_ntuple_processing_script_mergeDepths.py:
 # a SurfaceDepth-eX sample stands for the shell ending 1eX mm past the front face of the volume
 # at 8 m, and e6 additionally absorbs the outermost shell beyond every generated depth.
-DEPTH_SHELLS = {2: [0], 3: [1], 4: [2], 5: [3], 6: [4, 5]}
+#
+# Keyed by DEPTH IN MM, not by the exponent, so that the 2e5/3e5/5e5 samples of the
+# 20260817 request have valid keys and sorted()/max() stay in physical order.
+DEPTH_TAG_RE = r'(?:\d+)?e\d+'
+
+
+def depth_mm(tag):
+    """'e5' -> 100000.0, '2e5' -> 200000.0, 'e0' -> 1.0."""
+    return float(tag if tag[0].isdigit() else '1' + tag)
+
+
+DEPTH_SHELLS = {100: [0], 1000: [1], 10000: [2], 100000: [3], 1000000: [4, 5]}
+
+# NOTE: the intermediate depths 2e5/3e5/5e5 deliberately have NO entry here. This map is
+# the legacy whole-shell assignment; splitting shell 4 between 1e5 and 1e6 is a physics
+# choice that depends on the props_dict shell edges, and inventing one would silently
+# mis-weight the signal. depth_weight() raises on an unknown depth, which is intended:
+# the nominal path is the continuous weighting of depthWeightsContinuous.py, which
+# interpolates in z and needs no shell assignment at all.
 
 # The sentinel the per-depth files already carry, so 2DAlphabet never sees log(0). Summing
 # sentinelled inputs leaves no exact zero, so this only ever matters if an input changes.
@@ -83,9 +118,14 @@ props_masses = np.array(sorted(props_dict), dtype=float)
 props_table = np.array([props_dict[m] for m in sorted(props_dict)])
 print(f"Loaded depth fractions for {len(props_masses)} masses from {args.propsDict}")
 
+continuous = None
+if args.weights:
+    continuous = np.load(args.weights, allow_pickle=True).item()
+    print(f"Loaded continuous weights for {len(continuous)} masses from {args.weights}")
+
 
 def depth_weight(dm_mass, depth):
-    """Fraction of events at `dm_mass` that the SurfaceDepth-e{depth} sample stands in for.
+    """Fraction of events at `dm_mass` that the {depth} mm sample stands in for.
 
     `dm_mass` is the DM particle mass, i.e. **2 x** the MinP-<N> / M<N>GeV token of the filename:
     each DM particle decays to two muons that split its mass evenly, and props_dict is keyed by
@@ -97,8 +137,9 @@ def depth_weight(dm_mass, depth):
     ends. np.interp is exact at the tabulated masses.
     """
     if depth not in DEPTH_SHELLS:
-        raise ValueError(f"SurfaceDepth-e{depth} has no shell assignment in DEPTH_SHELLS "
-                         f"(known depths: {sorted(DEPTH_SHELLS)})")
+        raise ValueError(f"{depth} mm has no shell assignment in DEPTH_SHELLS "
+                         f"(known depths [mm]: {sorted(DEPTH_SHELLS)}). The intermediate depths have "
+                         f"none by design; use depthWeightsContinuous.py.")
 
     x = np.clip(np.log(dm_mass), np.log(props_masses[0]), np.log(props_masses[-1]))
     props = np.array([np.interp(x, np.log(props_masses), props_table[:, i])
@@ -131,14 +172,31 @@ def fill_empty_bins(hist, value=EMPTY_BIN_VALUE):
             hist.SetBinContent(int(x_bin) + 1, int(y_bin) + 1, value)
 
 
+def mirror_hist(nom, up, name):
+    """Linear mirror of `up` about `nom`: 2*nom - up, clipped at 0.
+
+    Not nom^2/up: on the fine 1 GeV bins that blows up wherever `up` dips (M3000: 1.67x
+    nominal instead of ~1.09x).
+    """
+    down = nom.Clone(name)
+    down.SetDirectory(0)
+    n = nom.GetSize()
+    a_nom = np.frombuffer(nom.GetArray(), dtype=np.float64, count=n)
+    a_up = np.frombuffer(up.GetArray(), dtype=np.float64, count=n)
+    vals = np.maximum(2. * a_nom - a_up, 0.)
+    for i in range(n):
+        down.SetBinContent(i, float(vals[i]))
+    return down
+
+
 def discover(hist_dir, region):
     """Map mass -> {depth: path} from the per-depth signal files of one region."""
-    pattern = re.compile(rf"^EaDM_Signal_M(\d+)GeV_e(\d+)_{region}\.root$")
+    pattern = re.compile(rf"^EaDM_Signal_M(\d+)GeV_({DEPTH_TAG_RE})_{region}\.root$")
     found = {}
-    for path in sorted(hist_dir.glob(f"EaDM_Signal_M*GeV_e*_{region}.root")):
+    for path in sorted(hist_dir.glob(f"EaDM_Signal_M*GeV_*e*_{region}.root")):
         match = pattern.match(path.name)
         if match:
-            found.setdefault(int(match.group(1)), {})[int(match.group(2))] = path
+            found.setdefault(int(match.group(1)), {})[int(depth_mm(match.group(2)))] = path
     return dict(sorted(found.items()))
 
 
@@ -176,9 +234,21 @@ def probe_missing_depth(mass, depth, by_mass):
 
 
 def merge_mass(mass, depth_files, region, out_dir, dry_run, by_mass):
-    """Write the props-weighted sum over depths of one mass point. Returns True on success."""
-    weights = {d: depth_weight(mass * 2, d) for d in sorted(depth_files)}
+    """Write the weighted sum over depths of one mass point. Returns True on success."""
+    variations = {}
+    if continuous is not None:
+        if mass not in continuous:
+            print(f"  ERROR: M{mass}GeV is not in {args.weights}; rerun depthWeightsContinuous.py")
+            return False
+        entry = continuous[mass]
+        weights = {d: entry[NOMINAL_KEY].get(d, 0.) for d in sorted(depth_files)}
+        variations = {v: {d: entry[key].get(d, 0.) for d in sorted(depth_files)}
+                      for v, key in DEPTH_VARIATIONS.items()}
+    else:
+        weights = {d: depth_weight(mass * 2, d) for d in sorted(depth_files)}
     total_weight = sum(weights.values())
+    varied = {}
+    varied_yield = {v: 0. for v in variations}
 
     print(f"\nM{mass}GeV (DM mass {2 * mass} GeV), {len(weights)} depths, "
           f"total weight {total_weight:.6f}")
@@ -194,7 +264,7 @@ def merge_mass(mass, depth_files, region, out_dir, dry_run, by_mass):
 
         names = sorted(k.GetName() for k in src.GetListOfKeys())
         if merged and set(names) != set(merged):
-            print(f"  ERROR: e{depth} has histograms {sorted(set(names) ^ set(merged))} that the "
+            print(f"  ERROR: {depth} mm has histograms {sorted(set(names) ^ set(merged))} that the "
                   f"other depths of this mass do not -- refusing to merge a ragged set")
             src.Close()
             return False
@@ -207,23 +277,41 @@ def merge_mass(mass, depth_files, region, out_dir, dry_run, by_mass):
                 merged[name].Reset()
             merged[name].Add(hist, weight)
 
+        for v, v_weights in variations.items():
+            for name in DEPTH_SYST_HISTS:
+                key = f"{name}_{DEPTH_SYST_ALIAS}_{v}"
+                if key not in varied:
+                    varied[key] = src.Get(name).Clone(key)
+                    varied[key].SetDirectory(0)
+                    varied[key].Reset()
+                varied[key].Add(src.Get(name), v_weights[depth])
+
         yield_here = src.Get("hpass").Integral() + src.Get("hfail").Integral()
         per_depth_yield += weight * yield_here
-        print(f"  e{depth}: weight {weight:.6f}, Int(hpass+hfail) {yield_here:.6f}  "
+        for v in variations:
+            varied_yield[v] += variations[v][depth] * yield_here
+        var_note = "".join(f", {v} {variations[v][depth]:.6f}" for v in variations)
+        print(f"  {depth} mm: weight {weight:.6f}{var_note}, Int(hpass+hfail) {yield_here:.6f}  "
               f"[{depth_files[depth].name}]")
         src.Close()
+
+    for v, v_weights in variations.items():
+        ratio = varied_yield[v] / per_depth_yield if per_depth_yield else float("nan")
+        print(f"  {DEPTH_SYST_ALIAS} {v} ({DEPTH_VARIATIONS[v]}): shell weights sum to "
+              f"{sum(v_weights.values()):.6f}, yield / nominal = {ratio:.4f}")
 
     # A depth with no sample is folded in as a depth with zero acceptance, because the weights are
     # not renormalised. Whether that is a defect or the right answer depends on why the sample is
     # absent -- see the ZERO_ACCEPTANCE_FRAC note at the top -- so measure it rather than assume.
-    if total_weight < 0.99:
+    # Continuous weights are not probabilities, so this check is legacy only.
+    if continuous is None and total_weight < 0.99:
         merged_yield = per_depth_yield
         for depth in sorted(set(DEPTH_SHELLS) - set(weights)):
             share = depth_weight(mass * 2, depth)
             probe = probe_missing_depth(mass, depth, by_mass)
 
             if probe is None:
-                print(f"  WARNING: M{mass}GeV has no e{depth} sample and no other mass has one "
+                print(f"  WARNING: M{mass}GeV has no {depth} mm sample and no other mass has one "
                       f"either, so its acceptance is unmeasured. If it is not zero, the merged "
                       f"template is missing a weight-{share:.6f} share of the signal.")
                 continue
@@ -237,24 +325,24 @@ def merge_mass(mass, depth_files, region, out_dir, dry_run, by_mass):
             bounds_note = " (heavier, so it bounds this one from above)" if is_above else ""
 
             if frac < ZERO_ACCEPTANCE_FRAC:
-                print(f"  NOTE: M{mass}GeV has no e{depth} sample, and it would be empty. "
+                print(f"  NOTE: M{mass}GeV has no {depth} mm sample, and it would be empty. "
                       f"M{neighbour}GeV, the nearest mass that has one{bounds_note}, selects "
-                      f"{at_depth:.4f} events per 100 generated at e{depth} against {best:.4f} at "
-                      f"its best depth ({100 * frac:.2f}%): e{depth} is past the muon range at "
+                      f"{at_depth:.4f} events per 100 generated at {depth} mm against {best:.4f} at "
+                      f"its best depth ({100 * frac:.2f}%): {depth} mm is past the muon range at "
                       f"this momentum, so the sample is treated as ZERO ACCEPTANCE. The weights "
                       f"are not renormalised, so that is exactly what this merge already does -- "
                       f"the histograms are correct as written and no 1/sum(w) penalty applies "
-                      f"(weights sum to {total_weight:.6f}). Generating e{depth} would add "
+                      f"(weights sum to {total_weight:.6f}). Generating {depth} mm would add "
                       f"{bound} {adds:.4f} events to the merged {merged_yield:.4f} ({pct:+.2f}%).")
             else:
                 shortfall = f"{1 / total_weight:.3f}" if total_weight > 0 else "inf"
-                print(f"  WARNING: M{mass}GeV has no e{depth} sample and it would NOT be empty: "
+                print(f"  WARNING: M{mass}GeV has no {depth} mm sample and it would NOT be empty: "
                       f"M{neighbour}GeV{bounds_note} selects {at_depth:.4f} events per 100 "
                       f"generated there, {100 * frac:.2f}% of its best depth. The merged template "
                       f"is therefore missing a weight-{share:.6f} share of the signal ({bound} "
                       f"{adds:.4f} events, {pct:+.2f}%); with the weights summing to "
                       f"{total_weight:.6f} the limit derived from it is too weak by up to a "
-                      f"factor {shortfall}. Generate e{depth} for this mass before using it.")
+                      f"factor {shortfall}. Generate {depth} mm for this mass before using it.")
 
     # Closure: the merged yield must equal the weighted sum of the per-depth yields it was built
     # from. This is the arithmetic the merge is, so anything but agreement at rounding level means
@@ -268,6 +356,17 @@ def merge_mass(mass, depth_files, region, out_dir, dry_run, by_mass):
               f"{100 * (ratio - 1):+.6f}% -- do not use these histograms for a limit.")
         return False
 
+    if variations and "down" not in variations:
+        for name in DEPTH_SYST_HISTS:
+            up = varied[f"{name}_{DEPTH_SYST_ALIAS}_up"]
+            down = mirror_hist(merged[name], up, f"{name}_{DEPTH_SYST_ALIAS}_down")
+            varied[down.GetName()] = down
+        y_down = (varied[f"hpass_{DEPTH_SYST_ALIAS}_down"].Integral()
+                  + varied[f"hfail_{DEPTH_SYST_ALIAS}_down"].Integral())
+        print(f"  {DEPTH_SYST_ALIAS} down (mirror of up): yield / nominal = "
+              f"{y_down / observed if observed else float('nan'):.4f}")
+
+    merged.update(varied)
     for hist in merged.values():
         fill_empty_bins(hist)
 

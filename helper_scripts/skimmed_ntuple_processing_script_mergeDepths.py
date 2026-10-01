@@ -43,7 +43,14 @@ N_SEG_CLIP = 199       # Maximum segment count for clipping
 # the per-muon pT). exp_lim/set_limit_alphaMax.py keys the same dict the same way -- its signal
 # list carries 2*MinP as the mass -- so the two must agree or the merge and the limit would
 # weight the depths differently. Callers of depth_weight() pass the DM mass, not MinP.
-DEPTH_SHELLS = {2: [0], 3: [1], 4: [2], 5: [3], 6: [4, 5]}
+# Keyed by DEPTH IN MM, matching merge_depths_2DA_hists.py. The intermediate depths
+# 2e5/3e5/5e5 have no entry by design; see the NOTE there.
+def depth_mm(tag):
+    """'e5' -> 100000.0, '2e5' -> 200000.0, 'e0' -> 1.0."""
+    return float(tag if tag[0].isdigit() else '1' + tag)
+
+
+DEPTH_SHELLS = {100: [0], 1000: [1], 10000: [2], 100000: [3], 1000000: [4, 5]}
 
 if args.sampleType == 'Signal':
     # depthFractionCalcScript.py runs under numpy>=2, whose pickles refer to the numpy._core
@@ -527,9 +534,10 @@ def sample_sort_key(file):
     signal samples, and everything in BkgMC) sort to -1, i.e. ahead of the depths of that mass.
     """
     mass = re.search(r'MinP-(\d+)', Path(file).stem)
-    depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
+    depth = re.search(r'SurfaceDepth-((?:\d+)?e\d+)', Path(file).stem)
 
-    return (int(mass.group(1)) if mass else -1, int(depth.group(1)) if depth else -1)
+    return (int(mass.group(1)) if mass else -1,
+            int(depth_mm(depth.group(1))) if depth else -1)
 
 
 def fill_empty_bins(hist, value=1e-12):
@@ -878,9 +886,9 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 # ntuple version in the stem since v5.0.0, so it had stopped firing entirely.
                 new_filename = f"EaDM_{args.sampleType}_M{number}GeV_{args.region.upper()}.root"
             elif match and "SurfaceDepth" in Path(file).stem:
-                depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
+                depth = re.search(r'SurfaceDepth-((?:\d+)?e\d+)', Path(file).stem)
                 number = match.group(1)
-                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_e{depth.group(1)}_{args.region.upper()}.root"
+                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_{depth.group(1)}_{args.region.upper()}.root"
             else:
                 print("No matching number found")
                 continue

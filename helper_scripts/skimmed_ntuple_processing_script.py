@@ -796,9 +796,15 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 if Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen_wRNN": new_filename = f'EaDM_NeutrinoMC_Data_{args.region.upper()}.root'
                 elif Path(file).stem == f"skimmed_matched_muon_{region}_CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen_wRNN": new_filename = f'EaDM_CosmicMC_Data_{args.region.upper()}.root'
             elif match and "SurfaceDepth" in Path(file).stem:
-                depth = re.search(r'SurfaceDepth-e(\d+)', Path(file).stem)
+                # The depth token is carried through verbatim rather than rebuilt from an
+                # exponent: the grid now has 2e5/3e5/5e5 samples alongside the e0..e6 decades,
+                # so 'SurfaceDepth-e(\d+)' would fail to match them and crash on .group(1).
+                depth = re.search(r'SurfaceDepth-((?:\d+)?e\d+)', Path(file).stem)
+                if not depth:
+                    print(f"Could not parse a SurfaceDepth tag from {Path(file).stem}")
+                    continue
                 number = match.group(1)
-                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_e{depth.group(1)}_{args.region.upper()}.root"
+                new_filename = f"EaDM_{args.sampleType}_M{number}GeV_{depth.group(1)}_{args.region.upper()}.root"
             else:
                 print("No matching number found")
                 continue

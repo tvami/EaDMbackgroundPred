@@ -61,6 +61,73 @@ struct L1DTResult {
     ROOT::VecOps::RVec<int>    fired_comb, fired_up, fired_low, fired_comb_acc, fired_up_acc, fired_low_acc;
 };
 
+// Per-event L1 DT tag-and-probe; shared with highE_tagprobe.C
+static L1DTResult l1dt_tagprobe(
+        const ROOT::VecOps::RVec<float>& muPt,
+        const ROOT::VecOps::RVec<float>& segY,
+        const ROOT::VecOps::RVec<float>& segEta,
+        const ROOT::VecOps::RVec<float>& segPhi,
+        const ROOT::VecOps::RVec<int>&   segSta,
+        const ROOT::VecOps::RVec<float>& trY,
+        const ROOT::VecOps::RVec<int>&   trBx,
+        const ROOT::VecOps::RVec<int>&   trQual,
+        const ROOT::VecOps::RVec<float>& trEta,
+        const ROOT::VecOps::RVec<float>& trPhi,
+        int l1dt_qual, int l1dt_bx, double l1dt_dr, int l1dt_minseg) {
+    L1DTResult R;
+    // probe pT = leading offline tuneP muon (both legs share the same momentum)
+    double pt = -1;
+    for (auto p : muPt) if (p > 0 && p < 1e4 && p > pt) pt = p;
+    if (pt < 0) return R;
+    // offline legs from DT segments, split by global-Y sign (position-based hemispheres)
+    std::vector<float> upEta, upPhi, lowEta, lowPhi;
+    std::set<int> upSta, lowSta;
+    for (size_t j = 0; j < segY.size(); ++j) {
+        float y = segY[j];
+        if (std::abs(y) > 9000) continue;
+        if (y > 0) { upEta.push_back(segEta[j]);  upPhi.push_back(segPhi[j]);  upSta.insert(segSta[j]); }
+        else       { lowEta.push_back(segEta[j]); lowPhi.push_back(segPhi[j]); lowSta.insert(segSta[j]); }
+    }
+    if ((int)upEta.size() < l1dt_minseg || (int)lowEta.size() < l1dt_minseg) return R;
+    auto mean = [](const std::vector<float>& v){ double s = 0; for (auto x : v) s += x; return s / v.size(); };
+    double upLegEta = mean(upEta),  upLegPhi  = l1dt_circ_mean(upPhi);
+    double lowLegEta = mean(lowEta), lowLegPhi = l1dt_circ_mean(lowPhi);
+    int up_nst = (int)upSta.size(), low_nst = (int)lowSta.size();
+    // did the DT Local Trigger fire in a given hemisphere, matched to the offline leg?
+    auto fired = [&](double le, double lp, bool wantUpper) -> bool {
+        for (size_t k = 0; k < trY.size(); ++k) {
+            float y = trY[k];
+            if (std::abs(y) > 9000 || ((y > 0) != wantUpper)) continue;
+            if (std::abs(trBx[k]) > l1dt_bx || trQual[k] < l1dt_qual) continue;
+            if (l1dt_dR(le, lp, trEta[k], trPhi[k]) < l1dt_dr) return true;
+        }
+        return false;
+    };
+    bool up_fired  = fired(upLegEta,  upLegPhi,  true);
+    bool low_fired = fired(lowLegEta, lowLegPhi, false);
+    // tag = lower, probe = upper (probe-leg direction = upper leg)
+    if (low_fired) {
+        int f = up_fired ? 1 : 0;
+        R.pt_up.push_back(pt);   R.phi_up.push_back(upLegPhi);   R.eta_up.push_back(upLegEta);   R.fired_up.push_back(f);
+        R.pt_comb.push_back(pt); R.phi_comb.push_back(upLegPhi); R.eta_comb.push_back(upLegEta); R.fired_comb.push_back(f);
+        if (l1dt_passes_acceptance(upLegPhi, up_nst, pt)) {
+            R.pt_up_acc.push_back(pt);   R.phi_up_acc.push_back(upLegPhi);   R.eta_up_acc.push_back(upLegEta);   R.fired_up_acc.push_back(f);
+            R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(upLegPhi); R.eta_comb_acc.push_back(upLegEta); R.fired_comb_acc.push_back(f);
+        }
+    }
+    // tag = upper, probe = lower (probe-leg direction = lower leg)
+    if (up_fired) {
+        int f = low_fired ? 1 : 0;
+        R.pt_low.push_back(pt);  R.phi_low.push_back(lowLegPhi);  R.eta_low.push_back(lowLegEta);  R.fired_low.push_back(f);
+        R.pt_comb.push_back(pt); R.phi_comb.push_back(lowLegPhi); R.eta_comb.push_back(lowLegEta); R.fired_comb.push_back(f);
+        if (l1dt_passes_acceptance(lowLegPhi, low_nst, pt)) {
+            R.pt_low_acc.push_back(pt);  R.phi_low_acc.push_back(lowLegPhi);  R.eta_low_acc.push_back(lowLegEta);  R.fired_low_acc.push_back(f);
+            R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(lowLegPhi); R.eta_comb_acc.push_back(lowLegEta); R.fired_comb_acc.push_back(f);
+        }
+    }
+    return R;
+}
+
 void trigger_study(TString object = "track", TString region = "sr", TString base_dir = "/ceph/cms/store/user/tvami/EarthAsDM/Cosmics/crab_Ntuplizer-Cosmics_Run2023D-CosmicTP-PromptReco-v1_v3/", bool validate = false,
                    int l1dt_qual = 4, int l1dt_bx = 2, double l1dt_dr = 0.4, int l1dt_minseg = 1) {
 
@@ -211,58 +278,8 @@ void trigger_study(TString object = "track", TString region = "sr", TString base
             const ROOT::VecOps::RVec<int>&   trQual,
             const ROOT::VecOps::RVec<float>& trEta,
             const ROOT::VecOps::RVec<float>& trPhi) {
-            L1DTResult R;
-            // probe pT = leading offline tuneP muon (both legs share the same momentum)
-            double pt = -1;
-            for (auto p : muPt) if (p > 0 && p < 1e4 && p > pt) pt = p;
-            if (pt < 0) return R;
-            // offline legs from DT segments, split by global-Y sign (position-based hemispheres)
-            std::vector<float> upEta, upPhi, lowEta, lowPhi;
-            std::set<int> upSta, lowSta;
-            for (size_t j = 0; j < segY.size(); ++j) {
-                float y = segY[j];
-                if (std::abs(y) > 9000) continue;
-                if (y > 0) { upEta.push_back(segEta[j]);  upPhi.push_back(segPhi[j]);  upSta.insert(segSta[j]); }
-                else       { lowEta.push_back(segEta[j]); lowPhi.push_back(segPhi[j]); lowSta.insert(segSta[j]); }
-            }
-            if ((int)upEta.size() < l1dt_minseg || (int)lowEta.size() < l1dt_minseg) return R;
-            auto mean = [](const std::vector<float>& v){ double s = 0; for (auto x : v) s += x; return s / v.size(); };
-            double upLegEta = mean(upEta),  upLegPhi  = l1dt_circ_mean(upPhi);
-            double lowLegEta = mean(lowEta), lowLegPhi = l1dt_circ_mean(lowPhi);
-            int up_nst = (int)upSta.size(), low_nst = (int)lowSta.size();
-            // did the DT Local Trigger fire in a given hemisphere, matched to the offline leg?
-            auto fired = [&](double le, double lp, bool wantUpper) -> bool {
-                for (size_t k = 0; k < trY.size(); ++k) {
-                    float y = trY[k];
-                    if (std::abs(y) > 9000 || ((y > 0) != wantUpper)) continue;
-                    if (std::abs(trBx[k]) > l1dt_bx || trQual[k] < l1dt_qual) continue;
-                    if (l1dt_dR(le, lp, trEta[k], trPhi[k]) < l1dt_dr) return true;
-                }
-                return false;
-            };
-            bool up_fired  = fired(upLegEta,  upLegPhi,  true);
-            bool low_fired = fired(lowLegEta, lowLegPhi, false);
-            // tag = lower, probe = upper (probe-leg direction = upper leg)
-            if (low_fired) {
-                int f = up_fired ? 1 : 0;
-                R.pt_up.push_back(pt);   R.phi_up.push_back(upLegPhi);   R.eta_up.push_back(upLegEta);   R.fired_up.push_back(f);
-                R.pt_comb.push_back(pt); R.phi_comb.push_back(upLegPhi); R.eta_comb.push_back(upLegEta); R.fired_comb.push_back(f);
-                if (l1dt_passes_acceptance(upLegPhi, up_nst, pt)) {
-                    R.pt_up_acc.push_back(pt);   R.phi_up_acc.push_back(upLegPhi);   R.eta_up_acc.push_back(upLegEta);   R.fired_up_acc.push_back(f);
-                    R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(upLegPhi); R.eta_comb_acc.push_back(upLegEta); R.fired_comb_acc.push_back(f);
-                }
-            }
-            // tag = upper, probe = lower (probe-leg direction = lower leg)
-            if (up_fired) {
-                int f = low_fired ? 1 : 0;
-                R.pt_low.push_back(pt);  R.phi_low.push_back(lowLegPhi);  R.eta_low.push_back(lowLegEta);  R.fired_low.push_back(f);
-                R.pt_comb.push_back(pt); R.phi_comb.push_back(lowLegPhi); R.eta_comb.push_back(lowLegEta); R.fired_comb.push_back(f);
-                if (l1dt_passes_acceptance(lowLegPhi, low_nst, pt)) {
-                    R.pt_low_acc.push_back(pt);  R.phi_low_acc.push_back(lowLegPhi);  R.eta_low_acc.push_back(lowLegEta);  R.fired_low_acc.push_back(f);
-                    R.pt_comb_acc.push_back(pt); R.phi_comb_acc.push_back(lowLegPhi); R.eta_comb_acc.push_back(lowLegEta); R.fired_comb_acc.push_back(f);
-                }
-            }
-            return R;
+            return l1dt_tagprobe(muPt, segY, segEta, segPhi, segSta, trY, trBx, trQual, trEta, trPhi,
+                                 l1dt_qual, l1dt_bx, l1dt_dr, l1dt_minseg);
         }, {"muon_tuneP_Pt", "muon_dtSeg_globY", "muon_dtSeg_eta", "muon_dtSeg_phi", "muon_dtSeg_Station_",
             "dtTrigPh_globY", "dtTrigPh_bx", "dtTrigPh_quality", "dtTrigPh_globEta", "dtTrigPh_globPhi"})
         .Define("l1dt_pt_comb",        [](const L1DTResult& r){ return r.pt_comb; },        {"l1dt_result"})

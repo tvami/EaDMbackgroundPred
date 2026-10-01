@@ -31,13 +31,15 @@ LUMILABEL="Run 3 Cosmics"
 MODEL="core"
 DO_INPUT=1
 DO_PLOT=1
+EXTRA_MASSES=""     # DM masses [GeV] below the e3 grid, e.g. "400 500 600"
 # --------------------------------------------------------------------------
 
 usage() {
-    echo "Usage: $0 [-d LIMITDIR] [-m MONTHS_OF_LIVETIME] [--skip-input] [--no-plot]"
+    echo "Usage: $0 [-d LIMITDIR] [-m MONTHS_OF_LIVETIME] [-x \"DM masses\"] [--skip-input] [--no-plot]"
     echo ""
     echo "  -d             2DA results directory (default: $LIMITDIR)"
     echo "  -m             livetime in months   (default: $MONTHS)"
+    echo "  -x             extra DM masses [GeV] to append to the e3 grid"
     echo "  --skip-input   reuse the existing exp_lim/signal_<LIMITDIR>_alpha_max.txt"
     echo "  --no-plot      stop after step 2 (limits), skip the 2D exclusion plot"
     exit 1
@@ -47,6 +49,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
         -d) LIMITDIR="${2:-}"; shift 2 ;;
         -m) MONTHS="${2:-}";   shift 2 ;;
+        -x) EXTRA_MASSES="${2:-}"; shift 2 ;;
         --skip-input) DO_INPUT=0; shift ;;
         --no-plot)    DO_PLOT=0;  shift ;;
         -h|--help) usage ;;
@@ -112,7 +115,8 @@ fi
 echo ""
 if [ $DO_INPUT -eq 1 ]; then
     echo ">>> Step 1: generating $SIGFILE (-d $DEPTH_KEY, then ${DEPTH_KEY} -> mergedDepth)"
-    python3 helper_scripts/limitRateInputScript.py -d "$DEPTH_KEY" -l "$LIMITDIR" -m "$MODEL"
+    extra_args=(); for x in $EXTRA_MASSES; do extra_args+=(--extra-mass "$x"); done
+    python3 helper_scripts/limitRateInputScript.py -d "$DEPTH_KEY" -l "$LIMITDIR" -m "$MODEL" "${extra_args[@]}"
     if [ $? -ne 0 ] || [ ! -f "$SIGFILE" ]; then
         echo "ERROR: limitRateInputScript.py failed to write $SIGFILE"
         exit 1

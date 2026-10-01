@@ -99,7 +99,7 @@ def extract_parameters(filename):
         params['minp'] = int(match.group(1))
     
     # Extract SurfaceDepth - handle both plain numbers and scientific notation (e2, e3, etc.)
-    match = re.search(r'SurfaceDepth-e(\d+)', filename)
+    match = re.search(r'SurfaceDepth-((?:\d+)?e\d+)', filename)
     if match:
         # Convert e2 -> 10^2 = 100, e3 -> 10^3 = 1000, etc.
         exponent = int(match.group(1))

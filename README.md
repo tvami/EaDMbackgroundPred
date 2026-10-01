@@ -217,6 +217,18 @@ histogram-dir version; "Binning v<M>" is the analysis binning — the two are bu
    per-depth files **plus** 18 `EaDM_Signal_M<mass>GeV_mergedDepth_SR.root` — SR only; the merge can
    produce VR1/VR2 too, but nothing downstream consumes them. See
    **[Depth-merged signals (mergedDepth)](#depth-merged-signals-mergeddepth)**.
+  - v30: v5.0.8_wRNN (v5 RNN, +8 ns MC t0 shift, **0.99999** working point). See
+    `HANDOVER_20260805_v30_AN_figures.md`.
+  - v31: v30 plus the 108 signal samples produced 2026-09-21/22 (added to v5.0.8_wRNN with the same
+    recipe): the intermediate depths `SurfaceDepth-2e5/3e5/5e5` across the mass grid, and new low
+    masses MinP 200-750 (non-tagged) and 200-900 (e2-e5). The mergedDepth templates use the
+    **continuous** depth weights as nominal and carry the new shape nuisance
+    `CMS_EXO26004_depthBin` (up = "greater than" shells, down = "less than" shells), see
+    **[The depth systematic](#the-depth-systematic)**. The v31 files carry the pre-rename name
+    `depthBin`; the merge now writes `depthsyst` (nuisance `CMS_EXO26004_depth`).
+  - v32: v31 inputs (hardlinked), but the mergedDepth nominal is the **"less than"** shells on the
+    finer grid (the AN v30 convention), with `CMS_EXO26004_depth`: up = "greater than", down =
+    linear mirror `2*nom - up` (clipped at 0). Merge with `--nominal lessThan`.
 
 > **Building the histogram dir.** `collect_and_merge_histograms.py -v <ver> [-s SOURCE_BASE]` collects the
 > step-6 `2DA/EaDM_*.root` trees into `histograms_for_2DAlphabet_<ver>/`, merging the per-era data files
@@ -311,7 +323,12 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
   both the cone *and* the ntuplizer campaign, so it must be read against C75n, which is the 0–75 cone
   from the *same* campaign. Only C89 − C75n isolates the cone. If that step says the cone matters,
   the winning cone gets a full step6 production as v5.0.7. Empty on ceph until then.
-- v5.0.8: free. Ceph dir exists but is empty and can be removed.
+- v5.0.8: v5 RNN + 8 ns MC t0 shift at the 0.99999 working point (`step6_condor_ntuple_processing_v5.0.8.cfg`
+  documents why). Feeds v30. On 2026-09-22 the 108 new signal samples (2e5/3e5/5e5 depths, low
+  masses) were added with the same recipe: `step6_condor_ntuple_processing_v5.0.8_newsignals_20260922.cfg`,
+  condor cluster 456100, which passes `skimmed_ntuple_processing_script.py` as the wrapper's 12th
+  argument (the wrapper now defaults to the mergeDepths fork, but v5.0.8 was made with the base
+  script). Outputs return to `helper_scripts/prod_v5.0.8_newsignals_20260922/`; rsync them to ceph.
 
 ### The 0to75Theta / 0to89Theta background skims (added to `Ntuples_v5.0.0/BkgMC/`, cluster 372321)
 
@@ -462,6 +479,47 @@ Pass it with `-p/--propsDict` (default `parquet_files/props_dict.npy`); it is on
 Step 6, pass 2 — see **[6a. Depth-merge the Signal histograms](#6a-depth-merge-the-signal-histograms-step-6-pass-2)**.
 Then run step 6c as usual to build `histograms_for_2DAlphabet_v29/`.
 
+From v30 on the merge runs on the histograms instead (`helper_scripts/merge_depths_2DA_hists.py`,
+same arithmetic, verified against v29).
+
+### The depth systematic
+
+With the intermediate depths (v31 on), `merge_depths_2DA_hists.py -w` adds one shape nuisance,
+`CMS_EXO26004_depth` (histograms `h*_depthsyst_{up,down}`, `<x>syst` convention), for the choice
+of shell assignment. `--nominal` picks the central template:
+
+| template | `--nominal continuous` (v31) | `--nominal lessThan` (v32) |
+|---|---|---|
+| nominal (`hpass`, `hfail`) | continuous: `N = Int f(z) eps(z) dz`, split over the nearest generated depth | "less than" |
+| `h*_depthsyst_up` | "greater than" | "greater than" |
+| `h*_depthsyst_down` | "less than" | `2*nom - up`, clipped at 0 |
+
+"Less than": sample `d` stands for `(d_prev, d]`, the deepest also takes `(d_max, 4 km]`.
+"Greater than": sample `d` stands for `[d, d_next)`, the shallowest also takes `[0, d_min)`.
+The v32 mirror is linear on purpose: a log mirror `nom^2/up` blows up on the fine 1 GeV bins
+(M3000 down came out 1.67x nominal instead of ~1.09x).
+
+The shell edges are the full generated grid (e2, e3, e4, e5, 2e5, 3e5, 5e5, e6), read from the decay
+depth parquets at any edge, so `props_dict` is not needed. A mass without a sample at some depth
+loses that shell (zero acceptance, the legacy convention); the low masses have no e6 for this reason.
+The other systematics' up/down templates are merged with the nominal weights.
+
+```bash
+# needs pandas (cmsenv) + pyarrow (borrowed, see step 8 env notes)
+export PYTHONPATH=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages:$PYTHONPATH
+python3 helper_scripts/depthWeightsContinuous.py -H histograms_for_2DAlphabet_v31 --validate \
+    -o helper_scripts/parquet_files/depth_weights_continuous_v31.npy
+python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v31 \
+    -w helper_scripts/parquet_files/depth_weights_continuous_v31.npy
+./submit_2DA_mergedDepths_SR_v31.sh     # config_Binningv13_Inputv31mergedDepthsTemplate_SR_Blind.json
+# v32: same weights file, less-than nominal
+python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v32 \
+    -w helper_scripts/parquet_files/depth_weights_continuous_v31.npy --nominal lessThan
+./submit_2DA_mergedDepths_SR_v32.sh     # config_Binningv13_Inputv32mergedDepthsTemplate_SR_Blind.json
+```
+The merge prints, per mass, the up/down yield relative to nominal. The ordering flips near a 4 to 5
+TeV DM mass (AN App. "The binning choice and its alternative"), so the nuisance is not one-signed.
+
 ### Running the 2DA chain
 
 The merged chain is a twin of the standard one, touching only `mergedDepth` files so the per-depth
@@ -495,6 +553,9 @@ Signals with a `done` marker are skipped, so it resumes after an interrupt; per-
 ./run_limits_mergedDepths.sh -m 24.3             # different livetime
 ./run_limits_mergedDepths.sh --skip-input        # reuse the existing alpha_max.txt
 ./run_limits_mergedDepths.sh --no-plot           # stop after the limits, skip the 2D plot
+# v31: the merged grid reaches below the e3 grid, pass those DM masses explicitly
+./run_limits_mergedDepths.sh -d rpf2x0_Binningv13_Inputv31_mergedDepths_SR_Blind \
+    -x "400 500 600 800 1000 1200 1500 1800"
 ```
 Defaults: `-d rpf2x0_Binningv13_Inputv29_mergedDepths_SR_Blind`, `-m 20.7`. It needs `pyarrow`
 (see the step 8 env notes) and checks for it up front.
@@ -519,6 +580,18 @@ Otherwise it is the same three steps as [Step 8: Run Limits](#8-run-limits): sig
 > after which the wrapper works.
 > Conversely the cache is **not** invalidated when the JSON is regenerated — delete the `.npz` after
 > re-running step 2, or you will redraw the old bands.
+
+## Access-shaft study (AN Appendix `app:shaft`)
+
+Answers the pre-approval question on the higher cosmic rate through the PX56 access shaft.
+Scripts in `helper_scripts/shaft_study/`:
+- `project_to_surface.py <Data|BkgMC|Signal> <sr|vr2> '<glob>' <outdir>`: principal-axis line fit to all
+  DT segments of the event, extrapolated to the surface (y = 88.9 m); writes `v2_<tag>.npz` with
+  (x, z) intercept, max muon pT, RNNScore. Vectorized, full data VR2 (28.5M events) in about 3 min.
+- `plot_shaft.py <npz dir> <out dir>`: the AN figures (`Figures/Appendix/ShaftStudy/`) and `shaft_summary.json`.
+Shaft positions come from `GeneratorInterface/CosmicMuonGenerator/interface/Point5MaterialMap.h`.
+Data above 200 GeV enters only through the FAIL region (RNN < 0.99999) to keep the SR blinded.
+The x intercept is smeared by bending below 200 GeV (field along z), z is not.
 
 ## Conventions and gotchas
 
@@ -781,6 +854,47 @@ the configs' `GLOBAL.path` points at. This is a separate, fast step (just copies
 python3 collect_and_merge_histograms.py --version v27 \
     --source-base /ceph/cms/store/user/tvami/EarthAsDM/Ntuples/Ntuples_v5.0.3_wRNN
 ```
+
+### 6d. Signal efficiency vs muon energy up to 90 TeV (pre-approval comment, 2026-09-28)
+Answers "efficiency vs pt/energy up to the highest energy probed" (AN Sec. `sec:highEnergyEfficiency`,
+figures `highE_*` in `Figures/Preselection/` and `Figures/3Trigger/`).
+
+**MC (no new production).** `plot_highE_efficiency.py` reads only the v5.0.8_wRNN signal skims:
+`h_cutflow` (denominator = all generated events) plus `RNNScore >= 0.99999`. The x axis is MinP of
+the e2/e3/e4 samples pooled: with at most 10 m of rock the muon reaches CMS with its generated
+momentum, so MinP *is* the energy at CMS (the three depths agree to a few %). The deep samples are
+plotted vs the momentum at production. No gen info is needed; the v5a ntuples have empty gen
+branches anyway (`hasGen = 0`, and GEN-SIM-RECO has only the HepMC record, no `genParticles`).
+
+**Data cross-check.** `highE_tagprobe.C` (includes `trigger_study.C` for the shared
+`l1dt_tagprobe()`) books, in log pT bins 5 GeV to 10 TeV with no overflow: the L1 DT Local
+Trigger tag-and-probe vs probe tuneP pT, and a per-muon track-quality tag-and-probe (each muon with
+a matched inner track at |eta| < 0.9, pass = N_hits, chi2/ndof, sigma(pT)/pT^2). A two-leg offline
+tag-and-probe does not work: pp tracking gives one inner track per cosmic (0/54 partners in data).
+Condor, 1228 jobs (all v5a data eras, the two bkg MC, all signal), runs at any US site (reads the
+ceph ntuples through AAA off-site). All files live in `helper_scripts/highE_efficiency/`, outputs in its `prod_highE_tagprobe/`.
+```bash
+cd helper_scripts/highE_efficiency
+# job lists: 40 files/job (data, bkg MC), 60 files/job (signal)
+P=prod_highE_tagprobe; E=/ceph/cms/store/user/tvami/EarthAsDM; mkdir -p $P/lists $P/logs
+mk() { find $2 -name "*.root" -size +50k | sort | split -l $3 -d -a 4 - $P/lists/$1__; }
+for d in $E/Cosmics/crab_*v5a; do
+  mk Data_$(basename $d | sed 's/crab_Ntuplizer-Cosmics_//; s/-CosmicTP-PromptReco//; s/_v5a//') $d 40; done
+mk BkgMC_MinP-10 $E/CosmicToMu_Par-MinP-10-MaxP-10000-MinTheta-91-MaxTheta-179_cosmuogen/crab_*_v5a 40
+mk BkgMC_MinP-4 $E/CosmicToMu_Par-MinP-4-MaxP-3000-MinTheta-0-MaxTheta-75_cosmuogen/crab_*_v5a 40
+for s in $(ls $E/Ntuples/Ntuples_v5.0.8_wRNN/Signal/sr/matched_muon | grep skimmed | sed 's/skimmed_matched_muon_sr_//; s/_v5.0.0.root//'); do
+  mk Signal_$s "$E/$s/crab_Ntuplizer-*_v5a" 60; done
+for l in $P/lists/*; do echo "$PWD/$l $(basename $l).root"; done > $P/jobs.txt
+condor_submit step2d_condor_highE_tagprobe.cfg
+# plots + highE_efficiency_summary.json (cmsenv only, not twoD-env)
+python3 plot_highE_efficiency.py --tp-dir prod_highE_tagprobe \
+    --trig-out ../../../../AN/AN-23-122/Figures/3Trigger \
+    --presel-out ../../../../AN/AN-23-122/Figures/Preselection
+```
+Result (shallow, pooled): trigger 33.4% at 1 TeV to 28.9% at 90 TeV; the loss is N_hits > 7
+(relative 0.53 to 0.24) and chi2/ndof < 35 (0.86 to 0.45), plus the RNN (0.43 to 0.22); total
+4.6% to 0.39%. Above M_DM = 180 TeV the limits reuse the M90000GeV template with `eff_func`
+(`limitRateInputScript.py`, `TEMPLATE_MASS_CAP`), i.e. extrapolated, not measured.
 - `--source-base` is the tree base holding `Data/`, `BkgMC/`, `Signal/` (each `<region>/matched_muon/2DA/`).
   Omit it to collect from the local `helper_scripts/` trees (the pre-ceph default).
 - Per-era data files (`EaDM_Run3_Cosmics_Data_<era>_{SR,VR1,VR2}.root`) are `hadd`-merged into
@@ -1168,20 +1282,27 @@ are appended with `--extra-mass`; the `-d e3` grid is used because it maps 1:1 o
 and the `_e3_SR` path token then has to be rewritten to `_mergedDepth_SR` exactly as
 `run_limits_mergedDepths.sh` does:
 
+The AN and paper figure (`SigmaVsMass_CMSstyle_tracker_core_v31_ddcut`) uses the v31 merged
+templates, whose low-mass samples make every point down to m_chi = 0.4 TeV a measured limit:
 ```
-SIG=exp_lim/signal_rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind_tracker_core_lowmass_alpha_max.txt
+SIG=exp_lim/signal_rpf2x0_Binningv13_Inputv31_mergedDepths_SR_Blind_tracker_core_lowmass_alpha_max.txt
 
 python3 helper_scripts/limitRateInputScript.py \
-  -d e3 -l rpf2x0_Binningv13_Inputv30_mergedDepths_SR_Blind -m core \
+  -d e3 -l rpf2x0_Binningv13_Inputv31_mergedDepths_SR_Blind -m core \
   --tag _tracker_core_lowmass \
   --extra-mass 400 --extra-mass 500 --extra-mass 600 --extra-mass 800 \
-  --extra-mass 1000 --extra-mass 1200 --extra-mass 1500 --extra-mass 1000000
+  --extra-mass 1000 --extra-mass 1200 --extra-mass 1500 --extra-mass 1800 --extra-mass 1000000
 sed -i 's/_e3_SR/_mergedDepth_SR/g' "$SIG"
 
 python3 helper_scripts/plotSigmaVsMass_CMSstyle.py \
-  -s "$SIG" -L 20.7 --extrapolate --extend-fog \
-  --name SigmaVsMass_CMSstyle_tracker_core_extrap
+  -s "$SIG" -L 20.7 --dd-mass-cut 100 \
+  --name SigmaVsMass_CMSstyle_tracker_core_v31_ddcut
 ```
+`--dd-mass-cut 100` draws the direct-detection curves and the neutrino fog only below 100 GeV,
+adds the dotted boundary line, and prints the largest captured-chi speed on the figure. Above
+~100 GeV the chi that the Earth can capture (u < v_esc sqrt(4 m_Fe / m_chi), the DarkCapPy
+capture integral limit) recoils below 1 keV in xenon. The previous v30 figure was made with
+`--extrapolate --extend-fog` on the `..._Inputv30_..._lowmass` table.
 
 `plotSigmaVsMass_CMSstyle.py` needs **cmsenv only** — do NOT `source twoD-env`, it shadows `mplhep`.
 It warns if handed a rate table without `_tracker` in its name.

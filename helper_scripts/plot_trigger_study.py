@@ -126,7 +126,7 @@ def extract_parameters(filename):
     if match:
         params['minp'] = int(match.group(1))
 
-    match = re.search(r'SurfaceDepth-e(\d+)', filename)
+    match = re.search(r'SurfaceDepth-((?:\d+)?e\d+)', filename)
     if match:
         exponent = int(match.group(1))
         params['depth'] = 10 ** exponent
