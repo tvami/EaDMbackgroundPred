@@ -17,6 +17,8 @@ echo "Checkpoint: ${7:-./rnn_v5_188k_final_weights.ckpt}"
 echo "t0 shift (MC only): ${8:-0}"
 echo "RNN_scale up/down: ${9:-<script default>} / ${10:-<script default>}"
 echo "Nominal RNN cut: ${11:-<script default 0.9999>}"
+# $12 = processing script (default: mergeDepths fork; base script reproduces v5.0.8)
+echo "Processing script: ${12:-skimmed_ntuple_processing_script_mergeDepths.py}"
 
 arch=el9_amd64_gcc12
 rel=CMSSW_14_1_0_pre4
@@ -66,6 +68,7 @@ t0_shift_mc=${8:-0}
 rnn_scale_up=${9:-}
 rnn_scale_down=${10:-}
 rnn_cut=${11:-}
+proc_script=${12:-skimmed_ntuple_processing_script_mergeDepths.py}
 
 # Only forward the scale cuts when both are given, so existing submissions that pass
 # eight arguments keep the python defaults and stay byte-identical.
@@ -89,7 +92,12 @@ fi
 
 # Run the Python script with arguments
 echo -e "\n[1] Running Python script"
-python3 skimmed_ntuple_processing_script_mergeDepths.py \
+# -p only for the fork, and only if props_dict.npy was shipped
+props_args=()
+if [ "$proc_script" = "skimmed_ntuple_processing_script_mergeDepths.py" ] && [ -f props_dict.npy ]; then
+    props_args=(-p props_dict.npy)
+fi
+python3 "$proc_script" \
     -i "$input_file" \
     -n "$ntuple_version" \
     -s "$sample_type" \
@@ -98,8 +106,8 @@ python3 skimmed_ntuple_processing_script_mergeDepths.py \
     -T "$run_type" \
     -k "$checkpoint" \
     -S "$t0_shift_mc" \
-    "${scale_args[@]}"
-    -p props_dict.npy
+    "${scale_args[@]}" \
+    "${props_args[@]}"
 
 # Copy output to final destination if accessible
 echo -e "\n[2] Transferring output files"
