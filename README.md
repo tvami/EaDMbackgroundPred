@@ -229,6 +229,13 @@ histogram-dir version; "Binning v<M>" is the analysis binning — the two are bu
   - v32: v31 inputs (hardlinked), but the mergedDepth nominal is the **"less than"** shells on the
     finer grid (the AN v30 convention), with `CMS_EXO26004_depth`: up = "greater than", down =
     linear mirror `2*nom - up` (clipped at 0). Merge with `--nominal lessThan`.
+  - v33: **SR only**, from v5.0.9_wRNN (v31 recipe + `--cleanSegments dropboth`). Merged with the v31
+    weights file (continuous nominal); the v33 config keeps the v31 nuisance name
+    `CMS_EXO26004_depthBin` but points its ALIAS at `depthsyst`. Fits ran locally
+    (`run_all_mergedDepths_local.sh`, logs in `logs_local_v33/`) because the uaf-2 schedd was refusing
+    submits on 2026-10-12. For a version-to-version comparison independent of the SR data,
+    `helper_scripts/timing_flip_study/blind_expected.sh <area>` gives the expected limit from a
+    SIG/HIGH-masked b-only fit.
 
 > **Building the histogram dir.** `collect_and_merge_histograms.py -v <ver> [-s SOURCE_BASE]` collects the
 > step-6 `2DA/EaDM_*.root` trees into `histograms_for_2DAlphabet_<ver>/`, merging the per-era data files
@@ -329,6 +336,11 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
   condor cluster 456100, which passes `skimmed_ntuple_processing_script.py` as the wrapper's 12th
   argument (the wrapper now defaults to the mergeDepths fork, but v5.0.8 was made with the base
   script). Outputs return to `helper_scripts/prod_v5.0.8_newsignals_20260922/`; rsync them to ceph.
+- v5.0.9: **SR only.** v5.0.8 recipe plus `--cleanSegments dropboth` (wrapper argument 13,
+  `helper_scripts/seg_cleaning.py`): the t0 sentinels (-999/9999) and both copies of same-chamber twin
+  segments (< 30 cm, |dt0| > 15 ns) are removed before inference. Motivated by the reviewer timing
+  question (`helper_scripts/timing_flip_study/`). `step6_condor_ntuple_processing_v5.0.9_sr.cfg`,
+  cluster 478690, 276/276 exit 0; the RNN_scale pair was NOT re-derived for the cleaned score. Feeds v33.
 
 ### The 0to75Theta / 0to89Theta background skims (added to `Ntuples_v5.0.0/BkgMC/`, cluster 372321)
 

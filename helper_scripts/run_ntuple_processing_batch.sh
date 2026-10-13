@@ -69,6 +69,8 @@ rnn_scale_up=${9:-}
 rnn_scale_down=${10:-}
 rnn_cut=${11:-}
 proc_script=${12:-skimmed_ntuple_processing_script_mergeDepths.py}
+# $13 = --cleanSegments mode (none/median/dropboth); needs seg_cleaning.py transferred
+clean_mode=${13:-none}
 
 # Only forward the scale cuts when both are given, so existing submissions that pass
 # eight arguments keep the python defaults and stay byte-identical.
@@ -83,6 +85,10 @@ fi
 # straddle it, so a moved working point with stale scale cuts fails loudly here rather
 # than producing a one-sided systematic.
 [ -n "$rnn_cut" ] && scale_args+=(--rnnCut "$rnn_cut")
+if [ "$clean_mode" != "none" ]; then
+    [ -f seg_cleaning.py ] || { echo "FATAL: cleanSegments=$clean_mode but seg_cleaning.py not transferred"; exit 1; }
+    scale_args+=(--cleanSegments "$clean_mode")
+fi
 
 if [ ! -f "${checkpoint}.index" ]; then
     echo "FATAL: checkpoint not transferred: ${checkpoint}.index not in $(pwd)"
