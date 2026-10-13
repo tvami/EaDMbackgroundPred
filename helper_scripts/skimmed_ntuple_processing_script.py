@@ -39,6 +39,9 @@ parser.add_argument("--rnnScaleUp",   type=float, default=None,
 parser.add_argument("--rnnScaleDown", type=float, default=None,
                     help="RNN working-point cut giving -4%% signal efficiency "
                          "(CMS_EXO26004_RNN_scale down)")
+parser.add_argument("--cleanSegments", default="none", choices=["none", "median", "dropboth"],
+                    help="drop t0 sentinels + same-chamber twin segments before inference "
+                         "(seg_cleaning.py); none reproduces v5.0.8")
 args = parser.parse_args()
 
 # =========================
@@ -201,6 +204,14 @@ if args.runType == 'Process' or args.runType == 'Both':
         elif args.t0ShiftMC:
             print(f"t0ShiftMC={args.t0ShiftMC} ns requested but sampleType=Data, "
                   f"so NOT applied (data already defines the frame)")
+
+        # --cleanSegments (default none = no-op): drop t0 sentinels and same-chamber twins
+        # before the sort, so the syst/bootstrap variants below inherit it like the shift
+        if args.cleanSegments != "none":
+            from seg_cleaning import clean_segments
+            n_before = ak.sum(ak.num(t0_arr))
+            t0_arr, x_arr, y_arr, z_arr = clean_segments(t0_arr, x_arr, y_arr, z_arr, args.cleanSegments)
+            print(f"cleanSegments={args.cleanSegments}: {n_before} -> {ak.sum(ak.num(t0_arr))} segments")
 
         # =========================
         # Sort segments by t0 timing per event
