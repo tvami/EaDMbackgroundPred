@@ -236,6 +236,14 @@ histogram-dir version; "Binning v<M>" is the analysis binning — the two are bu
     submits on 2026-10-12. For a version-to-version comparison independent of the SR data,
     `helper_scripts/timing_flip_study/blind_expected.sh <area>` gives the expected limit from a
     SIG/HIGH-masked b-only fit.
+  - v34: **nominal from 2026-10-14.** v5.0.10_wRNN (cleaning + 50 ns timing requirement), SR, VR1, VR2.
+    Data PASS: SR (200-1027 GeV) 31 -> 13, VR2 134 -> 56, VR1 7446 -> 520. The limits use the **linear TF**
+    (`run_limits_mergedDepths.sh -t 1x0`, areas `rpf1x0_Binningv13_Inputv34_mergedDepths_SR_Blind`); the
+    quadratic does not converge with 13 PASS events. Several fits (SR/VR2 0x0 and 2x0) need the TF seeded
+    from the 1x0 fit (`runWith1DVanilla_v34_*`), and the seeded 0x0 GoF had to be run by hand
+    (`helper_scripts/timing_flip_study/` scratch recipe: one `--setParameters` with masks + seed, since a
+    second `--setParameters` from 2DA's `extra` is ignored). MC closure kept without the cut (1 MC event
+    passes it).
 
 > **Building the histogram dir.** `collect_and_merge_histograms.py -v <ver> [-s SOURCE_BASE]` collects the
 > step-6 `2DA/EaDM_*.root` trees into `histograms_for_2DAlphabet_<ver>/`, merging the per-era data files
@@ -341,6 +349,10 @@ Versioning convention (in effect from now on): **`vX.Y.Z`** where
   segments (< 30 cm, |dt0| > 15 ns) are removed before inference. Motivated by the reviewer timing
   question (`helper_scripts/timing_flip_study/`). `step6_condor_ntuple_processing_v5.0.9_sr.cfg`,
   cluster 478690, 276/276 exit 0; the RNN_scale pair was NOT re-derived for the cleaned score. Feeds v33.
+- v5.0.10: v5.0.9 plus the PASS timing requirement `--dtCut 50` (wrapper argument 14): mean t0 of the
+  top-hemisphere segments (y > 2 m) minus the bottom ones (y < -2 m) > 50 ns, on the cleaned segments,
+  stored as `dtTopBot` (+ `_t0up/_t0down` for the t0 syst). SR/VR2: FAIL = complement of PASS; VR1: FAIL
+  (RNN < 0.45) unchanged. SR = cluster 384438, VR1+VR2 = 478697. Feeds v34.
 
 ### The 0to75Theta / 0to89Theta background skims (added to `Ntuples_v5.0.0/BkgMC/`, cluster 372321)
 

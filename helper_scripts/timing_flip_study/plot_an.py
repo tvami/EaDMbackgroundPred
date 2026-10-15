@@ -41,7 +41,7 @@ P = d["rnn"] >= WP
 both = (d["ntop"] > 0) & (d["nbot"] > 0)
 dt = d["t0top"] - d["t0bot"]
 style("Work in Progress")
-c = CMS.cmsCanvas("c_dt", -100, 150, 1e-4, 2, "#LTt_{0}#GT_{top} #minus #LTt_{0}#GT_{bottom} [ns]", "Fraction of events / 10 ns",
+c = CMS.cmsCanvas("c_dt", -100, 150, 1e-4, 30, "#LTt_{0}#GT_{top} #minus #LTt_{0}#GT_{bottom} [ns]", "Fraction of events / 10 ns",
                   square=True, iPos=11, extraSpace=0.01)
 c.SetLogy(True)
 hF = ROOT.TH1D("hF", "", 25, -100, 150); hP = ROOT.TH1D("hP", "", 25, -100, 150)
@@ -54,10 +54,11 @@ for v in dt[P & both]:
 hF.Scale(1.0 / hF.Integral()); hP.Scale(1.0 / hP.Integral())
 CMS.cmsDraw(hF, "hist", lcolor=ROOT.kAzure + 1, lwidth=2, fstyle=0)
 CMS.cmsDraw(hP, "pe", marker=20, mcolor=ROOT.kBlack)
-ln = ROOT.TLine(50, 1e-4, 50, 2); ln.SetLineStyle(2); ln.SetLineColor(ROOT.kGray + 2); ln.Draw(); keep.append(ln)
-lg = legend(0.50, 0.70, 0.90, 0.84)
-lg.AddEntry(hP, f"VR2 RNN PASS ({int((P & both).sum())} events)", "pe")
-lg.AddEntry(hF, "VR2 RNN FAIL (1/100 sample)", "l")
+ln = ROOT.TLine(50, 1e-4, 50, 1); ln.SetLineStyle(2); ln.SetLineColor(ROOT.kGray + 2); ln.Draw(); keep.append(ln)
+lg = legend(0.55, 0.74, 0.92, 0.88)
+lg.SetHeader("VR2 data")
+lg.AddEntry(hP, f"RNN PASS ({int((P & both).sum())} ev.)", "pe")
+lg.AddEntry(hF, "RNN FAIL (1/100)", "l")
 lg.Draw()
 save(c, "dt_top_bottom_vr2")
 
@@ -78,11 +79,11 @@ for i in np.where(ok)[0]:
     (gT if twin[i] else gN).AddPoint(y[i], t[i])
 for g, col, m in ((gN, ROOT.kBlack, 20), (gT, ROOT.kRed + 1, 21)):
     g.SetMarkerStyle(m); g.SetMarkerColor(col); g.SetMarkerSize(1.4); g.Draw("P same"); keep.append(g)
-lg = legend(0.18, 0.62, 0.60, 0.76)
+lg = legend(0.18, 0.56, 0.60, 0.68)
 lg.AddEntry(gN, "DT segments", "p"); lg.AddEntry(gT, "Same-chamber twins (#Deltat_{0} > 15 ns)", "p")
 lg.Draw()
 tx = ROOT.TLatex(); tx.SetNDC(); tx.SetTextFont(42); tx.SetTextSize(0.032)
-tx.DrawLatex(0.18, 0.80, f"Run {ev['run']}, event {ev['event']}, RNN score {ev['RNNScore']:.6f}")
+tx.DrawLatex(0.18, 0.72, f"Run {ev['run']}, event {ev['event']}, RNN score {ev['RNNScore']:.6f}")
 save(c, "event_display_twin")
 
 # 3) and 4) from the exported v31/v33 per-mass table

@@ -224,6 +224,7 @@ def main():
     parser.add_argument('-d', '--depth', required=True, choices=sorted(MASS_GRIDS),
                         help='Depth')
     parser.add_argument('-l', '--limit_directory', required=True, help='Limit directory')
+    parser.add_argument('--tf', default='2x0', help='TF order of the fit areas (<sig>-<tf>_area)')
     parser.add_argument('-m', '--model', required=True, choices=['core', 'floating'],
                         help='Detector-volume model')
     # Defaults cover the sensitivity turn-on (see densify()). Each inserted point costs one more
@@ -349,7 +350,7 @@ def main():
 
     with open(output_file, 'w') as f, contextlib.redirect_stdout(f):
         template = [f'Signal_M{min(int(m / 2), TEMPLATE_MASS_CAP)}GeV{suffix}_SR' for m in masses]
-        print(",".join(f'{args.limit_directory}/rpf2x0_{t}/{t}-2x0_area' for t in template))
+        print(",".join(f'{args.limit_directory}/rpf2x0_{t}/{t}-{args.tf}_area' for t in template))
         print(",".join(str(m) for m in masses))
         print(",".join('100' for _ in masses))
 

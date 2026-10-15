@@ -24,6 +24,7 @@ cd "$(dirname "$0")" || exit 1
 
 # ---------------------------- defaults ------------------------------------
 LIMITDIR="rpf2x0_Binningv13_Inputv29_mergedDepths_SR_Blind"
+TF="2x0"                # TF order of the fit areas, override with -t
 MONTHS="20.7"          # livetime in MONTHS -- override with -m
 DEPTH_KEY="e3"         # mass grid whose entries match the merged mass points
 MERGE_TAG="_mergedDepth"
@@ -48,6 +49,7 @@ usage() {
 while [ $# -gt 0 ]; do
     case "$1" in
         -d) LIMITDIR="${2:-}"; shift 2 ;;
+        -t) TF="${2:-}"; shift 2 ;;
         -m) MONTHS="${2:-}";   shift 2 ;;
         -x) EXTRA_MASSES="${2:-}"; shift 2 ;;
         --skip-input) DO_INPUT=0; shift ;;
@@ -97,7 +99,7 @@ if [ ! -d "$LIMITDIR" ]; then
     exit 1
 fi
 
-nlimit=$(ls "$LIMITDIR"/*/*-2x0_area/higgsCombineTest.AsymptoticLimits.mH120.root 2>/dev/null | wc -l)
+nlimit=$(ls "$LIMITDIR"/*/*-${TF}_area/higgsCombineTest.AsymptoticLimits.mH120.root 2>/dev/null | wc -l)
 narea=$(ls -d "$LIMITDIR"/*/ 2>/dev/null | wc -l)
 echo "Found $nlimit combine limit file(s) in $narea work area(s)."
 if [ "$nlimit" -eq 0 ]; then
@@ -116,7 +118,7 @@ echo ""
 if [ $DO_INPUT -eq 1 ]; then
     echo ">>> Step 1: generating $SIGFILE (-d $DEPTH_KEY, then ${DEPTH_KEY} -> mergedDepth)"
     extra_args=(); for x in $EXTRA_MASSES; do extra_args+=(--extra-mass "$x"); done
-    python3 helper_scripts/limitRateInputScript.py -d "$DEPTH_KEY" -l "$LIMITDIR" -m "$MODEL" "${extra_args[@]}"
+    python3 helper_scripts/limitRateInputScript.py -d "$DEPTH_KEY" -l "$LIMITDIR" --tf "$TF" -m "$MODEL" "${extra_args[@]}"
     if [ $? -ne 0 ] || [ ! -f "$SIGFILE" ]; then
         echo "ERROR: limitRateInputScript.py failed to write $SIGFILE"
         exit 1
