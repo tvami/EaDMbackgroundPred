@@ -1,2 +1,2 @@
-python3 run_single_signal_2DA.py rpf2x0_Binningv13_Inputv33_mergedDepths_SR_M3000GeV_Unblind \
-    config_Binningv13_Inputv33mergedDepths_SR_M3000GeV_Unblind.json Signal_M3000GeV_mergedDepth_SR 2x0
+python3 run_single_signal_2DA.py rpf1x0_Binningv13_Inputv34_mergedDepths_SR_M3000GeV_Unblind \
+    config_Binningv13_Inputv34mergedDepths_SR_M3000GeV_Unblind.json Signal_M3000GeV_mergedDepth_SR 1x0
