@@ -42,7 +42,26 @@ parser.add_argument("--rnnScaleDown", type=float, default=None,
 parser.add_argument("--cleanSegments", default="none", choices=["none", "median", "dropboth"],
                     help="drop t0 sentinels + same-chamber twin segments before inference "
                          "(seg_cleaning.py); none reproduces v5.0.8")
+parser.add_argument("--dtCut", type=float, default=0.0,
+                    help="SR PASS also requires mean t0(top) - mean t0(bottom) > dtCut ns; 0 = off")
 args = parser.parse_args()
+
+
+def dt_top_bottom(t0, y):
+    # mean t0 of top-hemisphere segments minus bottom (|y| > 2 m), valid t0 only; NaN if a hemisphere is empty
+    good = (t0 > -998.0) & (t0 < 9998.0)
+    t, yy = t0[good], y[good]
+    top = ak.to_numpy(ak.fill_none(ak.mean(t[yy > 200.0], axis=1), np.nan))
+    bot = ak.to_numpy(ak.fill_none(ak.mean(t[yy < -200.0], axis=1), np.nan))
+    return top - bot
+
+
+def with_dt(bnd, col):
+    # PASS gains the timing requirement; SR/VR2 FAIL is its exact complement, VR1 FAIL (RNN < 0.45) is kept
+    if args.dtCut <= 0:
+        return bnd
+    p = f'({bnd[0]}) && ({col} > {args.dtCut})'
+    return [p, bnd[1]] if args.region == 'vr1' else [p, f'!({p})']
 
 # =========================
 # Configuration constants
@@ -226,6 +245,7 @@ if args.runType == 'Process' or args.runType == 'Both':
         x_arr  = x_arr[ind]
         y_arr  = y_arr[ind]
         z_arr  = z_arr[ind]
+        dt_nom = dt_top_bottom(t0_arr, y_arr)  # same segments the RNN sees
 
 
         # =========================
@@ -313,6 +333,9 @@ if args.runType == 'Process' or args.runType == 'Both':
             arrays["RNNScore_t0syst_down"] = rnn_scores.flatten()
             arrays["RNNScore_syst_up"] = rnn_scores.flatten()
             arrays["RNNScore_syst_down"] = rnn_scores.flatten()
+            arrays["dtTopBot"] = dt_nom
+            arrays["dtTopBot_t0up"] = dt_nom
+            arrays["dtTopBot_t0down"] = dt_nom
 
             # Write new file with tree and copy histograms
             with uproot.recreate(f"{output_dir}/{Path(file).stem}.root") as out_f:
@@ -530,6 +553,9 @@ if args.runType == 'Process' or args.runType == 'Both':
         arrays["RNNScore_t0syst_down"] = rnn_scores_t0_down.flatten()
         arrays["RNNScore_syst_up"] = rnn_score_syst_up.flatten()
         arrays["RNNScore_syst_down"] = rnn_score_syst_down.flatten()
+        arrays["dtTopBot"] = dt_nom
+        arrays["dtTopBot_t0up"] = dt_top_bottom(t0_arr_t0_up, y_arr)  # same noise as the t0 syst
+        arrays["dtTopBot_t0down"] = dt_top_bottom(t0_arr_t0_down, y_arr)
 
         # Write new file with tree and copy histograms
         with uproot.recreate(f"{output_dir}/{Path(file).stem}.root") as out_f:
@@ -657,7 +683,10 @@ if args.runType == '2DAInput' or args.runType == 'Both':
             # RNN working-point efficiency scale: same nominal score, shifted cut
             bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
             bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
-        
+        bnd_nominal, bnd_up, bnd_down = (with_dt(b, 'dtTopBot') for b in (bnd_nominal, bnd_up, bnd_down))
+        bnd_rnnscale_up, bnd_rnnscale_down = with_dt(bnd_rnnscale_up, 'dtTopBot'), with_dt(bnd_rnnscale_down, 'dtTopBot')
+        bnd_t0_up, bnd_t0_down = with_dt(bnd_t0_up, 'dtTopBot_t0up'), with_dt(bnd_t0_down, 'dtTopBot_t0down')
+
         # Split events into pass/fail for each systematic variation:
         # Nominal RNN cut
         pass_df = df2.Filter(bnd_nominal[0])
@@ -939,6 +968,9 @@ if args.runType == '2DAInput' or args.runType == 'Both':
                 # RNN working-point efficiency scale: same nominal score, shifted cut
                 bnd_rnnscale_up = [f'RNNScore >= {RNN_SCALE_UP_CUT}', f'RNNScore < {RNN_SCALE_UP_CUT}']
                 bnd_rnnscale_down = [f'RNNScore >= {RNN_SCALE_DOWN_CUT}', f'RNNScore < {RNN_SCALE_DOWN_CUT}']
+            bnd_nominal, bnd_up, bnd_down = (with_dt(b, 'dtTopBot') for b in (bnd_nominal, bnd_up, bnd_down))
+            bnd_rnnscale_up, bnd_rnnscale_down = with_dt(bnd_rnnscale_up, 'dtTopBot'), with_dt(bnd_rnnscale_down, 'dtTopBot')
+            bnd_t0_up, bnd_t0_down = with_dt(bnd_t0_up, 'dtTopBot_t0up'), with_dt(bnd_t0_down, 'dtTopBot_t0down')
 
             # Split MC events into pass/fail for all systematic variations (same logic as Data)
             pass_df = df2.Filter(bnd_nominal[0])
