@@ -112,7 +112,7 @@ def combine_limits(area):
     if 0.5 not in out:
         return None
     return (out[0.5], out.get(0.16, out[0.5]), out.get(0.84, out[0.5]),
-            out.get(0.025, out[0.5]), out.get(0.975, out[0.5]))
+            out.get(0.025, out[0.5]), out.get(0.975, out[0.5]), out.get(-1.0))  # last: observed
 
 
 def excluded_alpha(signals, eps_target, livetime):
@@ -241,6 +241,39 @@ def best_over_epsilon(signals, livetime, ma, metric="sigma", extrapolate=False, 
         raise SystemExit(f"No usable combine limits found for {signals}")
     order = np.argsort(m_tev)
     return tuple(np.array(a)[order] for a in (m_tev, med_o, lo_o, hi_o, eps_o, ex_o))
+
+
+def best_observed_over_epsilon(signals, livetime, ma, metric="sigma"):
+    """Observed envelope over epsilon: per mass, the strongest observed limit any epsilon reaches.
+
+    The observed curve takes its own minimum over epsilon, as an observed exclusion should, so its
+    winning epsilon can differ from the median-expected one. Returns (m_tev, obs, eps_best).
+    """
+    areas, masses_gev, table = read_rate_table(signals)
+    scale = REFERENCE_EVENTS / livetime
+    rlim, _ = r_limit_lookup(areas, masses_gev, False)
+    m_tev, obs_o, eps_o = [], [], []
+    for idx, (area, mass_gev) in enumerate(zip(areas, masses_gev)):
+        lim = rlim.get(mass_gev)
+        if lim is None or len(lim) < 6 or lim[5] is None:
+            continue
+        mt = mass_gev / 1000.
+        best = None
+        for eps in sorted(table):
+            rate = table[eps][idx]
+            if rate <= 0 or not np.isfinite(rate):
+                continue
+            val = ALPHA_MAX(mt) * lim[5] * scale / rate
+            if metric == "sigma":
+                val = sigma_chi_p(val, mt, eps, ma)
+            if np.isfinite(val) and val > 0 and (best is None or val < best[0]):
+                best = (val, eps)
+        if best is not None:
+            m_tev.append(mt); obs_o.append(best[0]); eps_o.append(best[1])
+    if not m_tev:
+        raise SystemExit(f"No observed limits found for {signals} (blinded areas?)")
+    order = np.argsort(m_tev)
+    return tuple(np.array(a)[order] for a in (m_tev, obs_o, eps_o))
 
 
 def benchmark_excluded(signals, livetime, extrapolate=False):

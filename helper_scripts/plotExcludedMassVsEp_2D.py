@@ -25,10 +25,20 @@ from matplotlib.font_manager import FontProperties
 from matplotlib.patches import Patch
 from matplotlib.path import Path
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('-l','--limit_directory', action='store', dest='limit_directory', help='Limit directory')
 parser.add_argument('-L','--livetime', action='store', dest='livetime', help='Livetime')
+parser.add_argument('--cms-label', default='Work in Progress', help='text after "CMS" (e.g. Preliminary)')
+parser.add_argument('--lumi-unit', default='month', help='livetime unit in the top-right label (paper: "months")')
+parser.add_argument('--outdir', default='figures', help='output directory of the figures')
+parser.add_argument('--xmin', type=float, default=None,
+                    help='override the auto lower x limit, in GeV (paper: 2000, as the Oct-27 figures)')
+parser.add_argument('--bd-overlay', action='store_true', dest='bd_overlay',
+                    help="overlay the beam-dump and SN excluded eps ranges at fixed m_A' (ARC Q9)")
+parser.add_argument('--bd-json', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'beamdump_sn_excluded_eps_bands.json'),
+                    help='from work/arc2_beamdump (DarkCast + NA62 2312.12055, SN 2511.15785)')
 parser.add_argument('--fixedDepth', action='store_true', dest='fixedDepth',
                     help='Overlay the per-depth (e0..e6) fixed-depth exclusion regions '
                          'instead of the single volume-weighted region.')
@@ -44,6 +54,10 @@ parser.add_argument('--use-cache', action='store_true', dest='use_cache',
 parser.add_argument('--yaxis', action='store', dest='y_axis', default='epsilon',
                     choices=['epsilon', 'lifetime'],
                     help="Vertical axis variable: 'epsilon' (default) or 'lifetime' (ctau).")
+parser.add_argument('--tau0', type=float, default=1.6e-21,
+                    help='Dark photon proper lifetime at eps = 1 [s] for the ctau axis (7.53e-22 = Gamma_ee + Gamma_mumu at 0.23 GeV).')
+parser.add_argument('--cache-tag', default='',
+                    help='Suffix for the band cache file (e.g. a cache rescaled to another tau0).')
 parser.add_argument('--heatmap', action='store_true', dest='heatmap',
                     help='Third version of the plot: a 2D heatmap of the expected signal strength '
                          'mu = predicted signal rate / median 95%% CL expected excluded rate, over the '
@@ -61,6 +75,11 @@ parser.add_argument('--alpha-exponent', type=float, default=1.61, dest='alpha_ex
                          'only for the on-plot annotation. Must match --alpha-exponent given to '
                          'helper_scripts/limitRateInputScript.py, otherwise the figure advertises '
                          'a coupling the limit was not computed at. Default 1.61 (alpha_X^max).')
+parser.add_argument('--no-sn', action='store_true', dest='no_sn',
+                    help='with --bd-overlay: omit the SN band and its legend entry (off the eps axis at m_A\'=0.23 GeV)')
+parser.add_argument('--alpha-label', default='', dest='alpha_label',
+                    help='Superscript on the alpha_chi benchmark annotation, e.g. CMB gives '
+                         'alpha_chi^CMB. Default empty (plain alpha_chi).')
 parser.add_argument('--ymin', type=float, default=None,
                     help='Override the auto-derived lower y limit (epsilon, or ctau in m with '
                          '--yaxis lifetime). By default the range is snapped to the drawn curves.')
@@ -102,13 +121,15 @@ plt.rcParams.update({'font.size': 22})
 cms_fp = FontProperties(family="sans-serif", weight="bold")
 y_axis = args.y_axis # Can be either lifetime or epsilon (set via --yaxis)
 
-def alpha_annotation(exponent, coeff=0.17):
+def alpha_annotation(exponent, coeff=0.17, sup=''):
     """Benchmark line for the plot corner. The coefficient 0.17 is unchanged by a reweight in the
-    exponent, so only the power moves; ^1 is written without an exponent for readability."""
+    exponent, so only the power moves; ^1 is written without an exponent for readability.
+    sup: optional superscript on alpha_chi (e.g. CMB, via --alpha-label)."""
+    a = rf"\alpha_{{\chi}}^{{\text{{{sup}}}}}" if sup else r"\alpha_{\chi}"
     if abs(exponent - 1.0) < 1e-9:
-        return rf"$\alpha_{{\chi}}={coeff:g}\;\mathrm{{m_{{\chi}}/TeV}}$"
+        return rf"${a}={coeff:g}\;\mathrm{{m_{{\chi}}/TeV}}$"
     expo = f"{exponent:g}"
-    return rf"$\alpha_{{\chi}}={coeff:g}\;(\mathrm{{m_{{\chi}}/TeV}})^{{" + expo + r"}$"
+    return rf"${a}={coeff:g}\;(\mathrm{{m_{{\chi}}/TeV}})^{{" + expo + r"}$"
 
 
 # ── HEATMAP MODE ─────────────────────────────────────────────────────────────
@@ -232,12 +253,12 @@ if args.heatmap:
                    r"$\alpha_{\chi}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$")
         else:
             lab = (rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$" "\n"
-                   + alpha_annotation(args.alpha_exponent, args.alpha_coeff))
+                   + alpha_annotation(args.alpha_exponent, args.alpha_coeff, args.alpha_label))
         ax.annotate(lab, xy=(0.05, 0.975), xycoords="axes fraction", ha="left",
                     va="top", fontsize=22)
 
-        hep.cms.label("Work in Progress", data=True, loc=0, ax=ax,
-                      rlabel=f"Run 3 Cosmics ({livetime} month)", fontsize=24)
+        hep.cms.label(args.cms_label, data=True, loc=0, ax=ax,
+                      rlabel=f"Run 3 Cosmics ({livetime} {args.lumi_unit})", fontsize=24)
 
     # Colour axis = expected signal strength mu = predicted signal rate / median 95%
     # CL expected excluded rate; the mu=1 (log10 mu=0) contour is the exclusion edge.
@@ -247,7 +268,7 @@ if args.heatmap:
     cbar.set_label(r"Signal strength $\mu$ (predicted / 95% CL excluded)", fontsize=26)
     cbar.ax.tick_params(labelsize=22)
 
-    outbase = (f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}"
+    outbase = (f"{args.outdir}/ExcludedMass_mX_ep_explim_signal_{limit_directory}"
                f"_livetime_{livetime_tag}_heatmap")
     fig.savefig(outbase + ".pdf", bbox_inches='tight')
     fig.savefig(outbase + ".png", dpi=200, bbox_inches='tight')
@@ -295,7 +316,7 @@ if use_cache and not band68:
 # Cache of the interpolated band-edge points, so a color-only re-run can skip the
 # JSON + parquet + interpolation. y-axis specific (epsilon vs ctau change the grid).
 _cache_dir = os.path.join("exp_lim", f"signal_{limit_directory}_livetime_{livetime}_limit")
-BAND_CACHE_PATH = os.path.join(_cache_dir, f"band_edges_cache_{args.y_axis}.npz")
+BAND_CACHE_PATH = os.path.join(_cache_dir, f"band_edges_cache_{args.y_axis}{args.cache_tag}.npz")
 
 # The five nested band curves, outer->inner. Each maps a legend role to the
 # (open_arr_key, closed_arr_key) pair in exclusion_limits.json.
@@ -305,6 +326,7 @@ BAND_CURVES = [
     ("med",   "exp_lim",         "closed_exp_lim"),
     ("in68",  "exp_lim_lower",   "exp_lim_lower_closed"),
     ("in95",  "exp_lim_lower95", "exp_lim_lower95_closed"),
+    ("obs",   "obs_lim",         "closed_obs_lim"),  # only in unblinded exclusion_limits.json
 ]
 
 BAND_EDGES = None   # {name: (yy, lo_d, hi_d)} once built (fresh or from cache)
@@ -323,7 +345,11 @@ if use_cache:
     # line and the axis range. The JSON is small, so reading just `eps` costs nothing next to
     # the parquet load this path exists to avoid.
     try:
-        _lim_eps = _load_limits(f"signal_{limit_directory}_livetime_{livetime}_limit")["eps"]
+        _lim = _load_limits(f"signal_{limit_directory}_livetime_{livetime}_limit")
+        _lim_eps = _lim["eps"]
+        # the median window (gray region + "Excluded" label) still needs the median arrays
+        max_exp_lim_Run3_e0_closed = _lim["closed_exp_lim"]
+        max_exp_lim_Run3_e0        = _lim["exp_lim"]
     except (OSError, KeyError):
         _lim_eps = None
 elif fixedDepth:
@@ -366,7 +392,43 @@ else:
           "Check that it matches `labels` in exp_lim/set_limit_alphaMax.py.")
     eps = list(EPS_LEGACY)
 
-A = 1.6e-21 * 3e8
+A = args.tau0 * 3e8  # c*tau0 [m]; ctau = A/eps^2
+
+# Beam-dump / SN overlay (ARC Q9): eps intervals excluded at fixed m_A', independent of m_chi,
+# drawn as horizontal hatched bands; on the ctau axis eps -> A/eps^2, which flips the edges.
+BD_COLOR = '0.25'
+SN_COLOR = '#B2182B'
+
+def draw_bd_overlay(ax, y_axis):
+    from matplotlib.patches import Patch
+    from matplotlib.lines import Line2D
+    bd = json.load(open(args.bd_json))
+    conv = (lambda e: A / e**2) if y_axis == 'lifetime' else (lambda e: e)
+    x0, x1 = ax.get_xlim()
+    def band(lo, hi, color, hatch, edge):
+        y0, y1 = sorted((conv(lo), conv(hi)))
+        ax.fill_between([x0, x1], y0, y1, facecolor='none', edgecolor=color, hatch=hatch,
+                        linewidth=0, zorder=22)
+        ax.axhline(conv(edge), color=color, linewidth=2.0, zorder=23)
+    nom = bd[f"{args.ma:.2f}"]
+    band(*nom["beamdump_union"], BD_COLOR, '//', nom["beamdump_union"][0])
+    if not args.no_sn:
+        band(*nom["sn_union"], SN_COLOR, '\\\\', nom["sn_union"][1])
+    # sensitivity to m_A' (0.23 GeV is just above the dimuon threshold): the inner edges at the
+    # neighbouring masses as thin dotted lines
+    for mk in ("0.20", "0.25"):
+        if mk == f"{args.ma:.2f}" or mk not in bd:
+            continue
+        ax.axhline(conv(bd[mk]["beamdump_union"][0]), color=BD_COLOR, linewidth=1.2, linestyle=':', zorder=23)
+        if not args.no_sn:
+            ax.axhline(conv(bd[mk]["sn_union"][1]), color=SN_COLOR, linewidth=1.2, linestyle=':', zorder=23)
+    ax.set_xlim(x0, x1)
+    sn_patch = [] if args.no_sn else [Patch(facecolor='none', edgecolor=SN_COLOR, hatch='\\\\',
+                                            label="SN (cooling + low-E SNe)")]
+    return [Patch(facecolor='none', edgecolor=BD_COLOR, hatch='//',
+                  label="Beam dumps (E137, CHARM, NuCal, NA62)")] + sn_patch + [
+            Line2D([0], [0], color='0.4', linestyle=':', linewidth=1.2,
+                   label=r"edges at $m_{A^\prime}$ = 0.20, 0.25 GeV")]
 ctau = [A * e**(-2) for e in eps]
 
 if y_axis == 'lifetime': yAxis = ctau
@@ -454,6 +516,8 @@ if args.ymin is not None:
     Y_LO = args.ymin
 if args.ymax is not None:
     Y_HI = args.ymax
+if args.xmin is not None:
+    X_LO = args.xmin
 print(f"axis ranges from data: x [{X_LO:.4g}, {X_HI:.4g}] GeV   y [{Y_LO:.4g}, {Y_HI:.4g}]"
       + ("  (y overridden)" if (args.ymin is not None or args.ymax is not None) else ""))
 
@@ -729,14 +793,15 @@ for n, ax in enumerate(axs):
         label = (
             rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
             "\n"
-            + alpha_annotation(args.alpha_exponent, args.alpha_coeff)
+            + alpha_annotation(args.alpha_exponent, args.alpha_coeff, args.alpha_label)
         )
     # zorder + backing box: with the axes now cropped to the data, the bands can reach the
     # top-left corner (they do on the ctau panel), and without these the model parameters are
     # painted over by the fill.
     ax.annotate(label, xy=(0.05, 0.975), xycoords="axes fraction", ha="left", va="top",
                 fontsize=22, zorder=30,
-                bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none", alpha=0.75))
+                bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none",
+                          alpha=1.0 if args.bd_overlay else 0.75))
 
     # Retrieve unique scan points from the dataframe (not used for contouring here,
     # but kept for potential Z-matrix / rate-overlay extensions below). Skipped in
@@ -885,6 +950,7 @@ for n, ax in enumerate(axs):
                 _fillwin("in95",  '0.80',       5)   # +2s : gray robustly-excluded core
                 # Median contour line (runs through the gold 68% band).
                 _outline("med", MEDIAN_COLOR, 'dashed', MEDIAN_LW, 20)
+                _outline("obs", 'black', 'solid', MEDIAN_LW, 21)
             else:
                 _fill("out95", BAND95_COLOR, BAND95_ALPHA, 2)   # 95% reach (blue), widest
                 _fill("out68", BAND68_COLOR, BAND68_ALPHA, 3)   # 68% reach (gold) fills interior
@@ -895,15 +961,28 @@ for n, ax in enumerate(axs):
                 _outline("out68", BAND68_COLOR, 'solid', EDGE_LW, 16)
                 _outline("in68",  BAND68_COLOR, 'solid', EDGE_LW, 17)
                 _outline("in95",  BAND95_COLOR, 'solid', EDGE_LW, 18)
+                _outline("obs", 'black', 'solid', MEDIAN_LW, 21)
 
             from matplotlib.lines import Line2D
             from matplotlib.patches import Patch
-            band_legend = [
+            band_legend = ([Line2D([0], [0], color='black', linestyle='solid', linewidth=MEDIAN_LW,
+                                   label='Observed')] if "obs" in BAND_EDGES else []) + [
                 Line2D([0], [0], color=MEDIAN_COLOR, linestyle='dashed',
                        linewidth=MEDIAN_LW, label='Median expected'),
                 Patch(facecolor=BAND68_COLOR, edgecolor='none', label='68% expected'),
                 Patch(facecolor=BAND95_COLOR, edgecolor='none', label='95% expected'),
             ]
+            if args.bd_overlay:
+                # overlay legend in its own white box under the model annotation
+                # eps: under the model annotation; ctau: stacked above the band legend in the
+                # lower-left corner, which only the beam-dump hatching reaches
+                _bd_kw = (dict(fontsize=13, loc='lower left', bbox_to_anchor=(0.005, 0.115))
+                          if y_axis == 'lifetime' else
+                          dict(fontsize=15, loc='upper left', bbox_to_anchor=(0.015, 0.865)))
+                _bd_leg = ax.legend(handles=draw_bd_overlay(ax, y_axis), framealpha=1.0,
+                                    edgecolor='0.6', **_bd_kw)
+                _bd_leg.set_zorder(30)
+                ax.add_artist(_bd_leg)
             if args.ribbon:
                 # The "Excluded" text in the gray region conveys it directly, so no
                 # separate legend patch is needed for the fill. zorder must beat the
@@ -916,8 +995,15 @@ for n, ax in enumerate(axs):
             # The band runs UP to the right in the epsilon plane and DOWN to the right in the
             # ctau plane (ctau ~ eps^-2), so the empty corner flips with it. Fixed at
             # 'lower right' the legend sat on top of the bands on the ctau panel.
-            ax.legend(handles=band_legend, fontsize=18,
-                      loc='lower left' if y_axis == 'lifetime' else 'lower right')
+            if args.bd_overlay:
+                # compact 2x2 band legend, opaque over the hatching
+                _lg = ax.legend(handles=band_legend, fontsize=15, ncols=2,
+                                loc='lower left' if y_axis == 'lifetime' else 'lower right',
+                                framealpha=1.0, edgecolor='0.6')
+                _lg.set_zorder(30)
+            else:
+                ax.legend(handles=band_legend, fontsize=18,
+                          loc='lower left' if y_axis == 'lifetime' else 'lower right')
 
         else:
             # Single volume-weighted region, drawn the same smooth way as the
@@ -967,8 +1053,8 @@ tev_formatter = mticker.FuncFormatter(lambda x, pos: f"{x*1e-3:g}")
 for ax in axs.flat:
     # Official CMS label via mplhep: "CMS Work in Progress" (upper-left) and
     # the dataset/livetime label (upper-right), laid out and spaced by mplhep.
-    hep.cms.label("Work in Progress", data=True, loc=0, ax=ax,
-                  rlabel=f"Run 3 Cosmics ({livetime} month)", fontsize=24)
+    hep.cms.label(args.cms_label, data=True, loc=0, ax=ax,
+                  rlabel=f"Run 3 Cosmics ({livetime} {args.lumi_unit})", fontsize=24)
     ax.xaxis.set_major_formatter(tev_formatter)
 
 # ── SAVE ─────────────────────────────────────────────────────────────────────
@@ -983,12 +1069,13 @@ bbox = Bbox.from_extents(bbox.x0 - pad_left, bbox.y0 - pad_bottom,
                          bbox.x1 + pad_right, bbox.y1 + pad_top)
 ysuffix = '_lifetime' if y_axis == 'lifetime' else ''
 if fixedDepth:
-    outbase = f"figures/ExcludedMass_mX_ep_explim_Run3_fixedDepth_livetime_{livetime_tag}{ysuffix}"
+    outbase = f"{args.outdir}/ExcludedMass_mX_ep_explim_Run3_fixedDepth_livetime_{livetime_tag}{ysuffix}"
 elif band68:
     _ribtag = "_ribbon" if args.ribbon else ""
-    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}_band68{_ribtag}{ysuffix}"
+    outbase = (f"{args.outdir}/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}_band68{_ribtag}{ysuffix}"
+               + (("_beamdump" if args.no_sn else "_beamdumpSN") if args.bd_overlay else ""))
 else:
-    outbase = f"figures/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}{ysuffix}"
+    outbase = f"{args.outdir}/ExcludedMass_mX_ep_explim_signal_{limit_directory}_livetime_{livetime_tag}{ysuffix}"
 fig.savefig(outbase + ".pdf", bbox_inches=bbox)
 fig.savefig(outbase + ".png", bbox_inches=bbox, dpi=200)
 print(f"Wrote {outbase}.pdf / .png")
