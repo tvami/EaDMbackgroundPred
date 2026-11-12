@@ -1349,3 +1349,86 @@ plot XENONnT's −2σ *sensitivity* as its limit).
 `helper_scripts/plotSigmaVsMass_withDD.py` is the exploratory sibling: fixed-epsilon slices (`-e`), a
 `--compare` overlay for a second rate table, and the benchmark-excluded solid/faded styling. Use it for
 studies; `plotSigmaVsMass_CMSstyle.py` is the one that goes in the AN.
+
+## How the paper figures are made (EXO-26-004)
+
+Every figure in the paper (gitlab `tdr/papers/EXO-26-004`) is a copy of the output of one command below; each was checked to be identical to the file in the paper's `Figures/`.
+To change a figure: edit the script or the options, rerun the command, and copy the output over the file in the paper's `Figures/`.
+
+Common environment for the commands run in the CMSSW area (`ENV` below):
+
+```
+cd $CMSSW_BASE/src   # ~tvami/EarthAsDM/CMSSW_14_1_0_pre4/src
+source /cvmfs/cms.cern.ch/cmsset_default.sh && eval `scramv1 runtime -sh` && source twoD-env/bin/activate
+export PYTHONPATH=$PYTHONPATH:/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages
+```
+
+Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain built on them (`exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN*`) are produced as described in `CMSSW_14_1_0_pre4/src/hybridnew_v35/README.md` (`run_hn_chain.sh`). The flux limits come from `/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn` (`scripts/run_all.sh`, `scripts/collect.py`, see `RESULTS.md` there).
+
+### Main text
+
+- **Fig. 1**, `Figures/6ShapeAnalysis/2DA_Run3_SR_unblinded_v35_1x0_pass.pdf` (pass region), and **Fig. 5** (End Matter), `..._fail.pdf` (fail region): `ENV`, then
+  ```
+  python3 helper_scripts/plot2DA_SR_paper.py --area paper_figs_arc4/fig1/rpf2x0_Signal_M3000GeV_mergedDepth_SR \
+      --signal Signal_M3000GeV_mergedDepth_SR --tf 1x0 --panel pass --pull-range 1.5 \
+      --out paper_figs_arc4/fig1/2DA_Run3_SR_unblinded_v35_1x0_pass_pullzoom
+  python3 helper_scripts/plot2DA_SR_paper.py --area paper_figs_arc4/fig1/rpf2x0_Signal_M3000GeV_mergedDepth_SR \
+      --signal Signal_M3000GeV_mergedDepth_SR --tf 1x0 --panel fail --no-pull \
+      --out paper_figs_arc4/fig1/2DA_Run3_SR_unblinded_v35_1x0_fail_nopull
+  ```
+  Fig. 1: pull panel at +-1.5 (largest pass-region pull 1.02). Fig. 5: no pull panel (the fail-region pulls are all 0).
+- **Fig. 2**, `Figures/7Results/upward_intensity_limit_vs_pt.pdf`, and **Fig. 8** (End Matter), `upward_intensity_limit_vs_coszenith.pdf`: `ENV` (for ROOT), then
+  ```
+  cd /ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn
+  python3 scripts/plot_limit_bands_hn.py plots/upward_intensity_limit_vs_pt
+  python3 scripts/plot_limit_vs_angle_hn.py 1000 plots/upward_intensity_limit_vs_coszenith cos
+  ```
+- **Fig. 3**, `Figures/7Results/excl_ma_eps_mchi10_100_1000TeV.pdf`:
+  ```
+  cd /ceph/cms/store/user/tvami/EarthAsDM/work/arc3_epsma/scripts && source env.sh
+  export EPSMA_LIMITDIR=/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN \
+         EPSMA_SUFFIX=_HN EPSMA_OUTTAG=_alphaCMB EPSMA_ALPHA_LABEL=CMB
+  EPSMA_ZOOM=1 python3 plot_epsma.py 10000 100000 1000000
+  ```
+  Output `../figures/exclusion_ma_eps_mchi10_100_1000TeV_zoom_HN_alphaCMB.pdf`. Beam-dump curves: DarkCast in `work/arc2_beamdump/darkcast/limits` and NA62 in `work/arc3_epsma/data/na62_dump_ll_curve.json`; SN: `work/arc2_beamdump/sn_digitized.json`.
+- **Fig. 4**, `Figures/7Results/SigmaVsMass_CMSstyle_tracker_core_v35_ddmarked_unblinded_posTF.pdf`: `ENV`, then
+  ```
+  AT=rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN; O=hybridnew_v35/figures_HN_tau0
+  python3 helper_scripts/plotSigmaVsMass_CMSstyle.py -s exp_lim/signal_${AT}_tracker_core_lowmass_alpha_max.txt -L 14.9 \
+      --dd-mass-cut 100 --dd-show-all --observed --cms-label Preliminary --lumi-unit months \
+      --ylabel '$\sigma^{\mathrm{SI}}_{\chi p}$ [cm$^2$]' --proton-only -o $O \
+      --name SigmaVsMass_CMSstyle_tracker_core_v35_ddmarked_unblinded_posTF_HN
+  ```
+  The log prints the numbers quoted in the text (strongest observed and expected exclusion, capture speeds, ratio to LZ).
+
+### End Matter
+
+- **Fig. 6**, `Figures/7Results/limits_combine_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_alpha_max_4e-08.pdf`: `ENV`, then
+  ```
+  O=hybridnew_v35/figures_HN_tau0/fig6_theory10
+  python3 exp_lim/set_limit_alphaMax.py --single -L "Run 3 Cosmics" --outdir $O \
+      -s exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN_alpha_max.txt -l 14.9 \
+      --cmsLabel Preliminary --unblind -o "" --noCrossingLines --extraTextPosX 0.38 --lumiUnit months \
+      --xTitle "m_{#chi} [TeV]" --thLegend "Predicted rate" --paveTextSize 0.036 --paveBox 0.17,0.70,0.40,0.86 \
+      --legendFont 42 --legendTextSize 0.037 --legendBox 0.52,0.5175,0.93,0.89 --legendMargin 0.17 \
+      --tau0 7.53e-22 --thDashAbove 14.478 --alphaSup CMB \
+      --thBand 0.9,1.1 --thBandAlpha 0.35 --thBandLegend "Theory uncertainty"
+  ```
+  `--thBand` draws the 10% theory band (Earth composition about 5%, form factors 0.1%) as a translucent fill; it changes the drawing only. The paper uses the `..._HN_alpha_max_4e-08.pdf` output (the reference epsilon).
+- **Fig. 7**, `Figures/7Results/ExcludedMass_mX_ep_explim_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_livetime_14p9_band68_ribbon_beamdump.pdf`: `ENV`, then
+  ```
+  python3 helper_scripts/plotExcludedMassVsEp_2D.py -l rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN -L 14.9 \
+      --band68 --ribbon --yaxis epsilon --cms-label Preliminary --bd-overlay --no-sn --use-cache --lumi-unit months \
+      --xmin 2000 --alpha-label CMB --outdir hybridnew_v35/figures_HN/alphaCMB
+  ```
+  `--no-sn` drops the SN band, which lies below the epsilon range of the figure. Beam-dump bands: `helper_scripts/beamdump_sn_excluded_eps_bands.json`.
+
+### Supplementary material
+
+- c tau versus m_chi exclusion (`CMS Supplementary`), `hybridnew_v35/figures_HN_tau0/supplementary/`: `ENV`, then
+  ```
+  python3 helper_scripts/plotExcludedMassVsEp_2D.py -l rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN -L 14.9 \
+      --band68 --ribbon --yaxis lifetime --ymax 2824 --bd-overlay --use-cache --cache-tag _tau0phys --tau0 7.53e-22 \
+      --lumi-unit months --xmin 2000 --cms-label Supplementary --alpha-label CMB \
+      --outdir hybridnew_v35/figures_HN_tau0/supplementary
+  ```
