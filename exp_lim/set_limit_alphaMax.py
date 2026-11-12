@@ -3,6 +3,7 @@ import subprocess
 import array
 from  array import array
 import os
+import math
 import numpy as np
 import re
 
@@ -22,6 +23,67 @@ parser.add_option('-L', '--lumiLabel',metavar='F', type='string', action='store'
                 default   =   'Run-3 Cosmics',
                 dest      =   'lumiLabel',
                 help      =   'Top right label of limit plot')
+parser.add_option('--cmsLabel', type='string', action='store',
+                default   =   'Work in Progress',
+                dest      =   'cmsLabel',
+                help      =   'Text after "CMS" (e.g. Preliminary)')
+
+parser.add_option('--extraTextPosX', type='float', action='store', default=0.4325,
+                dest='extraTextPosX', help='NDC x of the text after "CMS"')
+
+parser.add_option('--noCrossingText', action='store_true', default=False,
+                dest='noCrossingText', help='keep the crossing lines but drop their TeV labels')
+
+parser.add_option('--noCrossingLines', action='store_true', default=False,
+                dest='noCrossingLines', help='drop the vertical crossing lines (and their labels)')
+
+parser.add_option('--tau0', type='float', action='store', default=1.6e-21,
+                dest='tau0', help='dark photon proper lifetime at eps = 1 [s] for the ctau label (7.53e-22 = Gamma_ee + Gamma_mumu at 0.23 GeV)')
+parser.add_option('--lumiUnit', type='string', action='store', default='month',
+                dest='lumiUnit', help='livetime unit in the top-right label (paper: "months")')
+
+parser.add_option('--xTitle', type='string', action='store', default=None,
+                dest='xTitle', help='x-axis title (default "m(<particle>) [TeV]")')
+
+parser.add_option('--thLegend', type='string', action='store', default=None,
+                dest='thLegend', help='legend text of the theory curve (default sigma_th(<process>))')
+
+parser.add_option('--thDashAbove', type='float', action='store', default=None,
+                dest='thDashAbove', help='draw the theory curve dashed above this m_chi [TeV] (e.g. 14.48, '
+                     'where alpha_chi = 0.17 (m/TeV)^1.61 reaches 4pi); default off = all solid. Drawing only, '
+                     'the crossings still use the full curve')
+parser.add_option('--thDashLegend', type='string', action='store', default=None,
+                dest='thDashLegend', help='legend text of the dashed part (default "<thLegend>, #alpha_{#chi}^{<alphaSup>} > 4#pi")')
+parser.add_option('--thBand', type='string', action='store', default=None,
+                dest='thBand', help='hatched band around the theory curve, multiplicative "lo,hi" (e.g. 0.667,1.867 for a '
+                     'local DM density of 0.2-0.56 around the nominal 0.3 GeV/cm3; the rate is linear in it). Drawing only')
+parser.add_option('--thBandAlpha', type='float', action='store', default=None,
+                dest='thBandAlpha', help='with --thBand: solid fill with this opacity (e.g. 0.35) instead of hatching')
+parser.add_option('--thBandLegend', type='string', action='store', default=None,
+                dest='thBandLegend', help='legend text of the theory band')
+parser.add_option('--alphaSup', type='string', action='store', default='max',
+                dest='alphaSup', help='superscript of alpha_chi in the model-parameter box (paper: CMB)')
+
+parser.add_option('--paveTextSize', type='float', action='store', default=None,
+                dest='paveTextSize', help='NDC text size of the model-parameter box (default: auto-fit)')
+
+parser.add_option('--paveBox', type='string', action='store', default='0.20,0.68,0.43,0.88',
+                dest='paveBox', help='x1,y1,x2,y2 NDC of the model-parameter box')
+
+parser.add_option('--legendTextSize', type='float', action='store', default=None,
+                dest='legendTextSize', help='NDC text size of the limit legend (default: auto-fit)')
+
+parser.add_option('--legendFont', type='int', action='store', default=62,
+                dest='legendFont', help='ROOT font of the limit legend entries (header stays bold)')
+
+parser.add_option('--legendMargin', type='float', action='store', default=None,
+                dest='legendMargin', help='fraction of the legend width used by the symbols')
+
+parser.add_option('--legendBox', type='string', action='store', default='0.5,0.6,0.92,0.89',
+                dest='legendBox', help='x1,y1,x2,y2 NDC of the limit legend')
+
+parser.add_option('--fluxUnits', action='store_true', default=False,
+                dest='fluxUnits', help='y axis as upward muon intensity: monthly rate / (tracker <A Omega>, isotropic)')
 parser.add_option('-s', '--signals', metavar='FILE', type='string', action='store',
                 default   =   'bstar_signalsLH.txt',
                 dest      =   'signals',
@@ -109,10 +171,12 @@ if _n_rate_rows != len(labels):
     raise SystemExit(f"{options.signals} has {_n_rate_rows} rate rows but the epsilon grid has "
                      f"{len(labels)} values. They are paired positionally, so this would mislabel "
                      f"every limit. Regenerate both with helper_scripts/limitRateInputScript.py.")
-A = 1.6e-21 * 3e8
+A = options.tau0 * 3e8  # c*tau0 [m]; label only
 ctau_labels = [A * e**(-2) for e in labels]
 exp_lim = []
 closed_exp_lim = []
+obs_lim = []
+closed_obs_lim = []
 exp_lim_upper = []
 exp_lim_lower = []
 # Closed (upper-mass) edges of the 68% band crossings. up_hi is the -1sigma
@@ -132,6 +196,68 @@ else: num_rate = options.num_rate
 # Dictionary that has proportions of each depth as a function of candidate mass.
 # Only needed for the nominal (depth-weighted) VOLUME mode.
 props_dict = None if options.single else np.load('exp_lim/props_dict.npy', allow_pickle=True).item()
+_th_keep = []   # keep the split theory graphs alive (ROOT ownership)
+
+
+def draw_theory(g):
+    """Draw the theory curve: solid, or solid up to --thDashAbove and dashed above it.
+    The split point is interpolated in log-log, i.e. on the straight segment drawn on the canvas."""
+    m0 = options.thDashAbove
+    xs = [g.GetPointX(i) for i in range(g.GetN())]
+    ys = [g.GetPointY(i) for i in range(g.GetN())]
+    if m0 is None or not (xs[0] < m0 < xs[-1]):
+        g.Draw("l")
+        if m0 is not None:
+            print(f"thDashAbove={m0} outside the mass grid; theory drawn as one style")
+            dash = g.Clone(); dash.SetLineStyle(2); _th_keep.append(dash)
+        return
+    k = next(i for i, x in enumerate(xs) if x > m0)   # first point above m0
+    f = math.log(m0 / xs[k-1]) / math.log(xs[k] / xs[k-1])
+    if ys[k-1] > 0 and ys[k] > 0:
+        y0 = math.exp(math.log(ys[k-1]) + f * (math.log(ys[k]) - math.log(ys[k-1])))
+    else:                                              # zero rate: no log-log segment
+        y0 = ys[k-1] + f * (ys[k] - ys[k-1])
+    parts = []
+    for px, py, style in (([x for x in xs[:k]] + [m0], [y for y in ys[:k]] + [y0], 1),
+                          ([m0] + xs[k:], [y0] + ys[k:], 2)):
+        gg = ROOT.TGraph(len(px), array('d', px), array('d', py))
+        gg.SetLineColor(g.GetLineColor()); gg.SetLineWidth(g.GetLineWidth()); gg.SetLineStyle(style)
+        gg.Draw("l")
+        parts.append(gg)
+    print(f"Theory solid for m <= {m0} TeV (rate {y0:.4g}), dashed above")
+    _th_keep.extend(parts)
+
+
+def style_theory_band(obj, color):
+    if options.thBandAlpha:
+        obj.SetFillColorAlpha(color, options.thBandAlpha); obj.SetFillStyle(1001)
+    else:
+        obj.SetFillColor(color); obj.SetFillStyle(3345)
+    obj.SetLineColor(0); obj.SetLineWidth(0)
+
+
+def draw_theory_band(g):
+    """--thBand: hatched band lo*theory .. hi*theory, drawn under the theory line."""
+    if not options.thBand:
+        return None
+    lo, hi = (float(v) for v in options.thBand.split(','))
+    ROOT.gPad.Update()
+    ymin = 10**ROOT.gPad.GetUymin() if ROOT.gPad.GetLogy() else ROOT.gPad.GetUymin()
+    # only points inside the frame: ROOT clips a filled polygon that leaves it into a spurious wedge
+    pts = [(g.GetPointX(i), g.GetPointY(i)) for i in range(g.GetN()) if g.GetPointY(i) * lo > ymin]
+    if len(pts) < 2:
+        return None
+    xs = [x for x, _ in pts]; ys = [y for _, y in pts]
+    px = xs + xs[::-1]
+    py = [y * hi for y in ys] + [y * lo for y in ys[::-1]]
+    band = ROOT.TGraph(len(px), array('d', px), array('d', py))
+    style_theory_band(band, g.GetLineColor())
+    band.Draw("f")
+    _th_keep.append(band)
+    print(f"Theory band x[{lo}, {hi}], frame ymin {ymin:.3g}, {len(pts)} points")
+    return band
+
+
 def add_e(path, tag='e3'):
     # Insert after the mass token (e.g. M800GeV)
     path = re.sub(r'(M\d+GeV)', rf'\1_{tag}', path)
@@ -193,11 +319,18 @@ print("min/max signal_mass (TeV):", min(signal_mass), max(signal_mass))
 # Read in rate 2DA is normalized to (100 events always but depending on runtime, this is artifically lowered by a factor of 1/runtime)
 signal_xsecs = signal_file.readline().split(',')
 signal_xsecs = [100/float(options.lumi) for x in signal_xsecs]
+# monthly rate through the full tracker (r=112, |z|<270 cm) -> intensity, <A Omega> = (pi/2) S
+Y_SCALE = 1.0
+if options.fluxUnits:
+    _S = 2*math.pi*112*540 + 2*math.pi*112**2  # cm^2
+    Y_SCALE = 1.0 / ((math.pi/2)*_S * 365.25*86400/12)  # month -> s
+    signal_xsecs = [x*Y_SCALE for x in signal_xsecs]
+Y_TITLE = "Upward #mu intensity [cm^{-2} s^{-1} sr^{-1}]" if options.fluxUnits else "Monthly DM-induced muon rate"
 
 for i in range(num_rate):
     # Read in xsecs as a list of strings, strip whitespace, and convert to floats
     theory_xsecs = signal_file.readline().split(',')
-    theory_xsecs = [float(x.strip()) for x in theory_xsecs]
+    theory_xsecs = [float(x.strip())*Y_SCALE for x in theory_xsecs]
     total_theory_xsec_list.append(theory_xsecs)
 
 def signed_window(gLimit, gTheory, first, last):
@@ -284,7 +417,7 @@ for theory_xsecs in total_theory_xsec_list:
     climits = TCanvas("climits", "climits",700, 600)
     climits.SetLogy(True)
     climits.SetLogx(True)
-    climits.SetLeftMargin(.15)
+    climits.SetLeftMargin(.18 if options.fluxUnits else .15)
     climits.SetBottomMargin(.15)
     climits.SetTopMargin(0.1)
     climits.SetRightMargin(0.05)
@@ -332,6 +465,10 @@ for theory_xsecs in total_theory_xsec_list:
     # Observed
     if not options.blind:
         print('Not blinded')
+        # frame from the expected graph, as in the blinded plot (ROOT clips the band fills otherwise)
+        g_mclimit.GetXaxis().SetRangeUser(1.1, 1000.0)
+        g_mclimit.SetMinimum(2e-1*Y_SCALE)
+        g_mclimit.SetMaximum(1e5*Y_SCALE)
         print('---------------DEBUG---------------------')
         print('x_mass: {}'.format(x_mass))
         print('len x_mass: {}'.format(len(x_mass)))
@@ -486,33 +623,38 @@ for theory_xsecs in total_theory_xsec_list:
     g_error.SetLineColor(0)
 
     if not options.blind:
-        g_limit.GetXaxis().SetTitle("m("+options.particle+") [TeV]")  # NOT GENERIC
-        g_limit.GetYaxis().SetTitle("Cross Section [pb]") # NOT GENERIC
-        g_limit.GetXaxis().SetTitleSize(0.055)
-        g_limit.GetYaxis().SetTitleSize(0.05)
-        g_limit.Draw('ap')
-        g_error95.Draw("lf")
-        g_error.Draw("lf")
-        g_mclimit.Draw("l")
-        g_limit.Draw("lp")
-        graphWP.Draw("l")
-        g_limit.GetYaxis().SetTitleOffset(1.5)
-        g_limit.GetXaxis().SetTitleOffset(1.25)
-
-    else:
-        g_mclimit.GetXaxis().SetTitle("m("+options.particle+") [TeV]")  # NOT GENERIC
-        g_mclimit.GetYaxis().SetTitle("Monthly DM-induced muon rate") # NOT GENERIC
+        # same frame and bands as the blinded plot, observed drawn on top
+        g_mclimit.GetXaxis().SetTitle(options.xTitle or "m("+options.particle+") [TeV]")  # NOT GENERIC
+        g_mclimit.GetYaxis().SetTitle(Y_TITLE) # NOT GENERIC
         g_mclimit.GetXaxis().SetTitleSize(0.055)
         g_mclimit.GetYaxis().SetTitleSize(0.05)
         g_mclimit.Draw("al")
         g_error95.Draw("lf")
         g_error.Draw("lf")
         g_mclimit.Draw("l")
-        graphWP.Draw("l")
-        g_mclimit.GetYaxis().SetTitleOffset(1.5)
+        g_limit.Draw("lp")
+        draw_theory_band(graphWP)
+        draw_theory(graphWP)
+        g_mclimit.GetYaxis().SetTitleOffset(1.75 if options.fluxUnits else 1.5)
         g_mclimit.GetXaxis().SetTitleOffset(1.25)
         g_mclimit.GetXaxis().SetRangeUser(1.1, 1000.0)
-        g_mclimit.GetYaxis().SetRangeUser(0.000001, 1000.0)
+        g_mclimit.GetYaxis().SetRangeUser(0.000001*Y_SCALE, 1000.0*Y_SCALE)
+
+    else:
+        g_mclimit.GetXaxis().SetTitle(options.xTitle or "m("+options.particle+") [TeV]")  # NOT GENERIC
+        g_mclimit.GetYaxis().SetTitle(Y_TITLE) # NOT GENERIC
+        g_mclimit.GetXaxis().SetTitleSize(0.055)
+        g_mclimit.GetYaxis().SetTitleSize(0.05)
+        g_mclimit.Draw("al")
+        g_error95.Draw("lf")
+        g_error.Draw("lf")
+        g_mclimit.Draw("l")
+        draw_theory_band(graphWP)
+        draw_theory(graphWP)
+        g_mclimit.GetYaxis().SetTitleOffset(1.75 if options.fluxUnits else 1.5)
+        g_mclimit.GetXaxis().SetTitleOffset(1.25)
+        g_mclimit.GetXaxis().SetRangeUser(1.1, 1000.0)
+        g_mclimit.GetYaxis().SetRangeUser(0.000001*Y_SCALE, 1000.0*Y_SCALE)
 
     # Theory uncertainty curve dropped (was graphWPdown/graphWPup dashed lines)
 
@@ -566,26 +708,35 @@ for theory_xsecs in total_theory_xsec_list:
 
 
     if not options.blind:
-        obsMassLimit,obsCrossLimit = Inter(g_limit,graphWP) if len(Inter(g_limit,graphWP)) > 0 else -1.0
-        print('Observed limit: '+str(obsMassLimit) + ' TeV')
-
-        obsLine = TLine(obsMassLimit,g_mclimit.GetMinimum(),obsMassLimit,obsCrossLimit)
-        obsLine.SetLineStyle(2)
-        obsLine.Draw()
+        # same (first, last) crossings and signed window as the median expected
+        obsMassLimit,obsCrossLimit = Inter(g_limit,graphWP)
+        obs_lo, obs_hi = signed_window(g_limit, graphWP, obsMassLimit, obsCrossLimit)
+        print('Observed limit: '+str(obsMassLimit[0]) + ' TeV')
 
     # Legend and draw.
     # Bands are the 68% and 95% central quantiles of the upper-limit distribution
     # under the background-only hypothesis -- NOT +-1/+-2 sigma. The theory line
     # stays in the legend but WITHOUT its uncertainty (that curve was dropped).
-    gStyle.SetLegendFont(62)
-    legend = TLegend(0.5, 0.6, 0.92, 0.89, '')
+    gStyle.SetLegendFont(options.legendFont)
+    legend = TLegend(*[float(v) for v in options.legendBox.split(',')], '')
+    if options.legendTextSize: legend.SetTextSize(options.legendTextSize)
+    if options.legendMargin: legend.SetMargin(options.legendMargin)
     legend.SetHeader("95% CL upper limits")
+    if options.legendFont != 62: legend.GetListOfPrimitives().First().SetTextFont(62)
     if not options.blind:
         legend.AddEntry(g_limit, "Observed", "lp")
     legend.AddEntry(g_mclimit, "Median expected", "l")
     legend.AddEntry(g_error,   "68% expected", "f")
     legend.AddEntry(g_error95, "95% expected", "f")
-    legend.AddEntry(graphWP, "#sigma^{"+options.xsorder+"}_{th}("+options.process+")", "l")   # NOT GENERIC
+    th_legend = options.thLegend or (("#sigma^{"+options.xsorder+"}_{th}" if options.xsorder else "#sigma_{th}")+"("+options.process+")")   # NOT GENERIC
+    legend.AddEntry(graphWP, th_legend, "l")
+    if options.thDashAbove is not None:
+        legend.AddEntry(_th_keep[-1], options.thDashLegend or
+                        (th_legend + ", #alpha_{#chi}^{" + options.alphaSup + "} > 4#pi"), "l")
+    if options.thBand:
+        _bl = ROOT.TGraph(); style_theory_band(_bl, graphWP.GetLineColor())
+        _th_keep.append(_bl)
+        legend.AddEntry(_bl, options.thBandLegend or "Prediction range", "f")
 
     legend.SetBorderSize(0)
     legend.SetFillStyle(0)
@@ -600,7 +751,8 @@ for theory_xsecs in total_theory_xsec_list:
     tmpline.SetLineWidth(1)
     tmpline.SetLineStyle(2)
     tmpline.SetLineColor(ROOT.kGray+2)
-    tmpline.DrawLine(expectedMassLimit[0],0,expectedMassLimit[0],expectedMassLimit[1])
+    if options.noCrossingLines: options.noCrossingText = True
+    if not options.noCrossingLines: tmpline.DrawLine(expectedMassLimit[0],0,expectedMassLimit[0],expectedMassLimit[1])
 
     text1 = ROOT.TLatex()
     # text1.SetNDC()
@@ -608,13 +760,13 @@ for theory_xsecs in total_theory_xsec_list:
     text1.SetTextSize(14)
     text1.SetTextColor(ROOT.kGray+2)
     text1.SetTextAngle(90)
-    text1.DrawLatex(expectedMassLimit[0]-0.005,0, "  %0.2f TeV"%(expectedMassLimit[0]))
+    if not options.noCrossingText: text1.DrawLatex(expectedMassLimit[0]-0.005,0, "  %0.2f TeV"%(expectedMassLimit[0]))
 
     # second intersection line: theory vs median expected (closed/upper edge).
     # Inter() returns (first_crossing, last_crossing); expectedCrossLimit is the
     # last crossing, or (-1,-1) if there is only one. Draw only when it is real
     # and distinct from the first crossing.
-    if expectedCrossLimit[0] > 0 and expectedCrossLimit[0] != expectedMassLimit[0]:
+    if expectedCrossLimit[0] > 0 and expectedCrossLimit[0] != expectedMassLimit[0] and not options.noCrossingLines:
         tmpline.SetLineColor(ROOT.kGray+2)
         tmpline.SetLineWidth(1)
         tmpline.SetLineStyle(2)
@@ -625,7 +777,7 @@ for theory_xsecs in total_theory_xsec_list:
         text1b.SetTextSize(14)
         text1b.SetTextColor(ROOT.kGray+2)
         text1b.SetTextAngle(90)
-        text1b.DrawLatex(expectedCrossLimit[0]-0.005,0, "  %0.2f TeV"%(expectedCrossLimit[0]))
+        if not options.noCrossingText: text1b.DrawLatex(expectedCrossLimit[0]-0.005,0, "  %0.2f TeV"%(expectedCrossLimit[0]))
 
     text2 = ROOT.TLatex()
     # text2.SetNDC()
@@ -633,8 +785,13 @@ for theory_xsecs in total_theory_xsec_list:
     text2.SetTextSize(14)
     text2.SetTextColor(1)
     text2.SetTextAngle(90)
-    if not options.blind:
-        text2.DrawLatex(obsMassLimit-0.005,0, "  %0.2f TeV"%(obsMassLimit))
+    if not options.blind and obsMassLimit[0] > 0 and not options.noCrossingLines:
+        tmpline.SetLineColor(1)
+        tmpline.DrawLine(obsMassLimit[0],0,obsMassLimit[0],obsMassLimit[1])
+        if not options.noCrossingText: text2.DrawLatex(obsMassLimit[0]-0.005,0, "  %0.2f TeV"%(obsMassLimit[0]))
+        if obsCrossLimit[0] > 0 and obsCrossLimit[0] != obsMassLimit[0]:  # second observed crossing
+            tmpline.DrawLine(obsCrossLimit[0],0,obsCrossLimit[0],obsCrossLimit[1])
+            if not options.noCrossingText: text2.DrawLatex(obsCrossLimit[0]-0.005,0, "  %0.2f TeV"%(obsCrossLimit[0]))
 
     # text1 = ROOT.TLatex()
     # text1.SetNDC()
@@ -645,11 +802,12 @@ for theory_xsecs in total_theory_xsec_list:
     climits.RedrawAxis()
 
     #CMS_lumi.extraText = 'Preliminary'
-    CMS_lumi.extraText = 'Work in Progress'
+    CMS_lumi.extraText = options.cmsLabel
+    CMS_lumi.extraTextPosX = options.extraTextPosX
     CMS_lumi.lumiTextSize = 0.35
 
     CMS_lumi.cmsTextSize = 0.8
-    lumiLabel = options.lumiLabel + f" ({options.lumi} month)"
+    lumiLabel = options.lumiLabel + f" ({options.lumi} {options.lumiUnit})"
     CMS_lumi.CMS_lumi(climits, lumiLabel, 0, 11, sim=False)
 
     print("Will save: ", excl_lo, "->", excl_hi)
@@ -657,6 +815,9 @@ for theory_xsecs in total_theory_xsec_list:
           % (labels[label_counter], up_lo, up_hi, low_lo, low_hi))
     exp_lim.append(excl_lo)
     closed_exp_lim.append(excl_hi)
+    if not options.blind:
+        obs_lim.append(obs_lo)
+        closed_obs_lim.append(obs_hi)
     exp_lim_upper.append(up_lo)
     exp_lim_lower.append(low_lo)
     exp_lim_upper_closed.append(up_hi)
@@ -669,13 +830,17 @@ for theory_xsecs in total_theory_xsec_list:
     if not os.path.exists(options.outdir):
         os.mkdir(options.outdir)
 
-    pave = ROOT.TPaveText(0.20, 0.68, 0.43, 0.88, "NDC")
+    pave = ROOT.TPaveText(*[float(v) for v in options.paveBox.split(',')], "NDC")
+    if options.paveTextSize:
+        pave.SetTextFont(42)
+        pave.SetTextSize(options.paveTextSize)
+        pave.SetFillStyle(0)            # do not hide the bands underneath
     pave.SetFillColor(0)
     pave.SetBorderSize(0)
     pave.SetTextAlign(12)  # left aligned
-    pave.AddText("m_{A'} = 0.245 GeV")
+    pave.AddText("m_{A'} = 0.23 GeV")
     pave.AddText(f"c#tau = {ctau_labels[label_counter]:.3g} m")
-    pave.AddText("#alpha_{#chi}^{max} = 0.17 (m_{#chi}/TeV)^{1.61}")
+    pave.AddText("#alpha_{#chi}^{" + options.alphaSup + "} = 0.17 (m_{#chi}/TeV)^{1.61}")
     pave.Draw()
 
     filename = "limits_combine_"+options.signals[options.signals.find('/')+1:options.signals.find('.')]+'_'+cstr+str(labels[label_counter])
@@ -708,5 +873,6 @@ with open(limits_out, "w") as f:
         "exp_lim_upper95": list(exp_lim_upper95),
         "exp_lim_lower95_closed": list(exp_lim_lower95_closed),
         "exp_lim_upper95_closed": list(exp_lim_upper95_closed),
+        **({"obs_lim": list(obs_lim), "closed_obs_lim": list(closed_obs_lim)} if not options.blind else {}),
     }, f, indent=2)
 print("Wrote exclusion limits to: " + limits_out)

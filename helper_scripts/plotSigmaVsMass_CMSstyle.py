@@ -34,7 +34,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "dd_limits"))
 import load_dd                                                    # noqa: E402
-from plotExcludedAlphaVsMass import best_over_epsilon             # noqa: E402
+from plotExcludedAlphaVsMass import best_over_epsilon, best_observed_over_epsilon  # noqa: E402
 from plotSigmaVsMass_withDD import DD_CURVES, DD_GRAY, DD_INK     # noqa: E402
 
 plt.style.use(hep.style.CMS)
@@ -59,6 +59,35 @@ DD_LABELS_CUT = {
     "WIMPSI_LZ_2024_2410.17036":        (55., 0.25),
     "WIMPSI_XENONnT_2025_2502.18005":   (30., 80.),
     "WIMPSI_PandaX_4T_2025_2408.00664": (65., 5.0),
+}
+
+
+# --proton-only: the dark photon couples to the EM current, i.e. to protons only (f_n = 0),
+# whereas the published SI limits assume f_p = f_n and are quoted per nucleon. At fixed rate
+# sigma_p(f_n=0) = sigma_p(f_p=f_n) * sum_i n_i A_i^2 / sum_i n_i Z_i^2 (number-weighted over the
+# target nuclei; mu_N^2 factors cancel for a single element and for m_chi << m_N in compounds).
+def _a2_over_z2(nuclei):
+    """nuclei: [(number fraction, A, Z)]"""
+    return sum(n * a * a for n, a, z in nuclei) / sum(n * z * z for n, a, z in nuclei)
+
+
+TARGETS = {
+    "Xe":      _a2_over_z2([(1, 131.293, 54)]),
+    "Ar":      _a2_over_z2([(1, 39.948, 18)]),
+    "Si":      _a2_over_z2([(1, 28.0855, 14)]),
+    "Al2O3":   _a2_over_z2([(2, 26.9815, 13), (3, 15.999, 8)]),     # CRESST SOS: sapphire only
+    "W45Si55": _a2_over_z2([(0.45, 183.84, 74), (0.55, 28.0855, 14)]),  # QROCODILE WSi film
+}
+DD_TARGET = {
+    "WIMPSI_LZ_2024_2410.17036":                      "Xe",
+    "WIMPSI_XENONnT_2025_2502.18005":                 "Xe",
+    "WIMPSI_PandaX_4T_2025_2408.00664":               "Xe",
+    "WIMPSI_DarkSide50_2018_lowE_noquench":           "Ar",
+    "WIMPSI_DAMIC_2020":                              "Si",
+    "WIMPSI_CRESST_2405.06527":                       "Al2O3",
+    "WIMPSI_TESSERACT_2025_2503.03683":               "Si",
+    "WIMPSI_QROCODILE_2025_2412.16279_heavymediator": "W45Si55",
+    "nufog_OHare_2021_2109.03116":                    "Xe",    # O'Hare 2021 fog is for xenon
 }
 
 
@@ -98,8 +127,23 @@ def main():
                              "mass. Above ~100 GeV the chi that the Earth can capture recoils off "
                              "xenon below 1 keV (printed at runtime), so a detector cannot see that "
                              "population. Also prints the captured-chi speed on the figure.")
+    parser.add_argument("--dd-show-all", action="store_true",
+                        help="with --dd-mass-cut: keep the direct-detection curves and the fog over "
+                             "their full published range, and also mark where LZ ends with the "
+                             "captured-chi speed there.")
+    parser.add_argument("--cms-label", default="Work in Progress",
+                        help='text after "CMS" (e.g. "Preliminary")')
     parser.add_argument("--legend-title", default="This work",
                         help='header line of the legend box (default "This work")')
+    parser.add_argument("--observed", action="store_true",
+                        help="also draw the observed envelope (unblinded areas only)")
+    parser.add_argument("--proton-only", action="store_true",
+                        help="rescale every direct-detection curve and the (xenon) neutrino fog by "
+                             "(A/Z)^2 of its target, converting the isospin-conserving per-nucleon "
+                             "limits to a proton-only (f_n = 0) coupling, as for a kinetically mixed "
+                             "dark photon")
+    parser.add_argument("--lumi-unit", default="month", help='livetime unit (paper: "months")')
+    parser.add_argument("--ylabel", default=r"$\sigma^{\mathrm{SI}}_{\chi N}$ [cm$^2$]")
     parser.add_argument("-o", "--outdir", default="figures")
     parser.add_argument("--name", default="SigmaVsMass_CMSstyle", help="output file stem")
     args = parser.parse_args()
@@ -112,20 +156,36 @@ def main():
     fig, ax = plt.subplots(figsize=(10, 10))          # square, per the plotting convention
 
     cut = args.dd_mass_cut
+    if args.dd_show_all and cut is None:
+        raise SystemExit("--dd-show-all needs --dd-mass-cut")
+    trim = None if args.dd_show_all else cut      # mass above which DD curves are dropped
     if cut is not None:
         print(f"  direct detection cut at {cut:g} GeV: captured chi has u < "
               f"{capture_speed_kms(cut):.1f} km/s there, max Xe recoil {max_recoil_xe_kev(cut):.2f} keV")
 
     # ---- context: direct detection, recessive, never extrapolated ----------------------
+    dd_scaled = {}
     for stem, x_lab, dy, override in DD_CURVES:
         mass, sigma, label = load_dd.load(stem)
-        if cut is not None:
-            keep = mass <= cut
+        if args.proton_only:
+            if stem.startswith("WIMPSI_QROCODILE"):
+                dy = 0.3                                  # below the curve, clear of the frame top
+            f = TARGETS[DD_TARGET[stem]]
+            sigma = sigma * f
+            print(f"  proton-only: {stem} ({DD_TARGET[stem]}) x {f:.3f}")
+        dd_scaled[stem] = (mass.copy(), sigma.copy())
+        if stem == "WIMPSI_LZ_2024_2410.17036":
+            lz_end = mass.max()
+        if trim is not None:
+            keep = mass <= trim
             if not keep.any():
                 continue
             mass, sigma = mass[keep], sigma[keep]
-            if x_lab > cut:
+            if x_lab > trim:
                 x_lab, dy = DD_LABELS_CUT[stem]
+        elif args.dd_show_all and stem == "WIMPSI_PandaX_4T_2025_2408.00664":
+            x_lab = 1.5e3                                 # clear of the LZ-end line
+
         ax.plot(mass, sigma, color=DD_GRAY, lw=1.6, zorder=2)
         ax.text(x_lab, np.interp(x_lab, mass, sigma) * dy, override or label, color=DD_INK,
                 fontsize=11.5, ha="center", va="center", zorder=6,
@@ -133,6 +193,9 @@ def main():
 
     if not args.no_fog:
         mass, fog, _ = load_dd.load("nufog_OHare_2021_2109.03116", column="nufloor")
+        if args.proton_only:
+            fog = fog * TARGETS["Xe"]
+            print(f"  proton-only: neutrino fog (Xe) x {TARGETS['Xe']:.3f}")
         if args.extend_fog:
             # sigma ~ m_chi: the DM number density falls as 1/m_chi, so a fixed neutrino-limited
             # event rate needs a proportionally larger cross section. Slope fitted on the file's
@@ -141,18 +204,29 @@ def main():
             m_ext = np.logspace(np.log10(mass.max()), 6, 120)[1:]
             mass = np.concatenate([mass, m_ext])
             fog = np.concatenate([fog, fog[-1] * (m_ext / m_ext[0])])
-        if cut is not None:
-            keep = mass <= cut
+        if trim is not None:
+            keep = mass <= trim
             mass, fog = mass[keep], fog[keep]
         ax.fill_between(mass, 1e-52, fog, color="0.74", alpha=0.5, lw=0, zorder=1)
-        ax.text(20., 1.2e-49, "Neutrino fog", color=DD_INK, fontsize=12, ha="center", zorder=6)
+        ax.text(20., 1.2e-49 * (TARGETS["Xe"] if args.proton_only else 1.), "Neutrino fog", color=DD_INK, fontsize=12, ha="center", zorder=6)
 
     if cut is not None:
         # Boundary above which captured chi recoils below threshold in xenon
         ax.axvline(cut, color=DD_INK, ls=":", lw=1.8, zorder=5)
-        ax.text(cut * 1.18, 3e-45,
+        ax.text(cut * 1.18, 1e-39,  # up, clear of the scaled LZ/XENONnT/PandaX labels
                 rf"Captured $\chi$: $E_R^{{\mathrm{{Xe}}}} < {max_recoil_xe_kev(cut):.0f}$ keV",
                 rotation=90, color=DD_INK, fontsize=13, ha="left", va="bottom", zorder=6)
+    if args.dd_show_all:
+        # End of the published LZ curve, with the captured-chi speed there
+        print(f"  LZ ends at {lz_end:g} GeV: captured chi has u < {capture_speed_kms(lz_end):.1f} "
+              f"km/s there, max Xe recoil {max_recoil_xe_kev(lz_end) * 1e3:.0f} eV")
+        # Stops below the result band, clear of the legend
+        ax.vlines(lz_end, 1e-50, 1e-41, color=DD_INK, ls=":", lw=1.8, zorder=5)
+        ax.text(lz_end * 1.18, 1.5e-50,
+                rf"Captured $\chi$: $u < {capture_speed_kms(lz_end):.1f}$ km/s",
+                rotation=90, color=DD_INK, fontsize=13, ha="left", va="bottom", zorder=6)
+        ax.text(cut * 1.25, 3e-30, "Captured $\\chi$\nbelow Xe\nthreshold",  # top, next to the E_R line
+                color=DD_INK, fontsize=13, ha="left", va="top", zorder=6)
 
     # ---- the result: median + 68% + 95% expected -----------------------------------------
     # Two calls, one per band. best_over_epsilon picks the winning epsilon on the MEDIAN in both,
@@ -178,6 +252,21 @@ def main():
     ax.fill_between(m_gev, lo95, hi95, color=BAND_95, lw=0, zorder=3, label="95% expected")
     ax.fill_between(m_gev, lo68, hi68, color=BAND_68, lw=0, zorder=4, label="68% expected")
     ax.plot(m_gev, med, color=MEDIAN, ls="--", lw=2.5, zorder=6, label="Median expected")
+    if args.observed:
+        m_o, obs, eps_o = best_observed_over_epsilon(args.signals, args.livetime, args.ma, "sigma")
+        ax.plot(m_o * 1000., obs, color="black", ls="-", lw=2.5, zorder=7, label="Observed")
+        bo = int(np.argmin(obs))
+        print(f"  observed: strongest {obs[bo]:.3g} cm^2 at m_chi = {m_o[bo]:g} TeV, "
+              f"winning epsilon {eps_o.min():.3g} to {eps_o.max():.3g}")
+    # how far below this result the LZ limit sits where both exist
+    lz_m, lz_s = dd_scaled["WIMPSI_LZ_2024_2410.17036"]
+    for tag, mm, yy in [("expected", m_gev, med)] + ([("observed", m_o * 1000., obs)] if args.observed else []):
+        sel = (mm >= lz_m.min()) & (mm <= lz_m.max())
+        if sel.any():
+            ratio = yy[sel] / np.exp(np.interp(np.log(mm[sel]), np.log(lz_m), np.log(lz_s)))
+            print(f"  {tag}/LZ{' (proton-only)' if args.proton_only else ''} over "
+                  f"{mm[sel].min():g}-{mm[sel].max():g} GeV: ratio {ratio.min():.3g} to {ratio.max():.3g} "
+                  f"(log10 {np.log10(ratio.min()):.2f} to {np.log10(ratio.max()):.2f})")
 
 
 
@@ -190,7 +279,8 @@ def main():
     ax.set_xlim(1e-1, 1e6)
     ax.set_ylim(1e-50, 1e-29)
     ax.set_xlabel(r"$m_\chi$ [GeV]")
-    ax.set_ylabel(r"$\sigma^{\mathrm{SI}}_{\chi N}$ [cm$^2$]")
+    ax.set_ylabel(args.ylabel)
+    # --proton-only scaling is stated in the paper caption, not on the canvas
     # Model line sits directly above the legend box, both flush to the same right edge, so the
     # two read as one block: what was assumed, then what was measured.
     ax.text(0.985, 0.955, rf"$m_{{A'}} = {args.ma:g}$ GeV,  $F_{{\mathrm{{DM}}}} = 1$",
@@ -207,8 +297,8 @@ def main():
                     title=args.legend_title)
     leg.get_title().set_fontsize(17)
     leg.get_title().set_fontweight("bold")
-    hep.cms.label("Work in Progress", data=True, loc=0, ax=ax, fontsize=17,
-                  rlabel=f"Run 3 Cosmics ({args.livetime:g} month)")
+    hep.cms.label(args.cms_label, data=True, loc=0, ax=ax, fontsize=17,
+                  rlabel=f"Run 3 Cosmics ({args.livetime:g} {args.lumi_unit})")
 
     os.makedirs(args.outdir, exist_ok=True)
     base = os.path.join(args.outdir, args.name)
