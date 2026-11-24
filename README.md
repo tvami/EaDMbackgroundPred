@@ -1406,7 +1406,7 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
 - **Fig. 6**, `Figures/7Results/limits_combine_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_alpha_max_4e-08.pdf`: `ENV`, then
   ```
   O=hybridnew_v35/figures_HN_tau0/fig6_theory10
-  python3 exp_lim/set_limit_alphaMax.py --single -L "Run 3 Cosmics" --outdir $O \
+  python3 exp_lim/set_limit_alphaMax.py --single -L "2021-2026" --outdir $O \
       -s exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN_alpha_max.txt -l 14.9 \
       --cmsLabel Preliminary --unblind -o "" --noCrossingLines --extraTextPosX 0.38 --lumiUnit months \
       --xTitle "m_{#chi} [TeV]" --thLegend "Predicted rate" --paveTextSize 0.036 --paveBox 0.17,0.70,0.40,0.86 \

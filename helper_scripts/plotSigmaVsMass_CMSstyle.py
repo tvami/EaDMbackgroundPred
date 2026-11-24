@@ -298,7 +298,7 @@ def main():
     leg.get_title().set_fontsize(17)
     leg.get_title().set_fontweight("bold")
     hep.cms.label(args.cms_label, data=True, loc=0, ax=ax, fontsize=17,
-                  rlabel=f"Run 3 Cosmics ({args.livetime:g} {args.lumi_unit})")
+                  rlabel=f"2021-2026 ({args.livetime:g} {args.lumi_unit})")
 
     os.makedirs(args.outdir, exist_ok=True)
     base = os.path.join(args.outdir, args.name)

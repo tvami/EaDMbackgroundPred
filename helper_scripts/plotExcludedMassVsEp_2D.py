@@ -258,7 +258,7 @@ if args.heatmap:
                     va="top", fontsize=22)
 
         hep.cms.label(args.cms_label, data=True, loc=0, ax=ax,
-                      rlabel=f"Run 3 Cosmics ({livetime} {args.lumi_unit})", fontsize=24)
+                      rlabel=f"2021-2026 ({livetime} {args.lumi_unit})", fontsize=24)
 
     # Colour axis = expected signal strength mu = predicted signal rate / median 95%
     # CL expected excluded rate; the mu=1 (log10 mu=0) contour is the exclusion edge.
@@ -1054,7 +1054,7 @@ for ax in axs.flat:
     # Official CMS label via mplhep: "CMS Work in Progress" (upper-left) and
     # the dataset/livetime label (upper-right), laid out and spaced by mplhep.
     hep.cms.label(args.cms_label, data=True, loc=0, ax=ax,
-                  rlabel=f"Run 3 Cosmics ({livetime} {args.lumi_unit})", fontsize=24)
+                  rlabel=f"2021-2026 ({livetime} {args.lumi_unit})", fontsize=24)
     ax.xaxis.set_major_formatter(tev_formatter)
 
 # ── SAVE ─────────────────────────────────────────────────────────────────────
