@@ -1432,3 +1432,9 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
       --lumi-unit months --xmin 2000 --cms-label Supplementary --alpha-label CMB \
       --outdir hybridnew_v35/figures_HN_tau0/supplementary
   ```
+- Unblinded SR RNN score, `-log10(1 - S)` with `pT > 200 GeV` and `dtTopBot > 50 ns`: data and signal m_chi = 1, 6, 40 TeV (depth e4, each normalized to the data yield); also a version without the timing cut (`_nodtcut`). Approval talk slide "RNN score in the signal region". Reads the stored `RNNScore`/`dtTopBot` branches of `Ntuples_v5.0.11_wRNN` and stops unless 19 data events pass. The downward background MC is not drawn: only 16 of its 3929 events pass the timing cut. On el9 hosts:
+  ```
+  cmssw-el8 -B /ceph -- bash -c 'cd $CMSSW_BASE/src && eval `scram runtime -sh` && \
+      python3 helper_scripts/plot_sr_rnn_unblinded.py --out <dir>'
+  ```
+  Output `<dir>/sr_rnn_unblinded{,_nodtcut}.{pdf,png,root}`.
