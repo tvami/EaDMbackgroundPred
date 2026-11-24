@@ -31,7 +31,7 @@ FIXED=rpf2x0_Binningv13_Inputv30_SR_Blind
 LT=20.7
 ANFIG=/home/users/tvami/EarthAsDM/AN/AN-23-122/Figures/7Results
 UPLOAD=/home/users/tvami/UploadToOverleaf
-PYA=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages
+PYA=/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages
 
 echo "=============================================================="
 echo " EaDM limit-figure regeneration"

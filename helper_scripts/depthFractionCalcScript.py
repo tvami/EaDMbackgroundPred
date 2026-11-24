@@ -8,7 +8,7 @@
 import os
 import pandas as pd, matplotlib.pyplot as plt, numpy as np
 
-parquet_dir = '/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/helper_scripts/parquet_files'
+parquet_dir = '/home/users/tvami/EarthAsDM/inputs/parquet_files_smasanam'
 
 infilename1 = f'{parquet_dir}/dist_from_depths_at_detector_masses_1000_9000_depth_-8.0--4000.0_diskR_4000.0_mDM_1000.0-9000.0_mA_0.22_dmModel_mom_con_ave_eloss__DETYCON_20.0.parquet'
 infilename2 = f'{parquet_dir}/dist_from_depths_at_detector_masses_10000_90000_depth_-8.0--4000.0_diskR_4000.0_mDM_10000.0-90000.0_mA_0.22_dmModel_mom_con_ave_eloss__DETYCON_20.0.parquet'

@@ -530,7 +530,7 @@ The other systematics' up/down templates are merged with the nominal weights.
 
 ```bash
 # needs pandas (cmsenv) + pyarrow (borrowed, see step 8 env notes)
-export PYTHONPATH=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages:$PYTHONPATH
+export PYTHONPATH=/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages:$PYTHONPATH
 python3 helper_scripts/depthWeightsContinuous.py -H histograms_for_2DAlphabet_v31 --validate \
     -o helper_scripts/parquet_files/depth_weights_continuous_v31.npy
 python3 helper_scripts/merge_depths_2DA_hists.py -H histograms_for_2DAlphabet_v31 \
@@ -917,8 +917,9 @@ python3 plot_highE_efficiency.py --tp-dir prod_highE_tagprobe \
 ```
 Result (shallow, pooled): trigger 33.4% at 1 TeV to 28.9% at 90 TeV; the loss is N_hits > 7
 (relative 0.53 to 0.24) and chi2/ndof < 35 (0.86 to 0.45), plus the RNN (0.43 to 0.22); total
-4.6% to 0.39%. Above M_DM = 180 TeV the limits reuse the M90000GeV template with `eff_func`
-(`limitRateInputScript.py`, `TEMPLATE_MASS_CAP`), i.e. extrapolated, not measured.
+4.6% to 0.39%. Above M_DM = 180 TeV the limits reuse the M90000GeV template with the `eff_ratio`
+extrapolation (`limitRateInputScript.py`, `TEMPLATE_MASS_CAP`), i.e. extrapolated, not measured; see
+"Efficiency above the heaviest template" below.
 - `--source-base` is the tree base holding `Data/`, `BkgMC/`, `Signal/` (each `<region>/matched_muon/2DA/`).
   Omit it to collect from the local `helper_scripts/` trees (the pre-ceph default).
 - Per-era data files (`EaDM_Run3_Cosmics_Data_<era>_{SR,VR1,VR2}.root`) are `hadd`-merged into
@@ -1074,7 +1075,9 @@ upper constraint, so its impact is one-sided. For a signal whose pT falls in the
 ### 8: Run Limits
 This sections guides you on how to create 1D/2D limit plots from the 2DA computed limits. LIMITDIR is name of the 2DA directory where `higgsCombineTest.AsymptoticLimits.mH120.root` for each mass is located. MONTHS_OF_LIVETIME is self-explanatory.
 
-You may need to run `pip/conda/whatever install pyarrow` for the following to work. 
+The parquet reads need `pyarrow`, which is not in cvmfs or twoD-env. A copy (with `cmsstyle`) lives in
+`/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages`; append it to `PYTHONPATH` after
+`cmsenv` + `twoD-env`. 
 
 You WILL need to download the files located [here](https://drive.google.com/drive/folders/1Pn10mJrzeFBAhp00yWmnPprDYWYmvgky?usp=share_link) and save them to `helper_scripts/parquet_files` for the below to work.
 
@@ -1107,7 +1110,21 @@ i.e. the parquet's per-km³ yearly rate converted to a monthly rate in the detec
 E > 10 GeV geometric acceptance (see the next subsection for which acceptance column, and for the
 1.21 tracker volume scale). Off-grid DM masses are log-interpolated between bracketing grid points
 (linear fallback if either endpoint is 0), and templates above `TEMPLATE_MASS_CAP` = 90 TeV get the
-`eff_func` efficiency correction for the frozen `M90000GeV` template.
+`eff_ratio` efficiency correction for the frozen `M90000GeV` template.
+
+#### Efficiency above the heaviest template
+
+Above M_DM = 180 TeV (template `M90000GeV`) the selection efficiency is extrapolated by
+`eff_ratio(template_mass, extrap)`, the efficiency relative to the 180 TeV template:
+- `powerlaw` (nominal, `--eff-extrap powerlaw`): `(m / 90 TeV)^EFF_SLOPE` with `EFF_SLOPE = -0.4126`,
+  a fit to the depth-averaged PASS efficiency of the v35 merged-depth templates at M_DM = 20-180 TeV
+  (6.7% to 2.7%). It gives 1.35% at 1 PeV.
+- `expconst` (`--eff-extrap expconst`): the older exponential plus constant `eff_func`, which levels off
+  just above the last template (2.46% at 1 PeV) and reproduces the v35 tables used up to the CWR.
+
+The factor sits in the predicted rate of the table. `set_limit_alphaMax.py --effOnLimit` moves it onto
+the drawn limit instead (pass the same `--effExtrap` the table was written with), so the plotted
+prediction is the bare rate; every crossing is unchanged.
 
 Two consequences worth knowing:
 - **`MA = 0.23` is the lowest ma at which the muon channel is open.** At `ma = 0.22` the parquet has
@@ -1221,7 +1238,7 @@ re-runs `set_limit_alphaMax.py` in the el8 container — reads 168 combine ROOT 
 # (1) Regenerate exclusion_limits.json with the +-1sigma / +-2sigma band edges.
 #     Run inside the el8 container with cmsenv + twoD-env, borrowing pyarrow (see step 8 env notes).
 cmssw-el8 -- bash -c 'cd /home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src && eval `scram runtime -sh` && source twoD-env/bin/activate && \
-  PYA=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages; export PYTHONPATH=$PYA:$PYTHONPATH && \
+  PYA=/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages; export PYTHONPATH=$PYA:$PYTHONPATH && \
   python3 exp_lim/set_limit_alphaMax.py -L "Run 3 Cosmics" \
     --outdir exp_lim/signal_rpf2x0_Binningv13_Inputv28_SR_Blind_livetime_20.7_limit \
     -s exp_lim/signal_rpf2x0_Binningv13_Inputv28_SR_Blind_alpha_max.txt -l 20.7'
@@ -1361,7 +1378,7 @@ Common environment for the commands run in the CMSSW area (`ENV` below):
 ```
 cd $CMSSW_BASE/src   # ~tvami/EarthAsDM/CMSSW_14_1_0_pre4/src
 source /cvmfs/cms.cern.ch/cmsset_default.sh && eval `scramv1 runtime -sh` && source twoD-env/bin/activate
-export PYTHONPATH=$PYTHONPATH:/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages
+export PYTHONPATH=$PYTHONPATH:/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages
 ```
 
 Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain built on them (`exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN*`) are produced as described in `CMSSW_14_1_0_pre4/src/hybridnew_v35/README.md` (`run_hn_chain.sh`). The flux limits come from `/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn` (`scripts/run_all.sh`, `scripts/collect.py`, see `RESULTS.md` there).
