@@ -135,7 +135,7 @@ def main():
     p.add_argument('--tf', default='1x0')
     p.add_argument('--out', required=True, help='output stem (.pdf and .png written)')
     p.add_argument('--cms-label', default='Preliminary')
-    p.add_argument('--lumi-text', default='Run 3 Cosmics (14.9 months)')
+    p.add_argument('--lumi-text', default='2021-2026 (14.9 months)')
     p.add_argument('--fail-label', default=r'Fail: $\mathrm{RNN} < 0.99999$ or $\Delta t \leq 50$ ns')
     p.add_argument('--pass-label', default=r'Pass: $\mathrm{RNN} \geq 0.99999$ and $\Delta t > 50$ ns')
     p.add_argument('--sig-label', default=r'DM signal ($m_{\chi}$ = 6 TeV)')
