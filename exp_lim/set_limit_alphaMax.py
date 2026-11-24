@@ -132,6 +132,16 @@ parser.add_option('--single', action="store_true",
                               'directly (this_tree.limit), for the fixed-depth pipeline. '
                               'Default (off) is the nominal VOLUME mode: the median is the '
                               'depth-weighted average over e3..e6 via props_dict.')
+parser.add_option('--effOnLimit', action="store_true",
+                default   =   False,
+                dest      =   'effOnLimit',
+                help      =   'Above the heaviest template, apply the extrapolated efficiency '
+                              'ratio to the drawn limit instead of the predicted rate.')
+parser.add_option('--effExtrap', type='choice', choices=['powerlaw', 'expconst'],
+                default   =   'powerlaw',
+                dest      =   'effExtrap',
+                help      =   'With --effOnLimit: the extrapolation the rate table was written with '
+                              '(limitRateInputScript.py --eff-extrap), default powerlaw.')
 parser.add_option('-l', '--lumi', metavar='F', type='string', action='store',
                 default       =       '16.7', #137.44
                 dest          =       'lumi',
@@ -349,6 +359,23 @@ for i in range(num_rate):
     theory_xsecs = signal_file.readline().split(',')
     theory_xsecs = [float(x.strip())*Y_SCALE for x in theory_xsecs]
     total_theory_xsec_list.append(theory_xsecs)
+
+# Above the heaviest template the rate table carries the extrapolated efficiency ratio
+# eff(m)/eff(cap) in the predicted rate. --effOnLimit moves it onto the limit instead, so the
+# drawn prediction is the bare rate; limit/theory per mass, and so every crossing, is unchanged.
+# --effExtrap must match the extrapolation the table was written with.
+if options.effOnLimit:
+    import importlib.util
+    _spec = importlib.util.spec_from_file_location('lris', 'helper_scripts/limitRateInputScript.py')
+    _lris = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(_lris)
+    _cap = _lris.TEMPLATE_MASS_CAP
+    for j, m in enumerate(signal_mass):
+        tm = m * 1000 / 2  # template mass = muon momentum [GeV]
+        if tm > _cap:
+            r_eff = _lris.eff_ratio(tm, options.effExtrap)  # the factor baked into the rate table
+            signal_xsecs[j] /= r_eff
+            for theory_xsecs in total_theory_xsec_list:
+                theory_xsecs[j] /= r_eff
 
 def signed_window(gLimit, gTheory, first, last):
     """Correctly-signed excluded mass window (lo, hi) in TeV, from the crossings.

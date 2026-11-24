@@ -33,8 +33,27 @@ MASS_GRIDS = {
 }
 
 
+# Selection efficiency above the heaviest template. Nominal: a power law fitted to the
+# depth-averaged PASS efficiency of the v35 merged-depth templates at m_chi = 20-180 TeV
+# (falls from 6.7% to 2.7%; 1.35% at 1 PeV). Alternative 'expconst': the older exponential plus
+# constant, which levels off just above the last template (2.46% at 1 PeV).
+EFF_SLOPE = -0.4126
+EFF_EXTRAPOLATIONS = ('powerlaw', 'expconst')
+
+
 def eff_func(mass):
     return 0.06758539099355372 * np.exp(-3.9610274911588674e-05 * mass) + 0.016782590921269932
+
+
+def eff_ratio(template_mass, extrap='powerlaw'):
+    """Efficiency at template_mass [GeV] relative to the TEMPLATE_MASS_CAP template."""
+    if template_mass <= TEMPLATE_MASS_CAP:
+        return 1.0
+    if extrap == 'powerlaw':
+        return (template_mass / TEMPLATE_MASS_CAP) ** EFF_SLOPE
+    if extrap == 'expconst':
+        return eff_func(template_mass) / eff_func(TEMPLATE_MASS_CAP)
+    raise ValueError(f'unknown efficiency extrapolation {extrap!r}')
 
 
 def load_slice(ma=MA, alpha=ALPHA):
@@ -209,14 +228,12 @@ def alpha_reweight(dm_mass, exponent, coeff=None):
     return (c / ALPHA_MAX_COEFF) * (dm_mass / 1000.) ** (expo - ALPHA_MAX_EXPONENT)
 
 
-def signal_rate(get_rate, dm_mass, eps, rate_scale=1.0, alpha_exponent=None, alpha_coeff=None):
+def signal_rate(get_rate, dm_mass, eps, rate_scale=1.0, alpha_exponent=None, alpha_coeff=None,
+                eff_extrap='powerlaw'):
     rate = get_rate(dm_mass, eps) * rate_scale * alpha_reweight(dm_mass, alpha_exponent, alpha_coeff)
     # Templates freeze at TEMPLATE_MASS_CAP, so correct the resulting
     # efficiency mismatch on the template-mass scale.
-    template_mass = dm_mass / 2
-    if template_mass > TEMPLATE_MASS_CAP:
-        rate *= eff_func(template_mass) / eff_func(TEMPLATE_MASS_CAP)
-    return rate
+    return rate * eff_ratio(dm_mass / 2, eff_extrap)
 
 
 def main():
@@ -287,11 +304,14 @@ def main():
                              "area paths still come from -l, so this does not affect what is read.")
     # The e2..e6 grids stop at 900 TeV while the parquet and the (m_chi, epsilon) plots run to
     # 1000 TeV, so the coupling/cross-section plots ended one point short of the others. Any mass
-    # added here reuses the TEMPLATE_MASS_CAP template with the eff_func correction, exactly as the
+    # added here reuses the TEMPLATE_MASS_CAP template with the eff_ratio correction, exactly as the
     # 600-900 TeV points already do, so it introduces no approximation those points do not have.
     parser.add_argument('--extra-mass', action='append', type=int, default=[], metavar='GEV',
                         help='Extra DM mass in GeV to append to the depth grid, repeatable. '
                              'Must lie on (or inside) the parquet mx grid. E.g. --extra-mass 1000000.')
+    parser.add_argument('--eff-extrap', choices=EFF_EXTRAPOLATIONS, default='powerlaw',
+                        help='Efficiency extrapolation above the heaviest template (m_chi = 180 TeV): '
+                             "'powerlaw' (nominal) or 'expconst' (the older exponential plus constant).")
     args = parser.parse_args()
 
     masses = sorted(set(MASS_GRIDS[args.depth]) | set(args.extra_mass))
@@ -355,7 +375,7 @@ def main():
         print(",".join('100' for _ in masses))
 
         for eps in eps_grid:
-            print(", ".join(f"{signal_rate(get_rate, m, eps, args.rate_scale * volume_scale, args.alpha_exponent, args.alpha_coeff):e}"
+            print(", ".join(f"{signal_rate(get_rate, m, eps, args.rate_scale * volume_scale, args.alpha_exponent, args.alpha_coeff, args.eff_extrap):e}"
                             for m in masses))
 
 
