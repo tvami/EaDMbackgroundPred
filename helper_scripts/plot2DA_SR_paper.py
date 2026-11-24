@@ -123,8 +123,8 @@ def draw_region(ax, rax, edges, data, total, bkgs, sigs, args, slicetitle, blind
 FONTS = {
     'both':   dict(tick_size=24, label_size=28, pull_label_size=26, legend_size=23, slice_size=22,
                    cms_size=26, lumi_size=18),
-    'single': dict(tick_size=27, label_size=31, pull_label_size=27, legend_size=25, slice_size=24,
-                   cms_size=28, lumi_size=19),
+    'single': dict(tick_size=19.5, label_size=23, pull_label_size=23, legend_size=17, slice_size=17,
+                   cms_size=24, lumi_size=19),
 }
 
 
@@ -135,7 +135,7 @@ def main():
     p.add_argument('--tf', default='1x0')
     p.add_argument('--out', required=True, help='output stem (.pdf and .png written)')
     p.add_argument('--cms-label', default='Preliminary')
-    p.add_argument('--lumi-text', default='Run 3 Cosmics (14.9 months)')
+    p.add_argument('--lumi-text', default='2021-2026 (14.9 months)')
     p.add_argument('--fail-label', default=r'Fail: $\mathrm{RNN} < 0.99999$ or $\Delta t \leq 50$ ns')
     p.add_argument('--pass-label', default=r'Pass: $\mathrm{RNN} \geq 0.99999$ and $\Delta t > 50$ ns')
     p.add_argument('--sig-label', default=r'DM signal ($m_{\chi}$ = 6 TeV)')

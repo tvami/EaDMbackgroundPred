@@ -1353,6 +1353,7 @@ studies; `plotSigmaVsMass_CMSstyle.py` is the one that goes in the AN.
 ## How the paper figures are made (EXO-26-004)
 
 Every figure in the paper (gitlab `tdr/papers/EXO-26-004`) is a copy of the output of one command below; each was checked to be identical to the file in the paper's `Figures/`.
+Font sizes are set so that at one PRL column (246 pt) CMS is about 10 pt, Preliminary and the top-right label 8 pt, axis titles 9.5 pt, tick labels 8 pt and legend/in-plot text 7 pt (CWR, 2026-11-23). Figs. 2, 3 and 8 come from the ceph work-dir scripts named below, which are not in this repo.
 To change a figure: edit the script or the options, rerun the command, and copy the output over the file in the paper's `Figures/`.
 
 Common environment for the commands run in the CMSSW area (`ENV` below):
@@ -1406,13 +1407,14 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
 - **Fig. 6**, `Figures/7Results/limits_combine_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_alpha_max_4e-08.pdf`: `ENV`, then
   ```
   O=hybridnew_v35/figures_HN_tau0/fig6_theory10
-  python3 exp_lim/set_limit_alphaMax.py --single -L "Run 3 Cosmics" --outdir $O \
+  python3 exp_lim/set_limit_alphaMax.py --single -L "2021-2026" --outdir $O \
       -s exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN_alpha_max.txt -l 14.9 \
-      --cmsLabel Preliminary --unblind -o "" --noCrossingLines --extraTextPosX 0.38 --lumiUnit months \
-      --xTitle "m_{#chi} [TeV]" --thLegend "Predicted rate" --paveTextSize 0.036 --paveBox 0.17,0.70,0.40,0.86 \
+      --cmsLabel Preliminary --unblind -o "" --noCrossingLines --extraTextPosX 0.335 --lumiUnit months \
+      --xTitle "m_{#chi} [TeV]" --thLegend "Predicted rate" --paveTextSize 0.0375 --paveBox 0.17,0.70,0.40,0.86 \
       --legendFont 42 --legendTextSize 0.037 --legendBox 0.52,0.5175,0.93,0.89 --legendMargin 0.17 \
       --tau0 7.53e-22 --thDashAbove 14.478 --alphaSup CMB \
-      --thBand 0.9,1.1 --thBandAlpha 0.35 --thBandLegend "Theory uncertainty"
+      --thBand 0.9,1.1 --thBandAlpha 0.35 --thBandLegend "Theory uncertainty" \
+      --cmsTextSize 0.53 --extraOverCmsTextSize 0.80 --lumiTextSize 0.43 --xTitleSize 0.051 --yTitleSize 0.05 --axisLabelSize 0.043
   ```
   `--thBand` draws the 10% theory band (Earth composition about 5%, form factors 0.1%) as a translucent fill; it changes the drawing only. The paper uses the `..._HN_alpha_max_4e-08.pdf` output (the reference epsilon).
 - **Fig. 7**, `Figures/7Results/ExcludedMass_mX_ep_explim_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_livetime_14p9_band68_ribbon_beamdump.pdf`: `ENV`, then
@@ -1432,3 +1434,9 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
       --lumi-unit months --xmin 2000 --cms-label Supplementary --alpha-label CMB \
       --outdir hybridnew_v35/figures_HN_tau0/supplementary
   ```
+- Unblinded SR RNN score, `-log10(1 - S)` with `pT > 200 GeV` and `dtTopBot > 50 ns`: data and signal m_chi = 1, 6, 40 TeV (depth e4, each normalized to the data yield); also a version without the timing cut (`_nodtcut`). Approval talk slide "RNN score in the signal region". Reads the stored `RNNScore`/`dtTopBot` branches of `Ntuples_v5.0.11_wRNN` and stops unless 19 data events pass. The downward background MC is not drawn: only 16 of its 3929 events pass the timing cut. On el9 hosts:
+  ```
+  cmssw-el8 -B /ceph -- bash -c 'cd $CMSSW_BASE/src && eval `scram runtime -sh` && \
+      python3 helper_scripts/plot_sr_rnn_unblinded.py --out <dir>'
+  ```
+  Output `<dir>/sr_rnn_unblinded{,_nodtcut}.{pdf,png,root}`.
