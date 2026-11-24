@@ -45,6 +45,10 @@ plt.style.use(hep.style.CMS)
 BAND_95 = "#85D1FB"     # +-2 sigma expected, blue
 BAND_68 = "#FFDF7F"     # +-1 sigma expected, gold
 MEDIAN = "black"        # median expected, dashed
+# Font sizes, chosen for a one-column (246 pt) print of the 10x10 inch canvas (scale ~0.36):
+# FS_TEXT -> ~6.8 pt for legend and in-plot labels, FS_CMS -> CMS 10 pt, Preliminary/lumi 8 pt
+FS_TEXT = 19
+FS_CMS = 22.2
 
 # Capture kinematics, as in DarkCapPy (DarkPhoton.EminEmaxIntersection): a single elastic scatter
 # can capture chi only if it arrives slower than u_int = v_esc * sqrt(B / (A - B)), with
@@ -59,6 +63,14 @@ DD_LABELS_CUT = {
     "WIMPSI_LZ_2024_2410.17036":        (55., 0.25),
     "WIMPSI_XENONnT_2025_2502.18005":   (30., 80.),
     "WIMPSI_PandaX_4T_2025_2408.00664": (65., 5.0),
+}
+# (x, dy) anchors replacing those of DD_CURVES, so the FS_TEXT-size labels do not collide
+DD_LABELS_MOVED = {
+    "WIMPSI_XENONnT_2025_2502.18005":   (1.5e2, 26.),     # just clear of the curve ends below it
+    "WIMPSI_PandaX_4T_2025_2408.00664": (9.3e2, 93.),     # above the XENONnT label, clear of the LZ-end line
+    "WIMPSI_CRESST_2405.06527":         (0.5, 2.4e4),     # top left, above where the curve starts
+    "WIMPSI_TESSERACT_2025_2503.03683": (1.05, 6.),       # above its plateau
+    "WIMPSI_QROCODILE_2025_2412.16279_heavymediator": (15., 0.27),  # right of and below the curve end
 }
 
 
@@ -167,9 +179,8 @@ def main():
     dd_scaled = {}
     for stem, x_lab, dy, override in DD_CURVES:
         mass, sigma, label = load_dd.load(stem)
+        x_lab, dy = DD_LABELS_MOVED.get(stem, (x_lab, dy))
         if args.proton_only:
-            if stem.startswith("WIMPSI_QROCODILE"):
-                dy = 0.3                                  # below the curve, clear of the frame top
             f = TARGETS[DD_TARGET[stem]]
             sigma = sigma * f
             print(f"  proton-only: {stem} ({DD_TARGET[stem]}) x {f:.3f}")
@@ -183,12 +194,10 @@ def main():
             mass, sigma = mass[keep], sigma[keep]
             if x_lab > trim:
                 x_lab, dy = DD_LABELS_CUT[stem]
-        elif args.dd_show_all and stem == "WIMPSI_PandaX_4T_2025_2408.00664":
-            x_lab = 1.5e3                                 # clear of the LZ-end line
 
         ax.plot(mass, sigma, color=DD_GRAY, lw=1.6, zorder=2)
         ax.text(x_lab, np.interp(x_lab, mass, sigma) * dy, override or label, color=DD_INK,
-                fontsize=11.5, ha="center", va="center", zorder=6,
+                fontsize=FS_TEXT, ha="center", va="center", zorder=6,
                 bbox=dict(boxstyle="round,pad=0.13", fc="white", ec="none", alpha=0.8))
 
     if not args.no_fog:
@@ -208,14 +217,14 @@ def main():
             keep = mass <= trim
             mass, fog = mass[keep], fog[keep]
         ax.fill_between(mass, 1e-52, fog, color="0.74", alpha=0.5, lw=0, zorder=1)
-        ax.text(20., 1.2e-49 * (TARGETS["Xe"] if args.proton_only else 1.), "Neutrino fog", color=DD_INK, fontsize=12, ha="center", zorder=6)
+        ax.text(12., 1.2e-49 * (TARGETS["Xe"] if args.proton_only else 1.), "Neutrino fog", color=DD_INK, fontsize=FS_TEXT, ha="center", zorder=6)
 
     if cut is not None:
         # Boundary above which captured chi recoils below threshold in xenon
         ax.axvline(cut, color=DD_INK, ls=":", lw=1.8, zorder=5)
-        ax.text(cut * 1.18, 1e-39,  # up, clear of the scaled LZ/XENONnT/PandaX labels
+        ax.text(cut / 1.18, 1e-39,  # left of the line, so the legend fits right of it
                 rf"Captured $\chi$: $E_R^{{\mathrm{{Xe}}}} < {max_recoil_xe_kev(cut):.0f}$ keV",
-                rotation=90, color=DD_INK, fontsize=13, ha="left", va="bottom", zorder=6)
+                rotation=90, color=DD_INK, fontsize=FS_TEXT, ha="right", va="bottom", zorder=6)
     if args.dd_show_all:
         # End of the published LZ curve, with the captured-chi speed there
         print(f"  LZ ends at {lz_end:g} GeV: captured chi has u < {capture_speed_kms(lz_end):.1f} "
@@ -224,9 +233,9 @@ def main():
         ax.vlines(lz_end, 1e-50, 1e-41, color=DD_INK, ls=":", lw=1.8, zorder=5)
         ax.text(lz_end * 1.18, 1.5e-50,
                 rf"Captured $\chi$: $u < {capture_speed_kms(lz_end):.1f}$ km/s",
-                rotation=90, color=DD_INK, fontsize=13, ha="left", va="bottom", zorder=6)
+                rotation=90, color=DD_INK, fontsize=FS_TEXT, ha="left", va="bottom", zorder=6)
         ax.text(cut * 1.25, 3e-30, "Captured $\\chi$\nbelow Xe\nthreshold",  # top, next to the E_R line
-                color=DD_INK, fontsize=13, ha="left", va="top", zorder=6)
+                color=DD_INK, fontsize=FS_TEXT, ha="left", va="top", zorder=6)
 
     # ---- the result: median + 68% + 95% expected -----------------------------------------
     # Two calls, one per band. best_over_epsilon picks the winning epsilon on the MEDIAN in both,
@@ -281,23 +290,25 @@ def main():
     ax.set_xlabel(r"$m_\chi$ [GeV]")
     ax.set_ylabel(args.ylabel)
     # --proton-only scaling is stated in the paper caption, not on the canvas
-    # Model line sits directly above the legend box, both flush to the same right edge, so the
-    # two read as one block: what was assumed, then what was measured.
+    # Model line top right; the legend sits left of the result band (at FS_TEXT a top-right
+    # legend would cover the band's high-mass end), just right of the 100 GeV line if drawn.
     ax.text(0.985, 0.955, rf"$m_{{A'}} = {args.ma:g}$ GeV,  $F_{{\mathrm{{DM}}}} = 1$",
-            transform=ax.transAxes, fontsize=17, ha="right", va="top", zorder=7)
+            transform=ax.transAxes, fontsize=FS_TEXT, ha="right", va="top", zorder=7)
     leg_top = 0.915
     if cut is not None:
         # The capture speed falls with mass, so the fastest captured chi is at the lightest point.
         u_max = capture_speed_kms(m_gev.min())
         ax.text(0.985, 0.915, rf"Captured $\chi$: $u < {u_max:.0f}$ km/s",
-                transform=ax.transAxes, fontsize=17, ha="right", va="top", zorder=7)
+                transform=ax.transAxes, fontsize=FS_TEXT, ha="right", va="top", zorder=7)
         leg_top = 0.875
-    leg = ax.legend(loc="upper right", bbox_to_anchor=(0.99, leg_top),
-                    bbox_transform=ax.transAxes, fontsize=15, framealpha=0.95,
+    if args.dd_show_all:
+        leg_top = 0.86                                    # below the "below Xe threshold" note
+    leg = ax.legend(loc="upper left", bbox_to_anchor=(0.44, leg_top),
+                    bbox_transform=ax.transAxes, fontsize=FS_TEXT, framealpha=0.95,
                     title=args.legend_title)
-    leg.get_title().set_fontsize(17)
+    leg.get_title().set_fontsize(FS_TEXT)
     leg.get_title().set_fontweight("bold")
-    hep.cms.label(args.cms_label, data=True, loc=0, ax=ax, fontsize=17,
+    hep.cms.label(args.cms_label, data=True, loc=0, ax=ax, fontsize=FS_CMS,
                   rlabel=f"2021-2026 ({args.livetime:g} {args.lumi_unit})")
 
     os.makedirs(args.outdir, exist_ok=True)

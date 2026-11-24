@@ -123,8 +123,8 @@ def draw_region(ax, rax, edges, data, total, bkgs, sigs, args, slicetitle, blind
 FONTS = {
     'both':   dict(tick_size=24, label_size=28, pull_label_size=26, legend_size=23, slice_size=22,
                    cms_size=26, lumi_size=18),
-    'single': dict(tick_size=27, label_size=31, pull_label_size=27, legend_size=25, slice_size=24,
-                   cms_size=28, lumi_size=19),
+    'single': dict(tick_size=19.5, label_size=23, pull_label_size=23, legend_size=17, slice_size=17,
+                   cms_size=24, lumi_size=19),
 }
 
 
