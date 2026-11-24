@@ -89,8 +89,7 @@ DEEPEST = int(depth_mm('e6'))
 Z_MAX = 4e6                     # outer edge of the generation volume, 4 km
 START = 8.0                     # m, front face of the volume in the parquet axis
 
-PARQUET_DIR = ('/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/'
-               'helper_scripts/parquet_files')
+PARQUET_DIR = '/home/users/tvami/EarthAsDM/inputs/parquet_files_smasanam'
 PARQUET_TPL = ('dist_from_depths_at_detector_masses_{a}_{b}_depth_-8.0--4000.0_'
                'diskR_4000.0_mDM_{a}.0-{b}.0_mA_0.22_dmModel_mom_con_ave_eloss__'
                'DETYCON_20.0.parquet')

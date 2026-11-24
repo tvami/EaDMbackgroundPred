@@ -10,7 +10,7 @@ LIMITDIR=rpf2x0_Binningv13_Inputv30_SR_Blind
 LIVETIME=20.7
 
 # Borrow pyarrow (parquet reader) from smasanam's pre5 env; twoD-env has none. Same py3.9.
-PYA=/home/users/smasanam/EarthAsDMProject/CMSSW_14_1_0_pre5/src/twoD-env/lib/python3.9/site-packages
+PYA=/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages
 export PYTHONPATH=$PYA:$PYTHONPATH
 
 # -- Step 2: limits_combine_..._alpha_max_<eps> plots (PDF + PNG for every alpha_max label,
