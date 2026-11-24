@@ -118,6 +118,9 @@ EDGE_LW      = 1.4         # band-edge outline width (marks the +-sigma crossing
 # ── GLOBAL PLOT SETTINGS ────────────────────────────────────────────────────
 pd.set_option('display.max_columns', None)
 plt.rcParams.update({'font.size': 22})
+# The saved exclusion panel is ~750 pt wide and printed one PRL column (246 pt) wide, so
+# fontsize=PT*x prints at ~x pt in the paper.
+PT = 750 / 246
 cms_fp = FontProperties(family="sans-serif", weight="bold")
 y_axis = args.y_axis # Can be either lifetime or epsilon (set via --yaxis)
 
@@ -426,9 +429,9 @@ def draw_bd_overlay(ax, y_axis):
     sn_patch = [] if args.no_sn else [Patch(facecolor='none', edgecolor=SN_COLOR, hatch='\\\\',
                                             label="SN (cooling + low-E SNe)")]
     return [Patch(facecolor='none', edgecolor=BD_COLOR, hatch='//',
-                  label="Beam dumps (E137, CHARM, NuCal, NA62)")] + sn_patch + [
+                  label="Beam dumps\n(E137, CHARM, NuCal, NA62)")] + sn_patch + [
             Line2D([0], [0], color='0.4', linestyle=':', linewidth=1.2,
-                   label=r"edges at $m_{A^\prime}$ = 0.20, 0.25 GeV")]
+                   label=r"edges at $m_{A\prime}$ = 0.20, 0.25 GeV")]
 ctau = [A * e**(-2) for e in eps]
 
 if y_axis == 'lifetime': yAxis = ctau
@@ -776,22 +779,22 @@ for n, ax in enumerate(axs):
     ax.set_xlim(X_LO, X_HI)
     ax.set_ylim(Y_LO, Y_HI)
     if y_axis == 'epsilon':
-        ax.set_ylabel(r"$\varepsilon$", fontsize=46)
+        ax.set_ylabel(r"$\varepsilon$", fontsize=9.5*PT)
     elif y_axis == 'lifetime':
-        ax.set_ylabel(r"$c\tau$ [m]", fontsize=46)
-    ax.set_xlabel(r"$m_\chi\;\mathrm{[TeV]}$", fontsize=42)
-    ax.tick_params(labelsize=28)
+        ax.set_ylabel(r"$c\tau$ [m]", fontsize=9.5*PT)
+    ax.set_xlabel(r"$m_\chi\;\mathrm{[TeV]}$", fontsize=9.5*PT)
+    ax.tick_params(labelsize=8*PT)
 
     # Panel annotation: model parameters shown in the upper-left corner
     if n == 0:
         label = (
-            rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
+            rf"$m_{{A\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
             "\n"
             r"$\alpha_{\chi}^{\text{thermal}}=0.035\;\mathrm{m_{\chi}/TeV}$"
         )
     elif n == 1:
         label = (
-            rf"$m_{{A^\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
+            rf"$m_{{A\prime}} = {args.ma:g}\;\mathrm{{GeV}}$"
             "\n"
             + alpha_annotation(args.alpha_exponent, args.alpha_coeff, args.alpha_label)
         )
@@ -799,7 +802,7 @@ for n, ax in enumerate(axs):
     # top-left corner (they do on the ctau panel), and without these the model parameters are
     # painted over by the fill.
     ax.annotate(label, xy=(0.05, 0.975), xycoords="axes fraction", ha="left", va="top",
-                fontsize=22, zorder=30,
+                fontsize=7*PT, zorder=30,
                 bbox=dict(boxstyle="round,pad=0.25", fc="white", ec="none",
                           alpha=1.0 if args.bd_overlay else 0.75))
 
@@ -973,14 +976,14 @@ for n, ax in enumerate(axs):
                 Patch(facecolor=BAND95_COLOR, edgecolor='none', label='95% expected'),
             ]
             if args.bd_overlay:
-                # overlay legend in its own white box under the model annotation
-                # eps: under the model annotation; ctau: stacked above the band legend in the
-                # lower-left corner, which only the beam-dump hatching reaches
-                _bd_kw = (dict(fontsize=13, loc='lower left', bbox_to_anchor=(0.005, 0.115))
+                # overlay legend in its own white box, in the corner only the beam-dump
+                # hatching reaches: eps: under the model annotation; ctau: lower-left corner
+                _bd_kw = (dict(loc='lower left', bbox_to_anchor=(0.005, 0.005))
                           if y_axis == 'lifetime' else
-                          dict(fontsize=15, loc='upper left', bbox_to_anchor=(0.015, 0.865)))
+                          dict(loc='upper left', bbox_to_anchor=(0.015, 0.865)))
                 _bd_leg = ax.legend(handles=draw_bd_overlay(ax, y_axis), framealpha=1.0,
-                                    edgecolor='0.6', **_bd_kw)
+                                    edgecolor='0.6', fontsize=7*PT, handlelength=1.5,
+                                    labelspacing=0.3, **_bd_kw)
                 _bd_leg.set_zorder(30)
                 ax.add_artist(_bd_leg)
             if args.ribbon:
@@ -990,15 +993,16 @@ for n, ax in enumerate(axs):
                 # Placement/tilt follows the band: it slopes UP in the eps plane and
                 # DOWN in the ctau plane (ctau ~ eps^-2), so flip for lifetime.
                 ax.annotate("Excluded", xy=EXCLUDED_XY, xycoords="axes fraction",
-                            ha="center", va="center", fontsize=22, color='0.25',
+                            ha="center", va="center", fontsize=7*PT, color='0.25',
                             rotation=EXCLUDED_ROT, zorder=25)
             # The band runs UP to the right in the epsilon plane and DOWN to the right in the
             # ctau plane (ctau ~ eps^-2), so the empty corner flips with it. Fixed at
             # 'lower right' the legend sat on top of the bands on the ctau panel.
             if args.bd_overlay:
-                # compact 2x2 band legend, opaque over the hatching
-                _lg = ax.legend(handles=band_legend, fontsize=15, ncols=2,
-                                loc='lower left' if y_axis == 'lifetime' else 'lower right',
+                # one-column band legend stacked on the overlay legend, opaque over the hatching
+                _lg = ax.legend(handles=band_legend, fontsize=7*PT, handlelength=1.5,
+                                labelspacing=0.3, loc='lower left' if y_axis == 'lifetime' else 'upper left',
+                                bbox_to_anchor=(0.005, 0.2) if y_axis == 'lifetime' else (0.015, 0.70),
                                 framealpha=1.0, edgecolor='0.6')
                 _lg.set_zorder(30)
             else:
@@ -1054,7 +1058,7 @@ for ax in axs.flat:
     # Official CMS label via mplhep: "CMS Work in Progress" (upper-left) and
     # the dataset/livetime label (upper-right), laid out and spaced by mplhep.
     hep.cms.label(args.cms_label, data=True, loc=0, ax=ax,
-                  rlabel=f"2021-2026 ({livetime} {args.lumi_unit})", fontsize=24)
+                  rlabel=f"2021-2026 ({livetime} {args.lumi_unit})", fontsize=8*PT)
     ax.xaxis.set_major_formatter(tev_formatter)
 
 # ── SAVE ─────────────────────────────────────────────────────────────────────

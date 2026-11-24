@@ -82,6 +82,23 @@ parser.add_option('--legendMargin', type='float', action='store', default=None,
 parser.add_option('--legendBox', type='string', action='store', default='0.5,0.6,0.92,0.89',
                 dest='legendBox', help='x1,y1,x2,y2 NDC of the limit legend')
 
+parser.add_option('--cmsTextSize', type='float', action='store', default=0.8,
+                dest='cmsTextSize', help='"CMS" size as a fraction of the top margin (CMS_lumi.cmsTextSize)')
+parser.add_option('--extraOverCmsTextSize', type='float', action='store', default=None,
+                dest='extraOverCmsTextSize', help='size of the text after "CMS" relative to "CMS" (default: CMS_lumi value, 0.56)')
+parser.add_option('--lumiTextSize', type='float', action='store', default=0.35,
+                dest='lumiTextSize', help='top-right label size as a fraction of the top margin (CMS_lumi.lumiTextSize)')
+parser.add_option('--xTitleSize', type='float', action='store', default=0.055,
+                dest='xTitleSize', help='NDC size of the x-axis title')
+parser.add_option('--yTitleSize', type='float', action='store', default=0.05,
+                dest='yTitleSize', help='NDC size of the y-axis title')
+parser.add_option('--axisLabelSize', type='float', action='store', default=None,
+                dest='axisLabelSize', help='NDC size of the tick labels on both axes (default: tdrstyle, 0.05)')
+parser.add_option('--xTitleOffset', type='float', action='store', default=1.25,
+                dest='xTitleOffset', help='x-axis title offset')
+parser.add_option('--yTitleOffset', type='float', action='store', default=None,
+                dest='yTitleOffset', help='y-axis title offset (default 1.5, 1.75 with --fluxUnits)')
+
 parser.add_option('--fluxUnits', action='store_true', default=False,
                 dest='fluxUnits', help='y axis as upward muon intensity: monthly rate / (tracker <A Omega>, isotropic)')
 parser.add_option('-s', '--signals', metavar='FILE', type='string', action='store',
@@ -626,8 +643,11 @@ for theory_xsecs in total_theory_xsec_list:
         # same frame and bands as the blinded plot, observed drawn on top
         g_mclimit.GetXaxis().SetTitle(options.xTitle or "m("+options.particle+") [TeV]")  # NOT GENERIC
         g_mclimit.GetYaxis().SetTitle(Y_TITLE) # NOT GENERIC
-        g_mclimit.GetXaxis().SetTitleSize(0.055)
-        g_mclimit.GetYaxis().SetTitleSize(0.05)
+        g_mclimit.GetXaxis().SetTitleSize(options.xTitleSize)
+        g_mclimit.GetYaxis().SetTitleSize(options.yTitleSize)
+        if options.axisLabelSize:
+            g_mclimit.GetXaxis().SetLabelSize(options.axisLabelSize)
+            g_mclimit.GetYaxis().SetLabelSize(options.axisLabelSize)
         g_mclimit.Draw("al")
         g_error95.Draw("lf")
         g_error.Draw("lf")
@@ -635,24 +655,27 @@ for theory_xsecs in total_theory_xsec_list:
         g_limit.Draw("lp")
         draw_theory_band(graphWP)
         draw_theory(graphWP)
-        g_mclimit.GetYaxis().SetTitleOffset(1.75 if options.fluxUnits else 1.5)
-        g_mclimit.GetXaxis().SetTitleOffset(1.25)
+        g_mclimit.GetYaxis().SetTitleOffset(options.yTitleOffset or (1.75 if options.fluxUnits else 1.5))
+        g_mclimit.GetXaxis().SetTitleOffset(options.xTitleOffset)
         g_mclimit.GetXaxis().SetRangeUser(1.1, 1000.0)
         g_mclimit.GetYaxis().SetRangeUser(0.000001*Y_SCALE, 1000.0*Y_SCALE)
 
     else:
         g_mclimit.GetXaxis().SetTitle(options.xTitle or "m("+options.particle+") [TeV]")  # NOT GENERIC
         g_mclimit.GetYaxis().SetTitle(Y_TITLE) # NOT GENERIC
-        g_mclimit.GetXaxis().SetTitleSize(0.055)
-        g_mclimit.GetYaxis().SetTitleSize(0.05)
+        g_mclimit.GetXaxis().SetTitleSize(options.xTitleSize)
+        g_mclimit.GetYaxis().SetTitleSize(options.yTitleSize)
+        if options.axisLabelSize:
+            g_mclimit.GetXaxis().SetLabelSize(options.axisLabelSize)
+            g_mclimit.GetYaxis().SetLabelSize(options.axisLabelSize)
         g_mclimit.Draw("al")
         g_error95.Draw("lf")
         g_error.Draw("lf")
         g_mclimit.Draw("l")
         draw_theory_band(graphWP)
         draw_theory(graphWP)
-        g_mclimit.GetYaxis().SetTitleOffset(1.75 if options.fluxUnits else 1.5)
-        g_mclimit.GetXaxis().SetTitleOffset(1.25)
+        g_mclimit.GetYaxis().SetTitleOffset(options.yTitleOffset or (1.75 if options.fluxUnits else 1.5))
+        g_mclimit.GetXaxis().SetTitleOffset(options.xTitleOffset)
         g_mclimit.GetXaxis().SetRangeUser(1.1, 1000.0)
         g_mclimit.GetYaxis().SetRangeUser(0.000001*Y_SCALE, 1000.0*Y_SCALE)
 
@@ -804,9 +827,10 @@ for theory_xsecs in total_theory_xsec_list:
     #CMS_lumi.extraText = 'Preliminary'
     CMS_lumi.extraText = options.cmsLabel
     CMS_lumi.extraTextPosX = options.extraTextPosX
-    CMS_lumi.lumiTextSize = 0.35
+    CMS_lumi.lumiTextSize = options.lumiTextSize
 
-    CMS_lumi.cmsTextSize = 0.8
+    CMS_lumi.cmsTextSize = options.cmsTextSize
+    if options.extraOverCmsTextSize: CMS_lumi.extraOverCmsTextSize = options.extraOverCmsTextSize
     lumiLabel = options.lumiLabel + f" ({options.lumi} {options.lumiUnit})"
     CMS_lumi.CMS_lumi(climits, lumiLabel, 0, 11, sim=False)
 
