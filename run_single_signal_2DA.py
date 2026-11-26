@@ -53,11 +53,12 @@ _rpf_options = {
             0: {"MIN": 0.0, "MAX": 50},
         }
     },
+    # SR pass/fail ~1e-5 gives par0 ~1e-4: in [0,50] Minuit stalls in false minima on unblinded data
     '1x0': {
         'form': '0.1*(@0+@1*x)',
         'constraints': {
-            0: {"MIN": 0.0, "MAX": 50},
-            1: {"MIN": -0.1, "MAX": 0.1}
+            0: {"MIN": 0.0, "MAX": 0.002, "NOM": 1e-4, "ERROR": 1e-5},
+            1: {"MIN": -0.005, "MAX": 0.005, "NOM": 0.0, "ERROR": 1e-4}
         }
     },
     '1x0Prime': {
