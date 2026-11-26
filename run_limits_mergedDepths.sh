@@ -33,6 +33,9 @@ MODEL="core"
 DO_INPUT=1
 DO_PLOT=1
 EXTRA_MASSES=""     # DM masses [GeV] below the e3 grid, e.g. "400 500 600"
+UNBLIND=""          # -u: also the observed limit (unblinded areas only)
+ANGULAR=1           # core-model angular reweighting of the rates; --no-angular to disable
+CMSLABEL="Work in Progress"   # --cms-label: text after "CMS" on the plots
 # --------------------------------------------------------------------------
 
 usage() {
@@ -41,8 +44,11 @@ usage() {
     echo "  -d             2DA results directory (default: $LIMITDIR)"
     echo "  -m             livetime in months   (default: $MONTHS)"
     echo "  -x             extra DM masses [GeV] to append to the e3 grid"
+    echo "  -u, --unblind  also compute and draw the observed limit"
     echo "  --skip-input   reuse the existing exp_lim/signal_<LIMITDIR>_alpha_max.txt"
     echo "  --no-plot      stop after step 2 (limits), skip the 2D exclusion plot"
+    echo "  --no-angular   keep the nominal (CMSCGEN) angular efficiency, no core reweighting"
+    echo "  --cms-label    text after \"CMS\" on the plots (default: $CMSLABEL)"
     exit 1
 }
 
@@ -52,8 +58,11 @@ while [ $# -gt 0 ]; do
         -t) TF="${2:-}"; shift 2 ;;
         -m) MONTHS="${2:-}";   shift 2 ;;
         -x) EXTRA_MASSES="${2:-}"; shift 2 ;;
+        -u|--unblind) UNBLIND="--unblind"; shift ;;
         --skip-input) DO_INPUT=0; shift ;;
         --no-plot)    DO_PLOT=0;  shift ;;
+        --no-angular) ANGULAR=0;  shift ;;
+        --cms-label)  CMSLABEL="${2:-}"; shift 2 ;;
         -h|--help) usage ;;
         *) echo "ERROR: unknown argument '$1'"; usage ;;
     esac
@@ -125,6 +134,10 @@ if [ $DO_INPUT -eq 1 ]; then
     fi
     sed -i "s/_${DEPTH_KEY}_SR/${MERGE_TAG}_SR/g" "$SIGFILE"
     echo "    rewrote _${DEPTH_KEY}_SR -> ${MERGE_TAG}_SR"
+    if [ $ANGULAR -eq 1 ]; then
+        echo ">>> Step 1b: core-model angular reweighting of the rates"
+        python3 helper_scripts/apply_core_angular.py "$SIGFILE" || { echo "ERROR: apply_core_angular.py failed"; exit 1; }
+    fi
 else
     echo ">>> Step 1: skipped (--skip-input), using existing $SIGFILE"
     if [ ! -f "$SIGFILE" ]; then
@@ -153,7 +166,7 @@ python3 exp_lim/set_limit_alphaMax.py --single \
     -L "$LUMILABEL" \
     --outdir "$OUTDIR" \
     -s "$SIGFILE" \
-    -l "$MONTHS"
+    -l "$MONTHS" --cmsLabel "$CMSLABEL" $UNBLIND
 if [ $? -ne 0 ]; then
     echo "ERROR: set_limit_alphaMax.py failed"
     exit 1
@@ -163,7 +176,7 @@ fi
 if [ $DO_PLOT -eq 1 ]; then
     echo ""
     echo ">>> Step 3: plotExcludedMassVsEp_2D.py"
-    python3 helper_scripts/plotExcludedMassVsEp_2D.py -l "$LIMITDIR" -L "$MONTHS" --band68 --use-cache
+    python3 helper_scripts/plotExcludedMassVsEp_2D.py -l "$LIMITDIR" -L "$MONTHS" --band68 --use-cache --cms-label "$CMSLABEL"
     if [ $? -ne 0 ]; then
         echo "ERROR: plotExcludedMassVsEp_2D.py failed"
         exit 1

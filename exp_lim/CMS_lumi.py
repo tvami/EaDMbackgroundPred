@@ -25,6 +25,7 @@ relPosY    = 0.001 # 0.035
 relExtraDY = 1.2
 
 extraOverCmsTextSize  = 0.56
+extraTextPosX = 0.4325   # NDC x of the extra text in the out-of-frame layout
 
 lumi_13TeV = "101 fb^{-1}"
 lumi_2016_13TeV = "35.9 fb^{-1}"
@@ -171,7 +172,7 @@ def CMS_lumi(pad, lumi_sqrtS, iPeriod=4,  iPosX=11, sim=False):
         if( iPosX==0):
             posX_ =   l +  relPosX*(1-l-r)
             posY_ =   1-t+cmsTextOffset*t
-        posX_ = 0.4325
+        posX_ = extraTextPosX
         posY_ = 0.95 
         latex.SetTextFont(extraTextFont)
         latex.SetTextSize(extraTextSize*t)
