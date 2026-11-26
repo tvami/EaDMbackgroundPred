@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """CMS-style upward muon intensity limit vs cos(zenith) (HybridNew CLs N95), fixed momentum."""
-import array, json, sys
+import array, json, os, sys
 import numpy as np
 import ROOT
 import cmsstyle as CMS
 
-W = "/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn"  # HybridNew CLs inputs (collect.py)
+W = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # HybridNew CLs inputs (collect.py) in ../out
 P, out = int(sys.argv[1]), sys.argv[2]
 COS = len(sys.argv) > 3 and sys.argv[3] == "cos"
 ROOT.gROOT.SetBatch(True)

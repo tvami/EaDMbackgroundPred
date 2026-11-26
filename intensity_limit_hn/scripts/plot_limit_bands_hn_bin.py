@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """CMS-style limit on the isotropic upward muon intensity vs muon pT (HybridNew CLs N95): observed, expected, 68/95% bands."""
-import array, json, sys
+import array, json, os, sys
 import numpy as np
 import ROOT
 import cmsstyle as CMS
 
-W = "/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn"  # HybridNew CLs inputs (collect.py)
+W = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # HybridNew CLs inputs (collect.py) in ../out
 out = sys.argv[1]
 full_cms = len(sys.argv) > 2 and sys.argv[2] == "fullCMS"
 # full CMS cylinder (r = 7.3 m, |z| < 10.8 m) vs the cosmicInTracker one, both (pi/2) S
