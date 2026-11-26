@@ -785,10 +785,11 @@ if args.runType == '2DAInput' or args.runType == 'Both':
         # not collide onto one RECREATE'd output file (silent overwrite).
         # e.g. "..._Ntuplizer-Cosmics_Run2023B-CosmicTP-PromptReco-v1_v5a..."       -> "_Run2023Bv1"
         # e.g. "..._Ntuplizer-Cosmics_Commissioning2023-CosmicTP-PromptReco-v2_..." -> "_Commissioning2023v2"
+        # e.g. "..._Ntuplizer-Cosmics_HIRun2023A-CosmicTP-PromptReco-v2_v5b..."    -> "_HIRun2023Av2"
         # e.g. "..._Ntuplizer-Cosmics_All_v4.root"                                  -> "_All"
         input_basename = Path(args.inputFile).stem
         era_match = re.search(
-            r'Ntuplizer-Cosmics_(Run\d{4}[A-Z]|Commissioning\d{4})-\w+-PromptReco-(v\d+)',
+            r'Ntuplizer-Cosmics_((?:HI)?Run\d{4}[A-Z]|Commissioning\d{4})-\w+-PromptReco-(v\d+)',
             input_basename)
         if era_match:
             era_suffix = f"_{era_match.group(1)}{era_match.group(2)}"
