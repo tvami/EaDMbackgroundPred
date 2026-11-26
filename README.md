@@ -1370,7 +1370,7 @@ studies; `plotSigmaVsMass_CMSstyle.py` is the one that goes in the AN.
 ## How the paper figures are made (EXO-26-004)
 
 Every figure in the paper (gitlab `tdr/papers/EXO-26-004`) is a copy of the output of one command below; each was checked to be identical to the file in the paper's `Figures/`.
-Font sizes are set so that at one PRL column (246 pt) CMS is about 10 pt, Preliminary and the top-right label 8 pt, axis titles 9.5 pt, tick labels 8 pt and legend/in-plot text 7 pt (CWR, 2026-11-23). Figs. 2, 3 and 8 come from the ceph work-dir scripts named below, which are not in this repo.
+Font sizes are set so that at one PRL column (246 pt) CMS is about 10 pt, Preliminary and the top-right label 8 pt, axis titles 9.5 pt, tick labels 8 pt and legend/in-plot text 7 pt (CWR, 2026-11-23). Fig. 3 comes from the ceph work-dir scripts named below, which are not in this repo.
 To change a figure: edit the script or the options, rerun the command, and copy the output over the file in the paper's `Figures/`.
 
 Common environment for the commands run in the CMSSW area (`ENV` below):
@@ -1381,7 +1381,7 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh && eval `scramv1 runtime -sh` && sou
 export PYTHONPATH=$PYTHONPATH:/home/users/tvami/EarthAsDM/pylibs/twoD-env-py39-site-packages
 ```
 
-Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain built on them (`exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN*`) are produced as described in `CMSSW_14_1_0_pre4/src/hybridnew_v35/README.md` (`run_hn_chain.sh`). The flux limits come from `/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn` (`scripts/run_all.sh`, `scripts/collect.py`, see `RESULTS.md` there).
+Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain built on them (`exp_lim/signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN*`) are produced as described in `CMSSW_14_1_0_pre4/src/hybridnew_v35/README.md` (`run_hn_chain.sh`). The flux limits come from `intensity_limit_hn/` (`scripts/run_all.sh`, `scripts/collect.py`, see its `README.md`), a copy of `/ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn` without the toy grids, which stay on ceph. The efficiency extrapolation above 180 TeV (power law, Sec. "Efficiency above the heaviest template") and its comparison plots are in `eff_extrapolation/`.
 
 ### Main text
 
@@ -1395,12 +1395,13 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
       --out paper_figs_arc4/fig1/2DA_Run3_SR_unblinded_v35_1x0_fail_nopull
   ```
   Fig. 1: pull panel at +-1.5 (largest pass-region pull 1.02). Fig. 5: no pull panel (the fail-region pulls are all 0).
-- **Fig. 2**, `Figures/7Results/upward_intensity_limit_vs_pt.pdf`, and **Fig. 8** (End Matter), `upward_intensity_limit_vs_coszenith.pdf`: `ENV` (for ROOT), then
+- **Fig. 2**, `Figures/upward_intensity_limit_vs_pt.pdf`, and **Fig. 8** (End Matter), `upward_intensity_limit_vs_coszenith.pdf`: `ENV` (for ROOT), then
   ```
-  cd /ceph/cms/store/user/tvami/EarthAsDM/work/arc4_appB_hn
-  python3 scripts/plot_limit_bands_hn.py plots/upward_intensity_limit_vs_pt
+  cd intensity_limit_hn
+  python3 scripts/plot_limit_bands_hn_vsPt_line_right.py plots/upward_intensity_limit_vs_pt_line_right
   python3 scripts/plot_limit_vs_angle_hn.py 1000 plots/upward_intensity_limit_vs_coszenith cos
   ```
+  Fig. 2: the 10 TeV muons are drawn at their median pT (7 TeV), joined to the curve, with a dashed line at the 7 TeV overflow edge. The other `plot_limit_bands_hn*.py` are the alternatives shown at approval.
 - **Fig. 3**, `Figures/7Results/excl_ma_eps_mchi10_100_1000TeV.pdf`:
   ```
   cd /ceph/cms/store/user/tvami/EarthAsDM/work/arc3_epsma/scripts && source env.sh
@@ -1409,14 +1410,14 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
   EPSMA_ZOOM=1 python3 plot_epsma.py 10000 100000 1000000
   ```
   Output `../figures/exclusion_ma_eps_mchi10_100_1000TeV_zoom_HN_alphaCMB.pdf`. Beam-dump curves: DarkCast in `work/arc2_beamdump/darkcast/limits` and NA62 in `work/arc3_epsma/data/na62_dump_ll_curve.json`; SN: `work/arc2_beamdump/sn_digitized.json`.
-- **Fig. 4**, `Figures/7Results/SigmaVsMass_CMSstyle_tracker_core_v35_ddmarked_unblinded_posTF.pdf`: `ENV`, then
+- **Fig. 4**, `Figures/SigmaVsMass_CMSstyle_tracker_core_v35_ddmarked_unblinded_posTF.pdf`: `ENV`, then
   ```
-  AT=rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN; O=hybridnew_v35/figures_HN_tau0
+  AT=rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN_effPL
   python3 helper_scripts/plotSigmaVsMass_CMSstyle.py -s exp_lim/signal_${AT}_tracker_core_lowmass_alpha_max.txt -L 14.9 \
-      --dd-mass-cut 100 --dd-show-all --observed --cms-label Preliminary --lumi-unit months \
-      --ylabel '$\sigma^{\mathrm{SI}}_{\chi p}$ [cm$^2$]' --proton-only -o $O \
-      --name SigmaVsMass_CMSstyle_tracker_core_v35_ddmarked_unblinded_posTF_HN
+      --dd-mass-cut 100 --dd-show-all --dd-extrapolate --extend-fog --observed --cms-label Preliminary --lumi-unit months \
+      --ylabel '$\sigma^{\mathrm{SI}}_{\chi p}$ [cm$^2$]' --proton-only -o <dir> --name fig4_ddext
   ```
+  `_HN_effPL`: power-law efficiency above 180 TeV. `--dd-extrapolate` continues the xenon limits to 1 PeV as dashed lines with the log-log slope of each curve's top factor of ten, and drops the capture-speed line at the LZ end; `--extend-fog` extends the neutrino fog the same way.
   The log prints the numbers quoted in the text (strongest observed and expected exclusion, capture speeds, ratio to LZ).
 
 ### End Matter
