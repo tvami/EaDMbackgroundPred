@@ -1,0 +1,58 @@
+ <<< Combine >>> 
+ <<< v10.0.1 >>>
+>>> Random number generator seed is 123456
+>>> Method used is AsymptoticLimits
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binfail_LOW_obsOnly: in 4 x-bins
+ , in 1 y-bins
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binfail_SIG_obsOnly: in 3 x-bins
+ , in 1 y-bins
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binfail_HIGH_obsOnly: in 7 x-bins
+ , in 1 y-bins
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binpass_LOW_obsOnly: in 4 x-bins
+ , in 1 y-bins
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binpass_SIG_obsOnly: in 3 x-bins
+ , in 1 y-bins
+Using internal logic for binned/unbinned Asimov dataset generation
+Generating asimov with histogram for pdf pdf_binpass_HIGH_obsOnly: in 7 x-bins
+ , in 1 y-bins
+Median for expected limits = 1.06213, Sigma for expected limits = 0.541915
+Restricting r to positive values.
+
+Make global fit of real data
+NLL at global minimum of data = -7.23635 (r=1.42718e-09)
+
+Make global fit of asimov data
+NLL at global minimum of asimov = -6.98118 (r=1.0379e-05)
+At r = 1.200000:	q_mu = 4.69682	q_A  = 4.19626	Pmu = 0.01498	1-Pb  = 0.45138	CLs  = 0.03318
+At r = 0.600000:	q_mu = 2.90085	q_A  = 2.46916	Pmu = 0.04375	1-Pb  = 0.44537	CLs  = 0.09824
+At r = 0.898688:	q_mu = 3.86479	q_A  = 3.39228	Pmu = 0.02441	1-Pb  = 0.44897	CLs  = 0.05438
+At r = 0.999922:	q_mu = 4.15734	q_A  = 3.67434	Pmu = 0.02053	1-Pb  = 0.44987	CLs  = 0.04564
+At r = 0.957763:	q_mu = 4.03727	q_A  = 3.55848	Pmu = 0.02204	1-Pb  = 0.44951	CLs  = 0.04903
+At r = 0.937043:	q_mu = 3.97735	q_A  = 3.50071	Pmu = 0.02284	1-Pb  = 0.44932	CLs  = 0.05083
+At r = 0.948755:	q_mu = 4.01129	q_A  = 3.53344	Pmu = 0.02238	1-Pb  = 0.44943	CLs  = 0.04980
+At r = 0.944591:	q_mu = 3.99925	q_A  = 3.52182	Pmu = 0.02254	1-Pb  = 0.44939	CLs  = 0.05016
+At r = 0.946929:	q_mu = 4.00602	q_A  = 3.52835	Pmu = 0.02245	1-Pb  = 0.44941	CLs  = 0.04996
+At r = 0.946095:	q_mu = 4.00360	q_A  = 3.52602	Pmu = 0.02248	1-Pb  = 0.44940	CLs  = 0.05003
+At r = 0.946563:	q_mu = 4.00496	q_A  = 3.52733	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.04999
+At r = 0.946396:	q_mu = 4.00448	q_A  = 3.52686	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05001
+At r = 0.946490:	q_mu = 4.00475	q_A  = 3.52712	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05000
+At r = 0.946456:	q_mu = 4.00465	q_A  = 3.52703	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05000
+At r = 0.946475:	q_mu = 4.00470	q_A  = 3.52708	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05000
+At r = 0.946468:	q_mu = 4.00468	q_A  = 3.52706	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05000
+At r = 0.946472:	q_mu = 4.00469	q_A  = 3.52707	Pmu = 0.02247	1-Pb  = 0.44941	CLs  = 0.05000
+
+ -- AsymptoticLimits ( CLs ) --
+Observed Limit: r < 0.9465
+Expected  2.5%: r < 0.2509
+Expected 16.0%: r < 0.4669
+Expected 50.0%: r < 1.0621
+Expected 84.0%: r < 2.1460
+Expected 97.5%: r < 3.2298
+
+Done in 0.01 min (cpu), 0.01 min (real)
+41 log messages saved to combine_logger.out

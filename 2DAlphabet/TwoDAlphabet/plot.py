@@ -361,7 +361,8 @@ class Plotter(object):
                             extraText=extraText,    # top left, above pad, next to "CMS"
                             units=units,
                             savePDF=True,
-                            savePNG=True
+                            savePNG=True,
+                            blinded=region in self.twoD.options.blindedPlots
                         )
 
                         # Append projection plot to master dataframe
@@ -482,7 +483,7 @@ def make_pad_2D(outname, hist, style='lego', logzFlag=False, ROOTout=None,
 def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='', slicetitle='',
             totalBkg=None, logyFlag=True, ROOTout=None, savePDF=False, savePNG=False,
             dataOff=False, datastyle='pe X0', year=1, addSignals=True, 
-            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Internal', units='GeV', hspace=0.0):
+            lumiText=r'$138 fb^{-1} (13 TeV)$', extraText='Internal', units='GeV', hspace=0.0, blinded=True):
     '''Create a matplotlib.axis.Axis object holding a 1D plot with standardized CMS formatting conventions
     Args:
         outname (str): Output file path + name.
@@ -611,9 +612,8 @@ def make_ax_1D(outname, binning, data, bkgs=[], signals=[], title='', subtitle='
                 ax.text(0.3, 0.95-(0.06*(i+1)), r'%s'%title, ha='center', va='top', fontsize='small', transform=ax.transAxes)
 
     # pull
-    # TAV: After unblinding one needs to come back to this
-    #dataMinusBkg = data_arr - totalBkg_arr
-    dataMinusBkg = np.where(data_arr == 0, 0, data_arr - totalBkg_arr)
+    # Blinded regions: zero the pull in empty (blinded) bins; unblinded ones show empty bins too
+    dataMinusBkg = np.where(data_arr == 0, 0, data_arr - totalBkg_arr) if blinded else data_arr - totalBkg_arr
     data_error = np.where(dataMinusBkg<0, upper_errors - data_arr, data_arr - lower_errors)
     sigmas = np.sqrt(data_error**2 + totalBkg_err**2) 
     #sigmas = np.sqrt(np.sqrt(data_arr)*np.sqrt(data_arr) + totalBkg_err*totalBkg_err)

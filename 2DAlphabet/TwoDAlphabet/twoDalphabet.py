@@ -1031,7 +1031,8 @@ def _runLimit(blindData, verbosity, setParams, card_or_w='card.txt', condor=Fals
     if len(setParams) > 0:
         param_options = '--setParameters '+','.join('%s=%s'%(k,v) for k,v in setParams.items())
 
-    limit_cmd = 'combine -M AsymptoticLimits -d {card_or_w} --saveWorkspace --cminDefaultMinimizerStrategy 0 {param_opt} {blind_opt} -v {verb} --rRelAcc 0.000005 --rAbsAcc 0.000005' 
+    # strategy 1: strategy 0 gives false observed limits on the unblinded SR (e.g. DM 1 TeV 0.098 vs exp 4.6)
+    limit_cmd = 'combine -M AsymptoticLimits -d {card_or_w} --saveWorkspace --cminDefaultMinimizerStrategy 1 {param_opt} {blind_opt} -v {verb} --rRelAcc 0.000005 --rAbsAcc 0.000005' 
     limit_cmd = limit_cmd.format(
         card_or_w=card_or_w,
         blind_opt='--run=blind' if blindData else '',

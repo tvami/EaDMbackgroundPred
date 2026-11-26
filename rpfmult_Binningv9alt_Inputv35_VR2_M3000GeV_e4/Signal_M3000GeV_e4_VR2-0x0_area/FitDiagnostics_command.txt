@@ -1,0 +1,1 @@
+combine -M FitDiagnostics card.txt --text2workspace "--channel-masks" --setParameters CMS_EXO26004_Background_rpf_0x0_par0=2.6733803388173183e-06,r=1 --saveWorkspace --cminDefaultMinimizerStrategy 0 --rMin 0 --rMax 5 -v 1 --robustHesse 1

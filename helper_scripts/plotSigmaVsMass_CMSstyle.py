@@ -139,6 +139,10 @@ def main():
                              "mass. Above ~100 GeV the chi that the Earth can capture recoils off "
                              "xenon below 1 keV (printed at runtime), so a detector cannot see that "
                              "population. Also prints the captured-chi speed on the figure.")
+    parser.add_argument("--dd-extrapolate", action="store_true",
+                        help="continue the xenon limits (LZ, XENONnT, PandaX-4T) to 1 PeV as dashed "
+                             "lines with the log-log slope of their own top factor of ten, and drop "
+                             "the line marking where LZ ends")
     parser.add_argument("--dd-show-all", action="store_true",
                         help="with --dd-mass-cut: keep the direct-detection curves and the fog over "
                              "their full published range, and also mark where LZ ends with the "
@@ -196,6 +200,12 @@ def main():
                 x_lab, dy = DD_LABELS_CUT[stem]
 
         ax.plot(mass, sigma, color=DD_GRAY, lw=1.6, zorder=2)
+        if args.dd_extrapolate and DD_TARGET[stem] == "Xe":
+            top = mass >= mass.max() / 10.
+            k = np.polyfit(np.log(mass[top]), np.log(sigma[top]), 1)[0]
+            m_ext = np.logspace(np.log10(mass.max()), 6, 60)
+            ax.plot(m_ext, sigma[-1] * (m_ext / mass.max()) ** k, color=DD_GRAY, lw=1.6, ls="--", zorder=2)
+            print(f"  extrapolated {stem} from {mass.max():g} GeV with slope {k:.3f}")
         ax.text(x_lab, np.interp(x_lab, mass, sigma) * dy, override or label, color=DD_INK,
                 fontsize=FS_TEXT, ha="center", va="center", zorder=6,
                 bbox=dict(boxstyle="round,pad=0.13", fc="white", ec="none", alpha=0.8))
@@ -230,10 +240,11 @@ def main():
         print(f"  LZ ends at {lz_end:g} GeV: captured chi has u < {capture_speed_kms(lz_end):.1f} "
               f"km/s there, max Xe recoil {max_recoil_xe_kev(lz_end) * 1e3:.0f} eV")
         # Stops below the result band, clear of the legend
-        ax.vlines(lz_end, 1e-50, 1e-41, color=DD_INK, ls=":", lw=1.8, zorder=5)
-        ax.text(lz_end * 1.18, 1.5e-50,
-                rf"Captured $\chi$: $u < {capture_speed_kms(lz_end):.1f}$ km/s",
-                rotation=90, color=DD_INK, fontsize=FS_TEXT, ha="left", va="bottom", zorder=6)
+        if not args.dd_extrapolate:
+            ax.vlines(lz_end, 1e-50, 1e-41, color=DD_INK, ls=":", lw=1.8, zorder=5)
+            ax.text(lz_end * 1.18, 1.5e-50,
+                    rf"Captured $\chi$: $u < {capture_speed_kms(lz_end):.1f}$ km/s",
+                    rotation=90, color=DD_INK, fontsize=FS_TEXT, ha="left", va="bottom", zorder=6)
         ax.text(cut * 1.25, 3e-30, "Captured $\\chi$\nbelow Xe\nthreshold",  # top, next to the E_R line
                 color=DD_INK, fontsize=FS_TEXT, ha="left", va="top", zorder=6)
 
