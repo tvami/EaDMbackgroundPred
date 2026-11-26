@@ -1385,7 +1385,7 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
 
 ### Main text
 
-- **Fig. 1**, `Figures/6ShapeAnalysis/2DA_Run3_SR_unblinded_v35_1x0_pass.pdf` (pass region), and **Fig. 5** (End Matter), `..._fail.pdf` (fail region): `ENV`, then
+- **Fig. 1**, `Figures/2DA_Run3_SR_unblinded_v35_1x0_pass.pdf` (pass region), and **Fig. 5** (End Matter), `..._fail.pdf` (fail region): `ENV`, then
   ```
   python3 helper_scripts/plot2DA_SR_paper.py --area paper_figs_arc4/fig1/rpf2x0_Signal_M3000GeV_mergedDepth_SR \
       --signal Signal_M3000GeV_mergedDepth_SR --tf 1x0 --panel pass --pull-range 1.5 \
@@ -1402,7 +1402,7 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
   python3 scripts/plot_limit_vs_angle_hn.py 1000 plots/upward_intensity_limit_vs_coszenith cos
   ```
   Fig. 2: the 10 TeV muons are drawn at their median pT (7 TeV), joined to the curve, with a dashed line at the 7 TeV overflow edge. The other `plot_limit_bands_hn*.py` are the alternatives shown at approval.
-- **Fig. 3**, `Figures/7Results/excl_ma_eps_mchi10_100_1000TeV.pdf`:
+- **Fig. 3**, `Figures/excl_ma_eps_mchi10_100_1000TeV.pdf`:
   ```
   cd /ceph/cms/store/user/tvami/EarthAsDM/work/arc3_epsma/scripts && source env.sh
   export EPSMA_LIMITDIR=/home/users/tvami/EarthAsDM/CMSSW_14_1_0_pre4/src/rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN \
@@ -1422,7 +1422,7 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
 
 ### End Matter
 
-- **Fig. 6**, `Figures/7Results/limits_combine_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_alpha_max_4e-08.pdf`: `ENV`, then
+- **Fig. 6**, `Figures/limits_combine_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_alpha_max_4e-08.pdf`: `ENV`, then
   ```
   O=hybridnew_v35/figures_HN_tau0/fig6_theory10
   python3 exp_lim/set_limit_alphaMax.py --single -L "2021-2026" --outdir $O \
@@ -1435,7 +1435,7 @@ Inputs: the limits from pseudo-experiments (`HybridNew`) and the limit chain bui
       --cmsTextSize 0.53 --extraOverCmsTextSize 0.80 --lumiTextSize 0.43 --xTitleSize 0.051 --yTitleSize 0.05 --axisLabelSize 0.043
   ```
   `--thBand` draws the 10% theory band (Earth composition about 5%, form factors 0.1%) as a translucent fill; it changes the drawing only. The paper uses the `..._HN_alpha_max_4e-08.pdf` output (the reference epsilon).
-- **Fig. 7**, `Figures/7Results/ExcludedMass_mX_ep_explim_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_livetime_14p9_band68_ribbon_beamdump.pdf`: `ENV`, then
+- **Fig. 7**, `Figures/ExcludedMass_mX_ep_explim_signal_rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_livetime_14p9_band68_ribbon_beamdump.pdf`: `ENV`, then
   ```
   python3 helper_scripts/plotExcludedMassVsEp_2D.py -l rpf1x0pos_Binningv13_Inputv35_mergedDepths_SR_Unblind_all_HN -L 14.9 \
       --band68 --ribbon --yaxis epsilon --cms-label Preliminary --bd-overlay --no-sn --use-cache --lumi-unit months \
